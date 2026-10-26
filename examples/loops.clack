@@ -1,0 +1,13 @@
+fn count_to(n: int) -> int:
+    requires 0 <= n and n <= 1000000
+    ensures result == n
+
+    i = 0
+    while i < n:
+        invariant 0 <= i and i <= n
+        decreases n - i
+        i = i + 1
+    return i
+
+fn main():
+    print(count_to(1000))

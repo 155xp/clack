@@ -1,0 +1,36 @@
+type StockReport:
+    total: int
+    empty: int
+
+fn analyze(stock: int[4]) -> StockReport:
+    requires 0 <= stock[0] <= 1000000
+    requires 0 <= stock[1] <= 1000000
+    requires 0 <= stock[2] <= 1000000
+    requires 0 <= stock[3] <= 1000000
+    ensures result.total == stock[0] + stock[1] + stock[2] + stock[3]
+    ensures 0 <= result.total <= 4000000
+    ensures 0 <= result.empty <= len(stock)
+
+    total = stock[0] + stock[1] + stock[2] + stock[3]
+    i = 0
+    empty = 0
+    while i < len(stock):
+        invariant 0 <= i <= len(stock)
+        invariant 0 <= empty <= i
+        decreases len(stock) - i
+        if stock[i] == 0:
+            empty = empty + 1
+        i = i + 1
+    return StockReport(total, empty)
+
+fn main():
+    north_stock = [12, 0, 8, 0]
+    south_stock = [5, 7, 0, 3]
+    parallel:
+        north = analyze(north_stock)
+        south = analyze(south_stock)
+    print(north.total)
+    print(north.empty)
+    print(south.total)
+    print(south.empty)
+    print(north.total + south.total)

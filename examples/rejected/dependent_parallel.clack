@@ -1,0 +1,8 @@
+fn identity(x: int) -> int:
+    ensures result == x
+    return x
+
+fn main():
+    parallel:
+        first = identity(10)
+        second = identity(first)

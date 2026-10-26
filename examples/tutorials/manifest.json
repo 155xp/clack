@@ -1,0 +1,44 @@
+{
+  "programs": [
+    {
+      "path": "examples/tutorials/01-first-program.clack",
+      "stdout": "42\ntrue\n"
+    },
+    {
+      "path": "examples/tutorials/02-functions-contracts.clack",
+      "stdout": "42\n"
+    },
+    {
+      "path": "examples/tutorials/03-records-arrays.clack",
+      "stdout": "3\n4\n0\n4\n4\n"
+    },
+    {
+      "path": "examples/tutorials/04-loops.clack",
+      "stdout": "3\n0\n"
+    },
+    {
+      "path": "examples/tutorials/05-parallel-work.clack",
+      "stdout": "3\n2\n5\n0\n"
+    },
+    {
+      "path": "examples/tutorials/06-fixing-errors.clack",
+      "stdout": "42\n"
+    },
+    {
+      "path": "examples/tutorials/06-overflow-rejected.clack",
+      "error": "cannot prove integer arithmetic stays within signed 64-bit range"
+    },
+    {
+      "path": "examples/tutorials/06-saturating.clack",
+      "stdout": "42\n9223372036854775807\n"
+    },
+    {
+      "path": "examples/tutorials/07-project.clack",
+      "stdout": "20\n2\n15\n1\n35\n"
+    },
+    {
+      "path": "examples/tutorials/08-libraries.clack",
+      "stdout": "100\n80\n7\n12\n"
+    }
+  ]
+}

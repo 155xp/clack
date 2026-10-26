@@ -1,0 +1,16 @@
+# Each call receives its own array value. This illustrates task semantics,
+# not a speed benchmark: these tiny jobs do not justify thread overhead.
+fn sum4(values: int[4]) -> int:
+    requires 0 <= values[0] and values[0] <= 1000000
+    requires 0 <= values[1] and values[1] <= 1000000
+    requires 0 <= values[2] and values[2] <= 1000000
+    requires 0 <= values[3] and values[3] <= 1000000
+    ensures result == values[0] + values[1] + values[2] + values[3]
+    ensures 0 <= result and result <= 4000000
+    return values[0] + values[1] + values[2] + values[3]
+
+fn main():
+    parallel:
+        left = sum4([10, 20, 30, 40])
+        right = sum4([1, 2, 3, 4])
+    print(left + right)

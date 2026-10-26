@@ -1,0 +1,7 @@
+# Rejected: the preconditions do not exclude the largest signed integer.
+fn increment(x: int) -> int:
+    ensures result == x + 1
+    return x + 1
+
+fn main():
+    print(increment(10))

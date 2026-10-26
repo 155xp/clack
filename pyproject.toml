@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clack-language"
+version = "0.1.0"
+description = "A small native language with checked contracts and structured parallel jobs"
+requires-python = ">=3.11"
+dependencies = ["z3-solver==4.16.0.0"]
+license = "MIT"
+
+[project.scripts]
+clack = "clack.cli:main"
+
+[tool.setuptools]
+packages = ["clack"]
+
+[tool.setuptools.package-data]
+clack = ["stdlib/*.clack"]

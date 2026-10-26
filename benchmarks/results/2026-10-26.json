@@ -1,0 +1,99 @@
+{
+  "timestamp_utc": "2026-10-26T14:32:07.710889+00:00",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "machine": "x86_64",
+  "logical_cpus_reported": 5,
+  "compiler": "cc (Debian 14.2.0-19) 14.2.0",
+  "compiler_command": [
+    "cc"
+  ],
+  "flags": [
+    "-std=c11",
+    "-O3",
+    "-Wall",
+    "-Wextra",
+    "-pthread"
+  ],
+  "iterations_per_kernel": 10000000,
+  "repeats": 5,
+  "verified_obligations": {
+    "clack_single": 20,
+    "clack_sequential": 24,
+    "clack_parallel": 24
+  },
+  "timing_scope": "native process wall time including startup, pthread setup, output, and exit; excludes verification and compilation",
+  "reference": "pow(48271, iterations, 2147483647) * seed % 2147483647",
+  "all_outputs_match_reference": true,
+  "results": {
+    "c_single": {
+      "description": "C, one kernel",
+      "kernels": 1,
+      "median_seconds": 0.04301246399995762,
+      "samples_seconds": [
+        0.040479939999954695,
+        0.04474326700005804,
+        0.04017220800005816,
+        0.04301246399995762,
+        0.04337331200008521
+      ],
+      "expected_stdout": "893153735\n"
+    },
+    "clack_single": {
+      "description": "Clack, one kernel",
+      "kernels": 1,
+      "median_seconds": 0.041725721000034355,
+      "samples_seconds": [
+        0.04034328500006268,
+        0.05715289599993412,
+        0.041725721000034355,
+        0.054350569000007454,
+        0.04156007699998554
+      ],
+      "expected_stdout": "893153735\n"
+    },
+    "c_sequential": {
+      "description": "C, two sequential kernels",
+      "kernels": 2,
+      "median_seconds": 0.08254517099999248,
+      "samples_seconds": [
+        0.08182819700004984,
+        0.08254517099999248,
+        0.07972837700003765,
+        0.09136425399992731,
+        0.08273616000008133
+      ],
+      "expected_stdout": "893153735\n1957108851\n"
+    },
+    "clack_sequential": {
+      "description": "Clack, two sequential kernels",
+      "kernels": 2,
+      "median_seconds": 0.08914349899998797,
+      "samples_seconds": [
+        0.08197758200003591,
+        0.08999012800006767,
+        0.07915074699997149,
+        0.08914349899998797,
+        0.0900963149999825
+      ],
+      "expected_stdout": "893153735\n1957108851\n"
+    },
+    "clack_parallel": {
+      "description": "Clack, two parallel kernels",
+      "kernels": 2,
+      "median_seconds": 0.041720972999996775,
+      "samples_seconds": [
+        0.041720972999996775,
+        0.05866186499997639,
+        0.04436656999996558,
+        0.03968007399998896,
+        0.0415160279999327
+      ],
+      "expected_stdout": "893153735\n1957108851\n"
+    }
+  },
+  "ratios": {
+    "single_clack_seconds_over_c_seconds": 0.9700844155330295,
+    "sequential_clack_seconds_over_c_seconds": 1.0799359662117132,
+    "clack_parallel_speedup_over_clack_sequential": 2.1366591570142637
+  }
+}

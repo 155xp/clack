@@ -1,0 +1,4 @@
+# Rejected: index 3 is outside a three-element array.
+fn main():
+    values = [10, 20, 30]
+    print(values[3])

@@ -1,0 +1,15 @@
+from std.math import min, max, abs, clamp
+from std.array import sum4
+from tutorial_helpers import twice
+
+fn main():
+    total = sum4([20, 35, 0, 45])
+    bounded = clamp(total, 0, 80)
+    bonus = twice(6)
+    parallel:
+        left = abs(-7)
+        right = max(9, 12)
+    print(total)
+    print(bounded)
+    print(min(left, right))
+    print(bonus)

@@ -1,0 +1,6 @@
+fn main():
+    hours = 6
+    rate = 7
+    answer = hours * rate
+    print(answer)
+    print(answer == 42)

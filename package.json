@@ -1,0 +1,20 @@
+{
+  "name": "clack-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node website/build.mjs",
+    "check:site": "node website/check.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "highlight.js": "11.11.1",
+    "marked": "15.0.12"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12"
+  }
+}

@@ -1,0 +1,11 @@
+fn next_or_same(n: int) -> int:
+    ensures result >= n
+    ensures n < 9223372036854775807 or result == n
+    ensures n == 9223372036854775807 or result == n + 1
+    if n == 9223372036854775807:
+        return n
+    return n + 1
+
+fn main():
+    print(next_or_same(41))
+    print(next_or_same(9223372036854775807))

@@ -1,0 +1,17 @@
+type Point:
+    x: int
+    y: int
+
+fn move_x(point: Point, step: int) -> Point:
+    requires -1000000 <= point.x and point.x <= 1000000
+    requires -1000000 <= step and step <= 1000000
+    ensures result.x == point.x + step
+    ensures result.y == point.y
+    return Point(point.x + step, point.y)
+
+fn main():
+    start = Point(3, 4)
+    moved = move_x(start, 10)
+    print(moved.x)
+    print(moved.y)
+    print(start.x)

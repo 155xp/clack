@@ -1,0 +1,4 @@
+fn twice(value: int) -> int:
+    requires -100 <= value <= 100
+    ensures result == 2 * value
+    return value + value

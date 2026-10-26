@@ -1,0 +1,6 @@
+fn next_number(n: int) -> int:
+    ensures result == n + 1
+    return n + 1
+
+fn main():
+    print(next_number(41))

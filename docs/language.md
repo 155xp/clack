@@ -1,0 +1,65 @@
+# Language guide
+
+Clack combines plain functions and value types with compile-time contracts and independent parallel calls. This guide gives an overview of the implemented language. Use the [tutorials](tutorials/README.md) for a step-by-step introduction and the [language reference](reference/README.md) for exact rules.
+
+## A small complete program
+
+```clack
+fn twice(x: int) -> int:
+    requires -1000000 <= x <= 1000000
+    ensures result == 2 * x
+    return x + x
+
+fn main():
+    parallel:
+        left = twice(12)
+        right = twice(9)
+    print(left + right)
+```
+
+The program prints `42`. `main` is the entry point. Function parameters and results have explicit types; local bindings infer their types. `requires` describes accepted inputs, and `ensures` describes the returned value. Both jobs receive their own inputs, and the parallel block waits for both before the addition.
+
+Store the program in a `.clack` file. With the compiler installed and the virtual environment activated, use `clack run program.clack`. `clack check program.clack` checks it without running it, and `clack build program.clack -o build/program` creates a native executable. All three commands require successful verification.
+
+## Everyday rules
+
+| Topic | Current rule | Details |
+| --- | --- | --- |
+| Layout | Consistent space indentation; `#` comments; no semicolons | [Lexical syntax](reference/lexical-syntax.md) |
+| Numbers | Signed 64-bit integers; every executable intermediate must fit | [Types and values](reference/types-values.md) |
+| Booleans | `true`, `false`, `and`, `or`, `not`; no integer truthiness | [Expressions](reference/lexical-syntax.md) |
+| Data | Named records and nonempty fixed `int[N]` or `bool[N]` arrays | [Types and values](reference/types-values.md) |
+| Libraries | Explicit `from module import name` for standard or local definitions | [Library guide](libraries.md) |
+| Mutation | Locals may change; parameters and record fields are immutable | [Functions and control flow](reference/functions-control-flow.md) |
+| Copies | Assignment, arguments, and results have value semantics | [Types and values](reference/types-values.md) |
+| Loops | `while`, with invariants and a decreasing integer measure | [Contracts and verification](reference/contracts-verification.md) |
+| Jobs | Direct independent function calls inside `parallel:` | [Parallel execution](reference/parallelism.md) |
+| Output | Only `main` may `print` one integer or Boolean at a time | [Built-ins](reference/functions-control-flow.md) |
+
+## Proofs in daily code
+
+Annotations use mathematical integers; executable values use signed 64-bit integers. `assert` asks the compiler to prove a fact, rather than trust it. A function's preconditions must hold at every call, and its postconditions must hold on every return path. Array bounds, division safety, and loop termination are checked as well.
+
+A failed proof may reveal a bug, a missing true contract or invariant, or a solver limitation. Timeouts and unknown solver results stop compilation. The [verification reference](reference/contracts-verification.md) explains how to distinguish these cases and what the compiler still trusts.
+
+## Reusing code
+
+Import only the names a program needs:
+
+```clack
+from std.math import clamp
+from std.array import sum4
+
+fn main():
+    print(clamp(150, 0, 100))
+    print(sum4([10, 20, 30, 40]))
+```
+
+This prints `100` twice. Local libraries use the same form: `from helpers import twice` loads `helpers.clack` relative to the importing file. Imports bring in checked definitions; all reached module code is verified, including unused helpers. The [library guide](libraries.md) explains reusable files and the standard functions' contracts.
+
+## Continue learning
+
+- Follow the [tutorial sequence](tutorials/README.md) to build and check programs.
+- Use the [reference index](reference/README.md) or [complete grammar](reference/grammar.md) to look up syntax.
+- Try the [example programs](../examples/) and compare their source with the generated C.
+- Read the [design direction](design.md) for planned strings, dynamic collections, richer proofs, and systems integration. Those proposals are not features accepted by version 0.1.

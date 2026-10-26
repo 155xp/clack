@@ -1,0 +1,14 @@
+fn clamp(x: int, low: int, high: int) -> int:
+    requires low <= high
+    ensures low <= result and result <= high
+
+    if x < low:
+        return low
+    if x > high:
+        return high
+    return x
+
+fn main():
+    value = clamp(150, 0, 100)
+    assert value >= 0 and value <= 100
+    print(value)

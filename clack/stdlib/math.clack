@@ -1,0 +1,33 @@
+# Verified scalar helpers. All operations preserve signed 64-bit values.
+
+fn min(a: int, b: int) -> int:
+    ensures result <= a and result <= b
+    ensures result == a or result == b
+    if a < b:
+        return a
+    return b
+
+fn max(a: int, b: int) -> int:
+    ensures result >= a and result >= b
+    ensures result == a or result == b
+    if a > b:
+        return a
+    return b
+
+fn abs(value: int) -> int:
+    requires value > -9223372036854775808
+    ensures result >= 0
+    ensures result == value or result == -value
+    if value < 0:
+        return -value
+    return value
+
+fn clamp(value: int, low: int, high: int) -> int:
+    requires low <= high
+    ensures low <= result <= high
+    ensures (value < low and result == low) or (value > high and result == high) or (low <= value <= high and result == value)
+    if value < low:
+        return low
+    if value > high:
+        return high
+    return value

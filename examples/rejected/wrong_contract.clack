@@ -1,0 +1,7 @@
+# Rejected: an input of zero contradicts the claimed positive result.
+fn identity(x: int) -> int:
+    ensures result > 0
+    return x
+
+fn main():
+    print(identity(10))

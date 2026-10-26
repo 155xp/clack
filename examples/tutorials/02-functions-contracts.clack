@@ -1,0 +1,9 @@
+fn double(n: int) -> int:
+    requires 0 <= n <= 100
+    ensures result == 2 * n
+    return n + n
+
+fn main():
+    answer = double(21)
+    assert answer == 42
+    print(answer)
