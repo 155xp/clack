@@ -2,7 +2,7 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
-[Website](https://clack.enci.dev) · [Online handbook](https://clack.enci.dev/docs/) · [GitHub](https://github.com/155xp/clack)
+[GitHub repository](https://github.com/155xp/clack)
 
 Clack is an original working prototype inspired by the goals of languages such as Bend: make useful programs easy to express, run them efficiently, and check what they promise. This implementation does not use Bend's code.
 
@@ -160,13 +160,3 @@ Check tutorial outputs, local documentation links, and synchronized source listi
 ```sh
 .venv/bin/python tools/check_docs.py
 ```
-
-The website is generated from these same Markdown guides. To build and check it:
-
-```sh
-npm ci
-npm run build
-npm run check:site
-```
-
-See [website development](website/README.md) for the static build and Vercel configuration.

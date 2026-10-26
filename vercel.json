@@ -1,8 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "npm run build",
-  "outputDirectory": "website/dist",
-  "cleanUrls": true,
-  "trailingSlash": true
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": "redirect",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://github.com/155xp/clack",
+      "permanent": false
+    }
+  ]
 }
