@@ -10,13 +10,20 @@ Clack is statically typed. Function signatures and record fields declare types. 
 | --- | --- | --- |
 | `int` | Integers from −9,223,372,036,854,775,808 through 9,223,372,036,854,775,807 | Signed 64-bit integer |
 | `bool` | `true` and `false` | Native Boolean |
-| `unit` | No user-constructible value | No returned value; used only by `main` |
+| `text` | Immutable UTF-8 literals | Read-only NUL-terminated bytes |
+| `unit` | No user-constructible value | No returned value; used by `main` and native procedures |
 
 Integer arithmetic must remain within the signed 64-bit range at every executable intermediate. There is no wrapping, saturating, floating-point, or arbitrary-precision runtime mode. The verifier proves safety before the native operation is emitted.
 
 Booleans support `not`, `and`, `or`, `==`, and `!=`. An `if` or `while` condition must be a Boolean. Integers do not have a truthiness conversion, and Booleans do not participate in arithmetic. `true + 1` and `if 1:` are type errors.
 
-`main` returns `unit`. Its signature can be written `fn main():` or `fn main() -> unit:`. No other function, parameter, record field, or local binding may use `unit` in the current language. In particular, `print` cannot supply a value to an assignment.
+`main` returns `unit`. Its signature can be written `fn main():` or `fn main() -> unit:`. A native procedure may explicitly declare a `unit` result too. Ordinary source helpers must return values; no parameter, record field, or local binding may use `unit`. In particular, `print` cannot supply a value to an assignment.
+
+## Immutable text
+
+`text` uses double-quoted JSON-style literals such as `"Clack"` and `"Ready\n"`. Contents must be valid UTF-8 without embedded NUL. An ordinary function may accept or return text, and a record may contain a text field. Text contents cannot be mutated, though a local text binding may be reassigned another text value.
+
+Text currently originates only from static literals. Concatenation, equality, ordering, indexing, `len(text)`, text arrays, and native text returns are unsupported. This keeps the current lifetime model small; it is not a general string-processing library. See [the text guide](../native.md#text-values) for escapes and output examples.
 
 ## Fixed arrays
 
@@ -37,6 +44,8 @@ This prints `20`, `true`, and `3`. Array indexing starts at zero. For an array o
 Arrays contain only `int` or only `bool`. Empty arrays, mixed arrays such as `[1, true]`, nested arrays, and arrays of records are unsupported. Accepted lengths are between `1` and `1000000`, inclusive. This is an implementation limit, not a promise that every such value will fit the native stack or a chosen platform's resources.
 
 Length is part of type identity. A function accepting `int[3]` does not accept `int[4]`, and a local first assigned a three-element array cannot later receive a four-element array. The length cannot be a parameter name or runtime expression in a type annotation. `len(array)` returns an `int` whose value is known from the type.
+
+The standard `sum`, `all`, `any`, and `count` operators accept any supported fixed length using the argument's type; they do not introduce user-defined generic type syntax. See [array reductions](../libraries.md#stdarray-any-supported-fixed-length) for element types and safety requirements.
 
 Assignment to an array element is supported only through a local variable, for example `readings[i] = value`. A function parameter is immutable, including its elements. Copy a parameter to a local when making a changed version:
 
@@ -81,7 +90,7 @@ fn main():
 
 This prints `3`, `30`, and `true`. The constructor takes one argument for each field, in declaration order. Constructors have no default values or named arguments. Each argument must have exactly the corresponding field's type.
 
-Fields may contain integers, Booleans, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no pointers or references with which to express a recursive data structure in version 0.1.
+Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.2.
 
 Field access uses `.` and may be chained with further field or array access. Fields cannot be assigned directly. To update a record, construct and assign a replacement. The following is a fragment inside a function where `point` is already a `Point` and the addition is known safe:
 
@@ -105,6 +114,6 @@ These rules also apply at parallel boundaries. Two workers receiving the same ar
 
 `==` and `!=` compare two integers or two Booleans. Ordering comparisons accept two integers. Composite equality is not implemented; compare the fields or elements needed for the property.
 
-`print` accepts one integer or one Boolean and appends a newline. It prints Booleans as `true` and `false`. It cannot print a whole record or array, so print selected fields or elements. Only `main` may call `print`.
+`print` accepts one integer, Boolean, or text value and appends a newline. It prints Booleans as `true` and `false`. It cannot print a whole record or array, so print selected fields or elements. Only `main` may call `print`.
 
-Strings, dynamic arrays, slices, enums, tagged unions, generic types, and user-defined operators remain [design proposals](../design.md).
+Text manipulation, dynamic arrays, slices, enums, tagged unions, generic types, and user-defined operators remain [design proposals](../design.md).

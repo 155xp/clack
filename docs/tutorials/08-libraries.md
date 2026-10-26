@@ -52,13 +52,13 @@ The exact output is:
 
 ## Understand the supplied helpers
 
-`sum4` sums exactly four integers and promises their exact sum. `sum2`, `sum3`, and `sum8` cover the other supplied fixed sizes. These are named library functions; there is no generic `sum` function or arbitrary-length collection API yet. Choose the helper matching the array's type.
+`sum4` sums exactly four integers and promises their exact sum. `sum2`, `sum3`, and `sum8` cover the other supplied fixed sizes. These named source functions remain supported. Clack 0.2 also provides `from std.array import sum` for any supported fixed length, so a five-element array no longer needs a new helper. See the [reduction example](../../examples/reductions.clack) for `sum`, `all`, `any`, and `count`.
 
 Each intermediate addition must fit into a signed 64-bit integer. A final sum fitting is not enough if an earlier prefix would overflow. The helpers state those requirements in their contracts, so callers must establish them just as they establish requirements for their own functions. The small literal array in this lesson makes those facts straightforward.
 
 `min` and `max` return one of their two input values. `abs` returns a nonnegative magnitude and excludes the smallest signed integer, whose positive magnitude cannot fit. `clamp(value, low, high)` restricts a value to the supplied interval and requires `low <= high`. Here the total is one hundred and the upper limit is eighty, so bounded becomes eighty.
 
-These functions are implemented in Clack source and verified with the program. They are not unchecked special cases. The compiler still has two built-in functions, `print` and `len`; importing a helper is a separate operation.
+The functions used in this lesson are implemented in Clack source and verified with the program. The new length-independent reductions are different: they are compiler operators modeled by the verifier and emitted as native loops. Both groups require explicit imports. Only `print` and `len` are available without an import.
 
 ## Reuse your own functions
 

@@ -28,7 +28,7 @@ source .venv/bin/activate
 clack --version
 ```
 
-The version command should print `Clack 0.1.0`. Installation downloads Python dependencies; compiling an installed project needs no network connection.
+The version command should print `Clack 0.2.0`. Installation downloads Python dependencies; compiling an installed project needs no network connection.
 
 Activation makes the `clack` command available in the current shell. In a new terminal, activate the environment again. You can also use the explicit command without activation:
 
@@ -63,6 +63,8 @@ fn main():
 ```
 
 Run it with `clack run answer.clack`. Execution starts at `main`. The local `answer` gets its type from `6 * 7`, and `print` writes its value followed by a newline. Use spaces to indent blocks; four spaces is the convention used throughout this handbook.
+
+You can also write `print("Hello, Clack")` in main. Text literals are immutable UTF-8 values with JSON-style escapes. Text manipulation is still limited; see [text and native bindings](native.md) when you want labels or an optional terminal UI package.
 
 ## Check, build, and inspect
 

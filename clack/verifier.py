@@ -10,17 +10,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
-import re
 
 import z3
 
 from . import frontend as ast
-from .typecheck import check
+from .reductions import REDUCTIONS
+from .typecheck import array_type, check
 
 
 MIN_INT = -(1 << 63)
 MAX_INT = (1 << 63) - 1
-_ARRAY = re.compile(r"(int|bool)\[([0-9]+)\]\Z")
 
 
 @dataclass(frozen=True)
@@ -52,7 +51,7 @@ class _Verifier:
         self.info = check(program)
         self.timeout_ms = timeout_ms
         self.proof_dir = proof_dir
-        self.sorts: dict[str, z3.SortRef] = {"int": z3.IntSort(), "bool": z3.BoolSort()}
+        self.sorts: dict[str, z3.SortRef] = {"int": z3.IntSort(), "bool": z3.BoolSort(), "text": z3.StringSort()}
         self.serial = 0
         self.obligations: list[dict] = []
         self.function: ast.Function | None = None
@@ -63,9 +62,9 @@ class _Verifier:
     def sort(self, type_name: str) -> z3.SortRef:
         if type_name in self.sorts:
             return self.sorts[type_name]
-        array = _ARRAY.fullmatch(type_name)
+        array = array_type(type_name)
         if array:
-            result = z3.ArraySort(z3.IntSort(), self.sort(array[1]))
+            result = z3.ArraySort(z3.IntSort(), self.sort(array[0]))
         else:
             record = self.info.records[type_name]
             definition = z3.Datatype(f"Clack_{type_name}")
@@ -81,25 +80,31 @@ class _Verifier:
     def bounds(self, value: Value) -> z3.BoolRef:
         if value.type == "int":
             return z3.And(value.term >= MIN_INT, value.term <= MAX_INT)
-        if value.type == "bool":
+        if value.type in {"bool", "text"}:
             return z3.BoolVal(True)
-        array = _ARRAY.fullmatch(value.type)
+        array = array_type(value.type)
         if array:
-            if array[1] == "bool":
+            if array[0] == "bool":
                 return z3.BoolVal(True)
             self.serial += 1
             index = z3.Int(f"index@{self.serial}")
-            item = Value(array[1], z3.Select(value.term, index))
-            return z3.ForAll([index], z3.Implies(z3.And(index >= 0, index < int(array[2])), self.bounds(item)))
+            item = Value(array[0], z3.Select(value.term, index))
+            return z3.ForAll([index], z3.Implies(z3.And(index >= 0, index < array[1]), self.bounds(item)))
         record = self.info.records[value.type]
         sort = self.sort(value.type)
         return z3.And(*[self.bounds(Value(t, sort.accessor(0, i)(value.term))) for i, (_, t) in enumerate(record.fields)])
 
     def prove(self, state: State, claim: z3.BoolRef, line: int, message: str) -> None:
-        solver = z3.Solver()
-        solver.set(timeout=self.timeout_ms)
-        solver.add(state.path, z3.Not(claim))
-        status = solver.check()
+        # A constant True claim needs no solver. False still needs its path:
+        # an unreachable operation may legitimately have a false safety goal.
+        trivial = z3.is_true(z3.simplify(claim))
+        status = z3.unsat
+        if not trivial or self.proof_dir is not None:
+            solver = z3.Solver()
+            solver.set(timeout=self.timeout_ms)
+            solver.add(state.path, z3.Not(claim))
+            if not trivial:
+                status = solver.check()
         number = len(self.obligations) + 1
         location = getattr(self.program, "locations", {}).get(line)
         names = getattr(self.program, "symbol_names", {})
@@ -138,6 +143,8 @@ class _Verifier:
             return self.int_result(z3.IntVal(expression.value), state, line, spec)
         if isinstance(expression, ast.BoolLit):
             return Value("bool", z3.BoolVal(expression.value))
+        if isinstance(expression, ast.StringLit):
+            return Value("text", z3.StringVal(expression.value))
         if isinstance(expression, ast.Name):
             return state.env[expression.name]
         if isinstance(expression, ast.Unary):
@@ -193,16 +200,28 @@ class _Verifier:
         if isinstance(expression, ast.Index):
             value = self.expr(expression.value, state, spec)
             index = self.expr(expression.index, state, spec)
-            array = _ARRAY.fullmatch(value.type)
-            self.prove(state, z3.And(index.term >= 0, index.term < int(array[2])), line, "array index is in bounds")
-            return Value(array[1], z3.Select(value.term, index.term))
+            array = array_type(value.type)
+            self.prove(state, z3.And(index.term >= 0, index.term < array[1]), line, "array index is in bounds")
+            return Value(array[0], z3.Select(value.term, index.term))
         if isinstance(expression, ast.Call):
             if expression.name == "len":
                 # Evaluate its argument too: source semantics must not hide
                 # unsafe indexing/calls just because length is statically known.
                 value = self.expr(expression.args[0], state, spec)
-                return Value("int", z3.IntVal(int(_ARRAY.fullmatch(value.type)[2])))
+                return Value("int", z3.IntVal(array_type(value.type)[1]))
             args = [self.expr(value, state, spec) for value in expression.args]
+            if expression.name in REDUCTIONS:
+                operation = REDUCTIONS[expression.name]
+                values = [z3.Select(args[0].term, i) for i in range(array_type(args[0].type)[1])]
+                if operation.name == "sum":
+                    total, bounds = values[0], []
+                    for value in values[1:]:
+                        total = total + value
+                        bounds.append(self.bounds(Value("int", total)))
+                    self.prove(state, z3.And(*bounds), line, "every partial sum stays within signed 64-bit range")
+                else:
+                    total = {"all": z3.And, "any": z3.Or, "count": lambda xs: z3.Sum([z3.If(x, 1, 0) for x in xs])}[operation.name](values)
+                return Value(operation.result, total)
             if expression.name == "print":
                 return Value("unit", z3.BoolVal(True))
             if expression.name in self.info.records:
@@ -212,6 +231,12 @@ class _Verifier:
 
     def call(self, expression: ast.Call, args: list[Value], state: State) -> Value:
         function = self.info.functions[expression.name]
+        if function.foreign_symbol is not None:
+            if function.return_type == "unit":
+                return Value("unit", z3.BoolVal(True))
+            result = self.fresh(function.return_type, "native.result")
+            state.path = z3.And(state.path, self.bounds(result))
+            return result
         display_name = getattr(self.program, "symbol_names", {}).get(function.name, function.name)
         env = {name: value for (name, _), value in zip(function.params, args)}
         invocation = State(env, state.path)
@@ -300,8 +325,8 @@ class _Verifier:
                 elif isinstance(statement, ast.IndexAssign):
                     array = state.env[statement.name]
                     index = self.expr(statement.index, state)
-                    shape = _ARRAY.fullmatch(array.type)
-                    self.prove(state, z3.And(index.term >= 0, index.term < int(shape[2])), statement.line, "array update is in bounds")
+                    shape = array_type(array.type)
+                    self.prove(state, z3.And(index.term >= 0, index.term < shape[1]), statement.line, "array update is in bounds")
                     value = self.expr(statement.value, state)
                     state.env[statement.name] = Value(array.type, z3.Store(array.term, index.term, value.term))
                 elif isinstance(statement, ast.ExprStmt):
@@ -316,8 +341,9 @@ class _Verifier:
                     continue
                 elif isinstance(statement, ast.If):
                     condition = self.expr(statement.condition, state)
-                    following.extend(self.block(statement.then_body, [state.under(condition.term)]))
-                    following.extend(self.block(statement.else_body, [state.under(z3.Not(condition.term))]))
+                    branches = self.block(statement.then_body, [state.under(condition.term)])
+                    branches += self.block(statement.else_body, [state.under(z3.Not(condition.term))])
+                    following.extend(self.join(branches))
                     continue
                 elif isinstance(statement, ast.While):
                     state = self.loop(statement, state)
@@ -332,10 +358,25 @@ class _Verifier:
             states = following
         return states
 
+    def join(self, states: list[State]) -> list[State]:
+        """Merge continuing, disjoint branches; return paths were checked already."""
+        if len(states) < 2:
+            return states
+        common = set.intersection(*(set(state.env) for state in states))
+        env = {name: value for name, value in states[0].env.items() if name in common}
+        for state in states[1:]:
+            for name, value in env.items():
+                alternative = state.env[name]
+                if not value.term.eq(alternative.term):
+                    env[name] = Value(value.type, z3.If(state.path, alternative.term, value.term))
+        return [State(env, z3.Or(*(state.path for state in states)))]
+
     def run(self) -> Verification:
         try:
             for name in self.info.call_order:
                 self.function = self.info.functions[name]
+                if self.function.foreign_symbol is not None:
+                    continue
                 self.entry = {param: self.fresh(t, f"{name}.{param}") for param, t in self.function.params}
                 state = State(self.entry.copy(), z3.And(*[self.bounds(value) for value in self.entry.values()]))
                 for condition in self.function.requires:

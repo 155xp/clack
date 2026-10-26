@@ -12,10 +12,11 @@ import hashlib
 from pathlib import Path
 
 from . import frontend as ast
+from .reductions import EXPORTS, PREFIX as REDUCTION_PREFIX
 
 
 _RESERVED_PREFIX = "_clack_module_"
-_PRIMITIVES = {"int", "bool", "unit"}
+_PRIMITIVES = {"int", "bool", "unit", "text"}
 _BUILTINS = {"print", "len"}
 _DECLARATION_RESERVED = _PRIMITIVES | _BUILTINS | {"result"}
 
@@ -74,11 +75,15 @@ class _Loader:
         # source map while the active stack separately detects cycles.
         self.modules[path] = module
         self.active.append(path)
+        if path == (self.bundled / "array.clack").resolve():
+            for name, internal in EXPORTS.items():
+                module.scope[name] = _Symbol(internal, "reduction")
+                self.symbol_names[internal] = f"std.array.{name}"
         declarations = [*program.records, *program.functions]
         for declaration in declarations:
             name = declaration.name
-            if name.startswith(_RESERVED_PREFIX):
-                self.fail(module, f"names starting with {_RESERVED_PREFIX!r} are reserved for linked libraries", declaration.line)
+            if name.startswith((_RESERVED_PREFIX, REDUCTION_PREFIX)):
+                self.fail(module, "compiler-internal names are reserved for linked libraries and reductions", declaration.line)
             if name in _DECLARATION_RESERVED:
                 self.fail(module, f"{name!r} is reserved and cannot name a declaration", declaration.line)
             if name in module.scope:
@@ -101,7 +106,7 @@ class _Loader:
             for name in declaration.names:
                 if name == "main":
                     self.fail(module, "main is an entry point and cannot be imported", declaration.line)
-                if name in _DECLARATION_RESERVED or name.startswith(_RESERVED_PREFIX):
+                if name in _DECLARATION_RESERVED or name.startswith((_RESERVED_PREFIX, REDUCTION_PREFIX)):
                     self.fail(module, f"{name!r} is reserved and cannot be imported", declaration.line)
                 if name in module.scope:
                     self.fail(module, f"import {name!r} conflicts with another declaration or import", declaration.line)
@@ -149,15 +154,25 @@ class _Loader:
         functions: list[ast.Function] = []
         records: list[ast.Record] = []
         locations: dict[int, tuple[str, int]] = {}
+        native_sources: list[str] = []
         offset = 0
         for module in self.modules.values():
+            for declaration in module.program.native_files:
+                name = Path(declaration.path)
+                native = (module.path.parent / name).resolve()
+                if name.is_absolute() or ".." in name.parts or name.suffix != ".c" or not native.is_relative_to(module.path.parent):
+                    self.fail(module, "native sources must be relative .c files inside their module directory", declaration.line)
+                if not native.is_file():
+                    self.fail(module, f"native C source was not found: {name}", declaration.line)
+                if str(native) not in native_sources:
+                    native_sources.append(str(native))
             line_count = max(1, len(module.source.splitlines()))
             for line in range(1, line_count + 1):
                 locations[line + offset] = (str(module.path), line)
             functions.extend(self.rewrite(module.program.functions, module, offset))
             records.extend(self.rewrite(module.program.records, module, offset))
             offset += line_count + 1
-        return ast.Program(functions, records, locations=locations, symbol_names=self.symbol_names)
+        return ast.Program(functions, records, locations=locations, symbol_names=self.symbol_names, native_sources=native_sources)
 
 
 def load_program(path: str | Path) -> ast.Program:

@@ -159,9 +159,11 @@ The timeout is per query. There is no option to accept an unproved result. See t
 
 ## The construct is not implemented
 
-Strings report `strings are not supported in this version`; nondecimal and floating-point literals report `only decimal integer literals are supported`. Recursive calls report `recursive call cycle ... is unsupported; use a loop with decreases`.
+Text requires double-quoted JSON-style literals; unsupported quoting reports `use double-quoted JSON text literals`. Text concatenation, comparison, indexing, text arrays, and `len(text)` are not supported. Nondecimal and floating-point literals report `only decimal integer literals are supported`. Recursive calls report `recursive call cycle ... is unsupported; use a loop with decreases`.
 
 Clack also has no dynamic arrays, `for`, `break`, `continue`, exceptions, or user-defined operators. These require language work rather than an alternative flag. Check the [current reference](reference/README.md) and [design direction](design.md) before assuming familiar syntax is available.
+
+Native calls are explicit main-only statements or direct assignments. `native calls belong only in main's direct assignments or unit call statements` means a call was nested, used in a condition, or attempted from a helper. Assign a native return to a local first, then check that local before arithmetic. The [native guide](native.md) explains the supported ABI and why native implementations are unproved.
 
 ## An import cannot be loaded or does not export the requested name
 

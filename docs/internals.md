@@ -23,6 +23,7 @@ The public command-line path follows this order for every emission or execution.
 | [frontend.py](../clack/frontend.py) | Source locations, AST, lexer adapter, recursive-descent parser |
 | [modules.py](../clack/modules.py) | Local and bundled imports, name resolution, merged program and source maps |
 | [typecheck.py](../clack/typecheck.py) | Types, definite assignment, parameter immutability, effects, call graph |
+| [reductions.py](../clack/reductions.py) | Shared typed registry for imported array reduction operators |
 | [verifier.py](../clack/verifier.py) | Symbolic execution and solver obligations |
 | [codegen.py](../clack/codegen.py) | Verified AST to C11, including thread wrappers |
 | [cli.py](../clack/cli.py) | Options, diagnostics, compiler invocation, executable handling |
@@ -31,23 +32,27 @@ The public command-line path follows this order for every emission or execution.
 
 `frontend.parse(source)` returns a `Program` containing functions, records, and import declarations, or raises `CompileError` with a source line and column. Python's tokenizer supplies lexical tokens and indentation markers. Clack's own parser decides the grammar and builds Clack AST nodes. Source is never evaluated by Python.
 
-The CLI uses `modules.load_program(path)` to load the entry file and resolve its imports. Local module paths are relative to the importing source file. Bundled `std` modules are package resources and cannot be replaced by a local `std` directory. Imports explicitly select functions and records; library files do not define main.
+The CLI uses `modules.load_program(path)` to load the entry file and resolve its imports. Local module paths are relative to the importing source file. Bundled `std` modules are package resources and cannot be replaced by a local `std` directory. Imports explicitly select functions and records; library files do not define main. `native` declarations resolve confined module-relative C files into `Program.native_sources`, while `Function.foreign_symbol` distinguishes an explicit external declaration from a source function.
 
 The loader constructs a merged program with distinct internal names for declarations and their references. `Program.locations` records mappings back to original source files and lines for diagnostics. These are compiler bookkeeping, not module objects or Python execution exposed to the source language. All declarations of loaded libraries participate in checking, not just the ones eventually called.
 
-The type checker collects the loaded declarations before checking bodies, so definition order does not dictate call order. It validates record layouts, types, function signatures, builtins, and supported expressions. It tracks which locals exist on every continuing path. Parameters cannot be assigned or mutated. The only output operation is `print`, allowed in main; main cannot be called as a worker.
+The type checker collects the loaded declarations before checking bodies, so definition order does not dictate call order. It validates record layouts, types, function signatures, builtins, and supported expressions. It tracks which locals exist on every continuing path. Parameters cannot be assigned or mutated. `print` is allowed only in main, as are direct external unit statements and external result assignments; main cannot be called as a worker. Native calls are rejected inside nested expressions and ordinary helpers, keeping the verified worker graph free of foreign effects.
 
 It also builds the runtime call graph and rejects cycles. The resulting callee-first order makes modular verification possible: a helper is checked before its postconditions are used to describe its result at a call site. `TypeInfo` holds local types, expression types, function and record maps, and that order.
 
-The [standard library](libraries.md) uses the same mechanism. Its math and fixed-array helpers are Clack source, not additional compiler builtins or assumed axioms. Their preconditions and bodies are checked as part of the loaded program.
+The [standard library](libraries.md) uses the same mechanism for its math and fixed-size source helpers. Their preconditions and bodies are checked as part of the loaded program. The length-independent `std.array` reductions are different: the loader exposes reserved internal operators through explicit public imports, and the shared registry records their input and result types. They have direct verifier and C-backend implementations rather than source bodies. A local module cannot replace the bundled namespace or call the internal spellings directly.
 
 ## Symbolic execution
 
 `verifier.verify(program, timeout_ms=5000, proof_dir=None)` invokes static checking and returns a `Verification` only after all obligations pass. A symbolic state contains an environment of typed terms and a path condition.
 
-Assignments change the local binding's symbolic value. Branches create states guarded by the condition or its negation. Returns must establish every postcondition under the facts of that path. At a call, the caller establishes the helper's preconditions, then receives a fresh result constrained by the helper's already-checked postconditions and type bounds.
+Assignments change the local binding's symbolic value. Branches create states guarded by the condition or its negation. Continuing branches are joined using conditional values and the disjunction of their path conditions; returned paths have already established their postconditions. This avoids enumerating every branch combination in later statements. At a source function call, the caller establishes the helper's preconditions, then receives a fresh result constrained by its already-checked postconditions and type bounds.
 
-For a required claim `P`, the verifier asks whether `path and not P` is satisfiable. `unsat` establishes that no counterexample exists under those facts. `sat` produces a model used in the diagnostic. `unknown`, including timeout, is rejected. No state is accepted merely because the programmer wrote a contract or assertion.
+For a required claim `P`, a claim that simplifies unconditionally to `true` needs no solver query. Otherwise the verifier asks whether `path and not P` is satisfiable. `unsat` establishes that no counterexample exists under those facts. `sat` produces a model used in the diagnostic. `unknown`, including timeout, is rejected. A constant `false` still needs its path checked, because it can be legitimate on an unreachable path. No state is accepted merely because the programmer wrote a contract or assertion. Proof export still records replayable queries for all obligations, including simplified ones.
+
+Reductions read the argument once and model each fixed-array element. `sum` constructs the mathematical left-to-right sum and a combined obligation covering every nontrivial prefix's signed bounds. `all` and `any` use exact conjunction and disjunction. `count` sums `if element then 1 else 0`; its maximum is the checked array length, at most one million. This element-level expansion grows with the array length and is not a constant-time verification algorithm.
+
+The verifier does not inspect native C bodies. A native scalar return becomes a fresh unconstrained term bounded only by its declared type; no foreign contract can add assumed properties. Text is carried as an opaque typed value, with all current runtime text originating in static literals. The CLI reports the native boundary explicitly rather than counting external implementations as proved Clack functions.
 
 ## Arithmetic and composite values
 
@@ -69,11 +74,13 @@ Short-circuit expressions require similar care. The right operand is checked onl
 
 `codegen.emit_c(program, local_types, expr_types)` assumes successful verification. It is an internal emitter, not an independent checking boundary. The CLI always calls it after `verify`.
 
-Integers become `int64_t`, Booleans become `bool`, and records and fixed arrays become structs passed by value. Identifiers are prefixed to avoid C keyword collisions. The signed minimum literal has a special representation that does not first create an out-of-range positive signed literal. Proof annotations and successful assertions are removed.
+Integers become `int64_t`, Booleans become `bool`, text becomes a `const char *` to immutable NUL-terminated UTF-8, and records and fixed arrays become structs passed by value. Text parsing rejects embedded NUL and invalid Unicode encodings. Identifiers are prefixed to avoid C keyword collisions. The signed minimum literal has a special representation that does not first create an out-of-range positive signed literal. Proof annotations and successful assertions are removed.
+
+For each used array reduction and length, the backend emits a specialized C loop. It passes a read-only pointer to the already-evaluated array value, using a temporary for value-returning expressions when necessary. The operation cannot modify the array, and its input expression is evaluated once. This internal lowering preserves source value semantics and avoids copying a large array solely to reduce it.
 
 For each parallel job, the emitter creates a typed task struct and a POSIX thread trampoline. It snapshots all arguments, attempts to launch each job, joins successfully launched threads, and then assigns results to the Clack bindings. A failed launch executes its worker synchronously. If joining a launched thread fails, the generated program aborts rather than reading a result that may still be written.
 
-The CLI invokes the selected C compiler with C11, optimization, warnings, and `-pthread`. A build uses temporary files beside its destination and replaces an existing binary only after successful compilation.
+The CLI invokes the selected C compiler with C11, optimization, warnings, `-pthread`, and any resolved native C providers. An external declaration emits a C prototype and call, not a verified source body. A build uses temporary files beside its destination and replaces an existing binary only after successful compilation. Manual compilation of emitted C must link the same providers; see the [native guide](native.md).
 
 ## What remains trusted
 

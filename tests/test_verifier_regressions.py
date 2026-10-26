@@ -135,6 +135,12 @@ class VerifierRegressions(unittest.TestCase):
 
     def test_solver_unknown_is_never_accepted_as_a_proof(self):
         program = self.program("""
+            fn nonnegative(x: int) -> int:
+                ensures result >= 0
+                if x < 0:
+                    return 0
+                return x
+
             fn main():
                 print(0)
         """)

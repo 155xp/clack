@@ -23,7 +23,9 @@ This prints `544`. Both jobs satisfy `square`'s precondition. Their verified pos
 
 ## Job syntax and result bindings
 
-Each job has the form `name = worker(arguments)`, where `worker` is a locally declared or imported Clack function other than `main`. A job must be a direct function call. A constructor, built-in, arithmetic expression, branch, or arbitrary statement cannot occupy a job line. Standard helpers such as an explicitly imported `sum4` can be jobs because they are ordinary verified Clack functions.
+Each job has the form `name = worker(arguments)`, where `worker` is a locally declared or imported ordinary Clack function other than `main`. A job must be a direct function call. A constructor, native binding, built-in, arithmetic expression, branch, or arbitrary statement cannot occupy a job line. Standard helpers such as an explicitly imported `sum4` can be jobs because they are ordinary verified Clack functions.
+
+The imported `sum`, `all`, `any`, and `count` operators are implemented by the compiler, so they are not direct job targets. Put a reduction inside a typed worker function when the larger operation should run as a job. Such a worker follows the same ordinary contract and purity rules as any other function.
 
 The block contains at least one job, and result names must be distinct. Each name follows the ordinary local-binding rules: an existing binding may receive another value of the same type, but parameters cannot be overwritten. A job may return an integer, Boolean, array, or record.
 
@@ -56,7 +58,7 @@ These fragments assume the `square` definition and a surrounding function, with 
 
 Helpers receive values, parameters are immutable, and there is no mutable global state. Only `main` can print, and helpers cannot call `main`. A worker can mutate its local bindings and local array copies without exposing that state to another worker.
 
-As a result, supported jobs have no shared mutable language data to race over. This is a restriction on the language's permitted effects, not a dynamic race detector. There are no user-visible shared references, atomics, locks, channels, or foreign calls in version 0.1.
+As a result, supported jobs have no shared mutable language data to race over. This is a restriction on the language's permitted effects, not a dynamic race detector. There are no user-visible shared references, atomics, locks, or channels. Version 0.2's explicit native bindings are restricted to main and cannot be reached from workers; the C implementations themselves are outside the proof model.
 
 Each worker's contract is checked in the same way as an ordinary call. Parallelism does not weaken preconditions, permit overflow, or turn unknown solver results into accepted programs. The callee's verified postconditions describe its output after the block.
 

@@ -4,7 +4,7 @@
 
 ## Programs and declarations
 
-A complete program has one root source file containing exactly one `main` function. Execution begins there. A source file may also import names and declare helper functions and records. There are no top-level executable statements or mutable globals. Imported modules contain reusable declarations and must not define their own `main`.
+A complete program has one root source file containing exactly one ordinary `main` function. Execution begins there. A source file may also import names and declare helper functions, records, native source files, and external bindings. There are no top-level executable statements or mutable globals. Imported modules contain reusable declarations and must not define their own `main`.
 
 ```clack
 fn main():
@@ -20,11 +20,11 @@ fn larger(a: int, b: int) -> int:
 
 This prints `12`. A function may be used before its textual declaration. The compiler collects declarations before checking their bodies and verifies callees before callers.
 
-Every function is checked, including an unused helper in an imported module. An invalid unused definition cannot hide an unproved contract or an unsafe operation. Duplicate function names, duplicate parameter names, duplicate type names, and colliding declarations or imported names are rejected.
+Every ordinary function is checked, including an unused helper in an imported module. An invalid unused definition cannot hide an unproved contract or an unsafe operation. Native C implementations are explicitly outside that proof model and are reported by the CLI; their declarations are type-checked. Duplicate function names, duplicate parameter names, duplicate type names, and colliding declarations or imported names are rejected.
 
 ## Imports and libraries
 
-Use a top-level `from` declaration to bring selected functions or record types into the current module:
+Use a top-level `from` declaration to bring selected functions, record types, or supplied array operators into the current module:
 
 ```clack
 from std.math import clamp
@@ -37,9 +37,11 @@ fn main():
     print(total)
 ```
 
-This prints `100` and `100`. Imported functions use ordinary call syntax and ordinary verified contracts. They are not extra compiler built-ins. Importing a name is explicit; qualified calls such as `std.math.clamp(...)`, wildcard imports, and import aliases are unsupported.
+This prints `100` and `100`. The imported source functions in this example use ordinary call syntax and verified contracts; they are not extra compiler built-ins. Importing a name is explicit; qualified calls such as `std.math.clamp(...)`, wildcard imports, and import aliases are unsupported.
 
-Standard modules currently provide `std.math` (`min`, `max`, `abs`, `clamp`) and `std.array` (`sum2`, `sum3`, `sum4`, `sum8`, `all4`, `any4`). The fixed-size sum functions require every left-to-right cumulative sum to fit in a signed 64-bit integer. They do not impose a blanket small-value bound on each element. `abs` excludes the minimum signed integer, whose positive magnitude is not representable.
+`std.math` provides the source functions `min`, `max`, `abs`, and `clamp`. `std.array` provides length-independent compiler operators `sum`, `all`, `any`, and `count`, alongside the compatible source functions `sum2`, `sum3`, `sum4`, `sum8`, `all4`, and `any4`. `sum` accepts any supported nonempty integer array; `all`, `any`, and `count` accept Boolean arrays, and `count` counts true elements. The compiler models these four operators directly and emits native loops; they do not have source function bodies.
+
+Both forms of summation require every left-to-right cumulative sum to fit in a signed 64-bit integer. They do not impose a blanket small-value bound on each element. `abs` excludes the minimum signed integer, whose positive magnitude is not representable. See the [library catalog](../libraries.md) for the operator/source-function distinction and verification costs for large arrays.
 
 A local module can live in `helpers.clack` and be used with `from helpers import twice`. Dotted names describe subdirectories, for example `from tools.numeric import twice` for `tools/numeric.clack`. Imported definitions are resolved separately from a caller's local names. See the [library guide](../libraries.md) for file layout, resolution rules, record imports, and complete reusable-module examples.
 
@@ -51,13 +53,19 @@ The loader reads each resolved module once. Cyclic module imports are rejected, 
 
 ## Signatures and calls
 
-Function parameters have explicit types. Every function except `main` also needs an explicit result type. The result can be an integer, Boolean, fixed array, or record. Only `main` may return `unit`.
+Function parameters have explicit types. Every function except `main` also needs an explicit result type. An ordinary helper result can be an integer, Boolean, text, fixed array, or record. Only `main` and declared native procedures may return `unit`; ordinary source helpers must return a value.
 
 Calls use a locally declared or imported function name and positional arguments. There are no default arguments, keyword arguments, variadic arguments, function-valued variables, or closures. At a call, the compiler checks argument count, corresponding argument types, and all declared preconditions. A result is described to the caller by the callee's verified postconditions and its declared type.
 
 Parameters cannot be reassigned, and array parameters cannot be mutated. A local copy may be changed. Keeping input values immutable also gives postconditions a stable meaning: references to parameters always denote the inputs received by that invocation.
 
 Calls to `main` are forbidden. Helpers cannot print. Their observable language-level result is their returned value; they may use local mutation and may invoke independent parallel work. Direct and mutual recursion are rejected, including a cycle involving calls made by parallel jobs.
+
+## Explicit native calls
+
+`native "terminal.c"` and `extern fn begin(title: text) -> unit = "clack_tui_begin"` establish a trusted C boundary. An external declaration has no source body or contracts. It accepts only scalar `int`, `bool`, or `text` inputs and returns `int`, `bool`, or `unit`.
+
+Only main may call such a binding, either as the whole right-hand side of an assignment or as a standalone unit call. Its arguments may be checked ordinary expressions, but may not contain another native call. Native calls cannot appear inside conditions, arithmetic, proof annotations, return expressions, parallel jobs, or source helper functions. Results are arbitrary values of their declared type; guards may establish the facts needed for later safe arithmetic. See [native bindings](../native.md) for an executable example and C ABI.
 
 ## Local bindings
 
@@ -94,7 +102,7 @@ The verifier checks a branch with its condition added to the known facts. Thus a
 
 `main` may finish at the end of its body or use bare `return`. It cannot return a value. A statement after an unconditional return is rejected as unreachable. The native executable's wrapper exits with status zero after `main` completes normally; the language currently has no user-controlled exit-status API.
 
-Only `print(...)` may stand alone as an expression statement. A non-unit helper result cannot simply be discarded by writing `helper(...)`. Assign the result to a local and use it as appropriate. `_` is an ordinary local name if a result is deliberately not needed.
+Only `print(...)` and main's native unit calls may stand alone as expression statements. A non-unit helper or foreign result cannot simply be discarded by writing `helper(...)`. Assign the result to a local and use it as appropriate. `_` is an ordinary local name if a result is deliberately not needed.
 
 ## While loops
 
@@ -127,7 +135,9 @@ A return may exit a loop. There are no `break`, `continue`, `for`, `range`, or g
 
 | Built-in | Input | Result and restrictions |
 | --- | --- | --- |
-| `print(value)` | One `int` or `bool` | Prints one line; callable only in `main`; no assignable value |
+| `print(value)` | One `int`, `bool`, or `text` | Prints one line; callable only in `main`; no assignable value |
 | `len(values)` | One fixed scalar array | Returns its length as `int`; allowed in executable and proof expressions |
 
-Standard-library helpers are ordinary Clack definitions supplied through explicit imports; they do not change this built-in table. Console input, file I/O, networking, command-line arguments, clocks, random numbers, and foreign-function calls are not current language APIs. Native POSIX threads are used by the generated implementation of `parallel`, rather than exposed as low-level library objects.
+This table lists the two functions available without imports. The source helpers and compiler-implemented reductions supplied through explicit standard imports are listed in the [library guide](../libraries.md). Reductions may be used in executable expressions but not proof annotations or direct parallel jobs. Source worker functions may call them normally.
+
+There are no built-in console input, file, network, command-line, clock, or random-number APIs. Explicit trusted native bindings may provide operating-system effects in main, including terminal UI drawing and input. Native POSIX threads implement `parallel` rather than being exposed as low-level language objects.

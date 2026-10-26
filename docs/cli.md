@@ -1,6 +1,6 @@
 # Command-line handbook
 
-The `clack` command checks a source file, produces a native executable, runs it, or emits the C that implements it. Every command that accepts source verifies the program first. There is no unchecked mode.
+The `clack` command checks a source file, produces a native executable, runs it, or emits the C that implements it. Every source command verifies ordinary Clack code first. There is no flag to ignore failed obligations. Explicit native C bindings are a separate trusted boundary, reported as outside the verification model.
 
 ## Install and check the installation
 
@@ -41,7 +41,9 @@ clack check examples/contracts.clack
 
 A successful check prints the source path, the number of obligations proved, and the number of functions checked. An obligation is a fact such as an array index being in bounds or a return satisfying its postcondition. The count is an implementation detail; more obligations do not necessarily mean a more useful specification.
 
-All loaded functions are checked, including functions that `main` does not call and unused declarations from loaded libraries. Importing a function does not make its contracts trusted assumptions. A successful check verifies the supported properties in Clack's model. It does not produce an executable or a proof certificate for a particular machine binary.
+All ordinary loaded functions are checked, including functions that `main` does not call and unused source declarations from loaded libraries. Importing a function does not make its contracts trusted assumptions. A successful check verifies the supported properties in Clack's model. It does not produce an executable or a proof certificate for a particular machine binary.
+
+When a program declares native bindings or C providers, `check` and `build` append `Native bindings: ...; C sources: ... (outside verification model).` to their success messages. Foreign declarations are type-checked, but C implementations are not inspected or proved. `check` does not compile or link their bodies. See [native bindings](native.md) for the ABI and call restrictions.
 
 ## Build a persistent executable
 
@@ -55,7 +57,7 @@ clack build examples/parallel.clack -o build/my-program
 
 Without `-o`, the output is `build/` followed by the source filename without its suffix. The build directory belongs to the current working directory, not necessarily the directory containing the source file. The compiler creates missing output directories.
 
-Verification and C compilation must succeed before an existing executable is replaced. `build` and `emit-c` also refuse to overwrite any input source, including an imported library. The generated C used during a normal build is temporary; request `emit-c` separately to keep a readable copy.
+Verification and C compilation must succeed before an existing executable is replaced. `build` and `run` compile every resolved `native` C provider with the generated file. `build` and `emit-c` refuse to overwrite any input source, including imported Clack or native C files. The generated C used during a normal build is temporary; request `emit-c` separately to keep a readable copy.
 
 ## Run without keeping a binary
 
@@ -65,7 +67,7 @@ clack run examples/arrays.clack
 
 `run` verifies, compiles in a temporary directory, executes the native program, and removes the temporary files. It forwards the program's output directly. It does not print a verification banner before the program's output.
 
-There is currently no syntax for command-line arguments or standard-input reads in a Clack program. `run` does not accept trailing application arguments.
+There are no built-in command-line argument or standard-input APIs. Native C bindings may provide input effects in main, but their behavior is unproved. `run` does not accept trailing application arguments, and it keeps native execution's standard output free of a compiler success banner.
 
 ## Inspect generated C
 
@@ -88,6 +90,8 @@ cc -std=c11 -O3 -Wall -Wextra -pthread build/parallel.c -o build/parallel
 ```
 
 Assertions and proof annotations have been checked and removed from executable code. Editing the emitted C changes the program outside Clack's verification process. See [compiler internals](internals.md) for the translation.
+
+For a program with native providers, emitted C contains external declarations and calls; it does not copy provider bodies into that file. Supply those `.c` files when compiling emitted output manually, as shown in the [native guide](native.md).
 
 ## Choose the C compiler
 

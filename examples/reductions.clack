@@ -1,0 +1,9 @@
+from std.array import sum, all, any, count
+
+fn main():
+    values = [1, 2, 3, 4, 5]
+    flags = [true, false, true]
+    print(sum(values))
+    print(all(flags))
+    print(any(flags))
+    print(count(flags))

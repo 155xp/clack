@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import re
 
 from . import frontend as f
+from .reductions import PREFIX as REDUCTION_PREFIX, REDUCTIONS
 
 
 @dataclass
@@ -25,7 +26,7 @@ class TypeInfo:
 _ARRAY = re.compile(r"(int|bool)\[([0-9]+)\]\Z")
 _RESERVED = frozenset(
     "fn type parallel if elif else while return assert requires ensures invariant "
-    "decreases and or not true false int bool unit result print len".split()
+    "decreases and or not true false int bool unit text result print len from import native extern".split()
 )
 
 
@@ -69,11 +70,11 @@ class _Checker:
         raise f.CompileError(message, line=line)
 
     def valid_name(self, name: str, line: int, role: str) -> None:
-        if name in _RESERVED:
+        if name in _RESERVED or name.startswith(REDUCTION_PREFIX):
             self.fail(f"{name!r} is reserved and cannot name a {role}", line)
 
     def valid_type(self, name: str, line: int, allow_unit: bool = False) -> None:
-        if name in {"int", "bool"} or (allow_unit and name == "unit"):
+        if name in {"int", "bool", "text"} or (allow_unit and name == "unit"):
             return
         arr = array_type(name)
         if arr is not None:
@@ -127,13 +128,23 @@ class _Checker:
         main = self.functions.get("main")
         if main is None:
             self.fail("program needs a fn main(): entry point", 1)
-        if main.params or main.return_type != "unit":
+        if main.params or main.return_type != "unit" or main.foreign_symbol is not None:
             self.fail("main must have no parameters and return unit: fn main():", main.line)
         if main.requires:
             self.fail("main cannot have requires: entry conditions must hold unconditionally", main.line)
+        native_signatures = {}
         for fn in self.program.functions:
-            self.valid_type(fn.return_type, fn.line, allow_unit=fn.name == "main")
-            if fn.name != "main" and fn.return_type == "unit":
+            self.valid_type(fn.return_type, fn.line, allow_unit=fn.name == "main" or fn.foreign_symbol is not None)
+            if fn.foreign_symbol is not None:
+                symbol = fn.foreign_symbol
+                if not re.fullmatch(r"clack_[A-Za-z_0-9]+", symbol) or symbol.startswith(("clack_fn_", "clack_t_", "clack_v_", "clack_worker_", "clack_task_", "clack_reduce_")):
+                    self.fail("native symbols need a clack_ prefix and a non-reserved C identifier", fn.line)
+                signature = (tuple(typ for _, typ in fn.params), fn.return_type)
+                if fn.return_type not in {"int", "bool", "unit"} or any(typ not in {"int", "bool", "text"} for _, typ in fn.params):
+                    self.fail("native parameters support int, bool, text; results support int, bool, unit", fn.line)
+                if fn.body or fn.requires or fn.ensures or native_signatures.setdefault(symbol, signature) != signature:
+                    self.fail("native declarations cannot have bodies/contracts or conflicting C signatures", fn.line)
+            elif fn.name != "main" and fn.return_type == "unit":
                 self.fail("only main can return unit in this version", fn.line)
             seen = set()
             for name, typ in fn.params:
@@ -147,11 +158,13 @@ class _Checker:
         if actual != wanted:
             self.fail(f"{context} needs {wanted}, got {actual}", line)
 
-    def expr(self, expr: f.Expr, scope: dict[str, str], proof: bool = False) -> str:
+    def expr(self, expr: f.Expr, scope: dict[str, str], proof: bool = False, allow_native: bool = False) -> str:
         if isinstance(expr, f.IntLit):
             typ = "int"
         elif isinstance(expr, f.BoolLit):
             typ = "bool"
+        elif isinstance(expr, f.StringLit):
+            typ = "text"
         elif isinstance(expr, f.Name):
             if expr.name not in scope:
                 self.fail(f"{expr.name!r} is not defined on every path before use", expr.line)
@@ -222,11 +235,19 @@ class _Checker:
                 if len(args) != 1 or array_type(args[0]) is None:
                     self.fail("len needs exactly one fixed array", expr.line)
                 typ = "int"
+            elif expr.name in REDUCTIONS:
+                operation = REDUCTIONS[expr.name]
+                if self.program.symbol_names.get(expr.name) != f"std.array.{operation.name}":
+                    self.fail("array reductions require an explicit import from std.array", expr.line)
+                shape = array_type(args[0]) if len(args) == 1 else None
+                if shape is None or shape[0] != operation.element:
+                    self.fail(f"{operation.name} needs exactly one fixed {operation.element} array", expr.line)
+                typ = operation.result
             elif expr.name == "print":
                 if self.fn is None or self.fn.name != "main":
                     self.fail("print is allowed only in main; worker functions are pure", expr.line)
-                if len(args) != 1 or args[0] not in {"int", "bool"}:
-                    self.fail("print needs exactly one int or bool", expr.line)
+                if len(args) != 1 or args[0] not in {"int", "bool", "text"}:
+                    self.fail("print needs exactly one int, bool, or text", expr.line)
                 typ = "unit"
             elif expr.name == "main":
                 self.fail("main is an entry point and cannot be called", expr.line)
@@ -238,6 +259,8 @@ class _Checker:
                 fn = self.functions[expr.name]
                 self.match_args(expr, args, fn.params, "function")
                 assert self.fn is not None
+                if fn.foreign_symbol is not None and (self.fn.name != "main" or not allow_native):
+                    self.fail("native calls belong only in main's direct assignments or unit call statements", expr.line)
                 self.calls[self.fn.name].add(fn.name)
                 typ = fn.return_type
             else:
@@ -274,7 +297,7 @@ class _Checker:
             if scope is None:
                 self.fail("unreachable statement after an unconditional return", stmt.line)
             if isinstance(stmt, f.Assign):
-                typ = self.expr(stmt.value, scope)
+                typ = self.expr(stmt.value, scope, allow_native=True)
                 self.bind(stmt.name, typ, stmt.line, scope)
             elif isinstance(stmt, f.IndexAssign):
                 if stmt.name in self.params:
@@ -293,10 +316,10 @@ class _Checker:
                 self.need(actual, self.fn.return_type, stmt.line, "return")
                 scope = None
             elif isinstance(stmt, f.ExprStmt):
-                actual = self.expr(stmt.value, scope)
+                actual = self.expr(stmt.value, scope, allow_native=True)
                 self.need(actual, "unit", stmt.line, "expression statement")
-                if not isinstance(stmt.value, f.Call) or stmt.value.name != "print":
-                    self.fail("only print calls can be used as expression statements", stmt.line)
+                if not isinstance(stmt.value, f.Call) or (stmt.value.name != "print" and self.functions.get(stmt.value.name, self.fn).foreign_symbol is None):
+                    self.fail("only print and native unit calls can be used as expression statements", stmt.line)
             elif isinstance(stmt, f.Assert):
                 self.need(self.expr(stmt.condition, scope, proof=True), "bool", stmt.line, "assert")
             elif isinstance(stmt, f.If):
@@ -343,11 +366,13 @@ class _Checker:
         return scope
 
     def run(self) -> TypeInfo:
-        unresolved = getattr(self.program, "imports", [])
+        unresolved = [*self.program.imports, *self.program.native_files]
         if unresolved:
             self.fail("unresolved imports: use clack.modules.load_program(path), or the clack command", unresolved[0].line)
         self.check_declarations()
         for fn in self.program.functions:
+            if fn.foreign_symbol is not None:
+                continue
             self.fn = fn
             self.params = {name for name, _ in fn.params}
             params = dict(fn.params)

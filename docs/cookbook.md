@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Tutorials](tutorials/README.md) · [Error guide](errors.md)
 
-These patterns show how to write ordinary Clack functions. The only compiler built-ins are `print` and `len`; `std.math` and `std.array` provide explicitly imported source helpers. You can use those libraries for common operations, or study the implementations below to understand their contracts. Each example below is a complete program you can save in its own `.clack` file.
+These patterns show how to write ordinary Clack functions. `print` and `len` are available without imports; `std.math` and `std.array` supply explicitly imported source helpers. `std.array` also supplies the compiler-implemented reductions `sum`, `all`, `any`, and `count` for any supported fixed length. The [library catalog](libraries.md) explains that distinction. You can reuse these operations or study the functions below to understand their contracts. Each example below is a complete program you can save in its own `.clack` file.
 
 ## Minimum and maximum
 
@@ -130,4 +130,4 @@ Output: `3`, then `2`. Record results also work in a `parallel:` block. See the 
 
 ## Pick the right next pattern
 
-For summing a fixed array, start with [the functions tutorial](tutorials/02-functions-contracts.md) and [array tutorial](tutorials/03-records-arrays.md). For scanning values, learn to carry the needed bounds through [a loop invariant](tutorials/04-loops.md). For failures, prefer a guard or a meaningful input contract; an `assert` cannot turn an unproved fact into a trusted assumption.
+For summing any supported fixed integer array, import `sum` from `std.array`; the [reduction example](../examples/reductions.clack) also demonstrates Boolean reductions. To write your own algorithm, start with [the functions tutorial](tutorials/02-functions-contracts.md) and [array tutorial](tutorials/03-records-arrays.md), then learn to carry bounds through [a loop invariant](tutorials/04-loops.md). For failures, prefer a guard or a meaningful input contract; an `assert` cannot turn an unproved fact into a trusted assumption.

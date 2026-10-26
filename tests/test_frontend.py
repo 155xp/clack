@@ -187,7 +187,7 @@ class FrontendTests(unittest.TestCase):
     def test_unsupported_host_language_and_injection_syntax_is_rejected(self):
         cases = [
             ("import os\n", "top level declarations"),
-            ("fn main():\n    x = __import__('os')\n", "strings are not supported"),
+            ("fn main():\n    x = __import__('os')\n", "double-quoted JSON text literals"),
             ("fn main():\n    x = 1; print(2)\n", "unsupported operator"),
             ("fn main():\n    x = `touch /tmp/unwanted`\n", "unsupported operator"),
             ("fn main():\n    x = 1.5\n", "decimal integer literals"),

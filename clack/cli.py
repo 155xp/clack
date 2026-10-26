@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 import os
 from pathlib import Path
 import shlex
@@ -38,7 +39,7 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _compile(c_source: str, output: Path, cc: str) -> None:
+def _compile(c_source: str, output: Path, cc: str, native_sources: Sequence[str] = ()) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     # A failed C compilation must not replace a previously working binary.
     with tempfile.TemporaryDirectory(prefix=".clack-", dir=output.parent) as directory:
@@ -49,7 +50,7 @@ def _compile(c_source: str, output: Path, cc: str) -> None:
         command = shlex.split(cc)
         if not command:
             raise RuntimeError("C compiler command cannot be empty")
-        result = subprocess.run([*command, "-std=c11", "-O3", "-Wall", "-Wextra", "-pthread", str(source), "-o", str(binary)],
+        result = subprocess.run([*command, "-std=c11", "-O3", "-Wall", "-Wextra", "-pthread", str(source), *native_sources, "-o", str(binary)],
                                 text=True, capture_output=True)
         if result.returncode:
             raise RuntimeError(f"C compiler failed:\n{result.stderr.strip()}")
@@ -70,11 +71,14 @@ def main(argv: list[str] | None = None) -> int:
         program = load_program(args.source)
         checked = verify(program, timeout_ms=args.timeout_ms, proof_dir=args.proof_dir)
         count = len(checked.obligations)
+        native_count = sum(fn.foreign_symbol is not None for fn in program.functions)
+        native_note = f" Native bindings: {native_count}; C sources: {len(program.native_sources)} (outside verification model)." if native_count or program.native_sources else ""
         if args.command == "check":
-            print(f"Verified {args.source}: {count} obligations proved across {len(program.functions)} functions.")
+            print(f"Verified {args.source}: {count} obligations proved across {len(program.functions) - native_count} Clack functions.{native_note}")
             return 0
         c_source = emit_c(program, checked.local_types, checked.expr_types)
         source_paths = {Path(path).resolve() for path, _ in program.locations.values()}
+        source_paths.update(Path(path).resolve() for path in program.native_sources)
         if args.command == "emit-c":
             if args.output:
                 if args.output.resolve() in source_paths:
@@ -88,12 +92,12 @@ def main(argv: list[str] | None = None) -> int:
             output = args.output or Path("build") / args.source.stem
             if output.resolve() in source_paths:
                 raise RuntimeError("output must differ from every input source, including imported libraries")
-            _compile(c_source, output, args.cc)
-            print(f"Built {output} ({count} obligations proved).")
+            _compile(c_source, output, args.cc, program.native_sources)
+            print(f"Built {output} ({count} obligations proved).{native_note}")
             return 0
         with tempfile.TemporaryDirectory(prefix="clack-run-") as directory:
             output = Path(directory) / "program"
-            _compile(c_source, output, args.cc)
+            _compile(c_source, output, args.cc, program.native_sources)
             result = subprocess.run([str(output)])
             return result.returncode if result.returncode >= 0 else 128 - result.returncode
     except CompileError as error:

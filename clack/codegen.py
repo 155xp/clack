@@ -7,22 +7,20 @@ verifier and are erased here. This emitter is part of the trusted compiler.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-import re
+from dataclasses import dataclass, fields, is_dataclass
 
 from . import frontend as ast
-
-
-_ARRAY = re.compile(r"(int|bool)\[([0-9]+)\]\Z")
+from .reductions import REDUCTIONS
+from .typecheck import array_type
 
 
 def _ctype(type_name: str) -> str:
-    primitive = {"int": "int64_t", "bool": "bool", "unit": "void"}
+    primitive = {"int": "int64_t", "bool": "bool", "unit": "void", "text": "const char *"}
     if type_name in primitive:
         return primitive[type_name]
-    array = _ARRAY.fullmatch(type_name)
+    array = array_type(type_name)
     if array:
-        return f"clack_t_array_{array[1]}_{int(array[2])}"
+        return f"clack_t_array_{array[0]}_{array[1]}"
     return f"clack_t_record_{type_name}"
 
 
@@ -53,23 +51,23 @@ class _Emitter:
         self.records = {record.name: record for record in getattr(program, "records", [])}
         self.functions = {function.name: function for function in program.functions}
         self.tasks: dict[int, _Task] = {}
+        self.reductions: set[tuple[str, str]] = set()
         self._collect_tasks()
 
     def _collect_tasks(self) -> None:
-        def visit(body: list[ast.Stmt]) -> None:
-            for statement in body:
-                kind = type(statement).__name__
-                if kind == "Parallel":
-                    for binding in statement.bindings:
-                        callee = self.functions[binding.value.name]
-                        self.tasks[id(binding)] = _Task(len(self.tasks), binding, callee)
-                elif kind == "If":
-                    visit(statement.then_body)
-                    visit(statement.else_body)
-                elif kind == "While":
-                    visit(statement.body)
-        for function in self.program.functions:
-            visit(function.body)
+        def visit(node) -> None:
+            if isinstance(node, list):
+                for value in node:
+                    visit(value)
+            elif is_dataclass(node):
+                if isinstance(node, ast.Parallel):
+                    for binding in node.bindings:
+                        self.tasks[id(binding)] = _Task(len(self.tasks), binding, self.functions[binding.value.name])
+                if isinstance(node, ast.Call) and node.name in REDUCTIONS:
+                    self.reductions.add((node.name, self.expr_types[id(node.args[0])]))
+                for field in fields(node):
+                    visit(getattr(node, field.name))
+        visit(self.program.functions)
 
     def _type_definitions(self) -> list[str]:
         types = set(self.expr_types.values())
@@ -81,9 +79,9 @@ class _Emitter:
             types.update(value for _, value in record.fields)
         output: list[str] = []
         for type_name in sorted(types):
-            array = _ARRAY.fullmatch(type_name)
+            array = array_type(type_name)
             if array:
-                output.append(f"typedef struct {{ {_ctype(array[1])} data[{int(array[2])}]; }} {_ctype(type_name)};")
+                output.append(f"typedef struct {{ {_ctype(array[0])} data[{array[1]}]; }} {_ctype(type_name)};")
         emitted: set[str] = set()
         visiting: set[str] = set()
 
@@ -106,9 +104,28 @@ class _Emitter:
             record_definition(name)
         return output
 
+    def _reduction_name(self, name: str, type_name: str) -> str:
+        return f"clack_reduce_{REDUCTIONS[name].name}_{array_type(type_name)[1]}"
+
+    def _reduction_definitions(self) -> list[str]:
+        output = []
+        for name, type_name in sorted(self.reductions):
+            operation = REDUCTIONS[name]
+            numeric = operation.result == "int"
+            step = {"sum": "result += values->data[i];", "count": "result += values->data[i];",
+                    "all": "if (!values->data[i]) return false;", "any": "if (values->data[i]) return true;"}[operation.name]
+            output.extend([
+                f"static {_ctype(operation.result)} {self._reduction_name(name, type_name)}(const {_ctype(type_name)} *values) {{",
+                *(["    int64_t result = 0;"] if numeric else []),
+                f"    for (size_t i = 0; i < {array_type(type_name)[1]}; ++i) {{ {step} }}",
+                f"    return {'result' if numeric else 'true' if operation.name == 'all' else 'false'};", "}",
+            ])
+        return output
+
     def _prototype(self, function: ast.Function) -> str:
-        args = ", ".join(f"const {_ctype(type_name)} {_var(name)}" for name, type_name in function.params) or "void"
-        return f"static {_ctype(function.return_type)} {_func(function.name)}({args})"
+        args = ", ".join(f"{_ctype(type_name)} const {_var(name)}" for name, type_name in function.params) or "void"
+        foreign = function.foreign_symbol is not None
+        return f"{'extern' if foreign else 'static'} {_ctype(function.return_type)} {function.foreign_symbol if foreign else _func(function.name)}({args})"
 
     def expression(self, expression: ast.Expr) -> str:
         kind = type(expression).__name__
@@ -121,6 +138,9 @@ class _Emitter:
             return f"INT64_C({value})"
         if kind == "BoolLit":
             return "true" if expression.value else "false"
+        if kind == "StringLit":
+            # Fixed-width octal escapes preserve UTF-8 bytes and avoid C trigraphs.
+            return '"' + ''.join(chr(byte) if 32 <= byte < 127 and byte not in (34, 63, 92) else f"\\{byte:03o}" for byte in expression.value.encode("utf-8")) + '"'
         if kind == "Name":
             return _var(expression.name)
         if kind == "Unary":
@@ -133,22 +153,30 @@ class _Emitter:
             op = {"and": "&&", "or": "||"}.get(expression.op, expression.op)
             return f"({self.expression(expression.left)} {op} {self.expression(expression.right)})"
         if kind == "Call":
-            args = ", ".join(self.expression(value) for value in expression.args)
+            if expression.name in REDUCTIONS:
+                value = expression.args[0]
+                type_name = self.expr_types[id(value)]
+                source = self.expression(value)
+                argument = f"&({source})" if isinstance(value, (ast.Name, ast.ArrayLit)) else f"((const {_ctype(type_name)}[]){{ {source} }})"
+                return f"{self._reduction_name(expression.name, type_name)}({argument})"
             if expression.name in self.records:
                 record = self.records[expression.name]
                 fields = ", ".join(f".{_field(name)} = {self.expression(value)}" for (name, _), value in zip(record.fields, expression.args))
                 return f"(({_ctype(expression.name)}){{ {fields} }})"
             if expression.name == "len":
-                array = _ARRAY.fullmatch(self.expr_types[id(expression.args[0])])
+                array = array_type(self.expr_types[id(expression.args[0])])
                 if array is None:
                     raise ValueError("len of a non-array reached code generation")
-                return f"INT64_C({int(array[2])})"
+                return f"INT64_C({array[1]})"
             if expression.name == "print":
                 value = expression.args[0]
+                if self.expr_types[id(value)] == "text":
+                    return f"puts({self.expression(value)})"
                 if self.expr_types[id(value)] == "bool":
                     return f'puts(({self.expression(value)}) ? "true" : "false")'
                 return f'printf("%" PRId64 "\\n", {self.expression(value)})'
-            return f"{_func(expression.name)}({args})"
+            args = ", ".join(self.expression(value) for value in expression.args)
+            return f"{self.functions[expression.name].foreign_symbol or _func(expression.name)}({args})"
         if kind == "Field":
             return f"(({self.expression(expression.value)}).{_field(expression.name)})"
         if kind == "ArrayLit":
@@ -248,12 +276,15 @@ class _Emitter:
             "#include <pthread.h>",
             "",
             *self._type_definitions(),
+            *self._reduction_definitions(),
             "",
             *[self._prototype(function) + ";" for function in self.program.functions],
             "",
             *self._worker_definitions(),
         ]
         for function in self.program.functions:
+            if function.foreign_symbol is not None:
+                continue
             output.append("")
             output.append(self._prototype(function) + " {")
             for name, type_name in self.local_types.get(function.name, {}).items():

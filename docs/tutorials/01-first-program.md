@@ -35,7 +35,7 @@ true
 
 The first assignment gives `hours` an integer value. Clack infers a local variable's type from that assignment, so you do not write a type beside every name. `rate` and `answer` are integers too. A name keeps its type if you assign another value later.
 
-`*` multiplies integers. `==` compares two values and produces a Boolean: either `true` or `false`. Assignment uses one `=`, while comparison uses two. `print` writes one integer or Boolean followed by a newline. String values are not implemented yet, so this first program prints numbers rather than a text greeting.
+`*` multiplies integers. `==` compares two values and produces a Boolean: either `true` or `false`. Assignment uses one `=`, while comparison uses two. `print` writes one integer, Boolean, or text value followed by a newline. This first lesson uses numbers to show calculation; double-quoted text greetings are also supported, as explained in [text values](../native.md#text-values).
 
 ## What run actually does
 

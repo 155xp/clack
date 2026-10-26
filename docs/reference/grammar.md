@@ -1,6 +1,6 @@
 # Grammar
 
-This grammar describes Clack 0.1's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
+This grammar describes Clack 0.2's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
 
 Quoted strings are literal tokens. `A | B` chooses an alternative, `[ A ]` makes a form optional, and `{ A }` repeats it zero or more times. A comma between grammar items means sequence; it is not a source comma unless quoted.
 
@@ -20,15 +20,18 @@ integer         = "0" | nonzero_digit, { digit } ;
 
 The `name` productions below exclude syntax keywords. Some otherwise valid names, including `result`, `print`, and `len`, have additional binding restrictions. A minus sign is a unary operator, rather than part of the integer token. Hexadecimal, floating-point, and underscore-separated integer literals are unsupported.
 
+`text_literal` below is a double-quoted JSON text token, including JSON escapes. Its decoded value must be valid UTF-8 without NUL. Single quotes, triple quotes, and string prefixes are not valid tokens; see [text values](../native.md#text-values).
+
 ## Declarations
 
 ```ebnf
 source_file     = top_level, { top_level }, END ;
-top_level       = import_statement | declaration ;
+top_level       = import_statement | native_source | declaration ;
 import_statement = "from", module_path, "import",
                    name, { ",", name }, [ "," ], NEWLINE ;
 module_path     = name, { ".", name } ;
-declaration     = record | function ;
+native_source   = "native", text_literal, NEWLINE ;
+declaration     = record | function | foreign_function ;
 
 record          = "type", name, ":", NEWLINE, INDENT,
                   field, { field }, DEDENT ;
@@ -37,18 +40,22 @@ field           = name, ":", type, NEWLINE ;
 function        = "fn", name, "(", [ parameters ], ")",
                   [ "->", type ], ":", NEWLINE, INDENT,
                   { contract }, statement, { statement }, DEDENT ;
+foreign_function = "extern", "fn", name, "(", [ parameters ], ")",
+                   "->", type, "=", text_literal, NEWLINE ;
 parameters      = parameter, { ",", parameter }, [ "," ] ;
 parameter       = name, ":", type ;
 type            = type_name, [ "[", integer, "]" ] ;
-type_name       = "int" | "bool" | "unit" | name ;
+type_name       = "int" | "bool" | "unit" | "text" | name ;
 contract        = ( "requires" | "ensures" ), expression, NEWLINE ;
 ```
 
-Only `main` may omit the return annotation. Its valid signature has no parameters and returns `unit`, whether written explicitly or omitted. Every other function needs a result type and a value return on every syntactically continuing path. The root program must declare exactly one `main`; imported library files must not declare it. A library can contain only records or only imports, provided its source file is nonempty.
+Only `main` may omit the return annotation. Its valid signature has no parameters and returns `unit`, whether written explicitly or omitted. Every other ordinary function needs a result type and a value return on every syntactically continuing path. The root program must declare exactly one ordinary `main`; imported library files must not declare it. A library can contain only records, imports, or native declarations, provided its source file is nonempty.
+
+Foreign declarations require their result annotation and have no colon, body, or contracts. Their parameters may be `int`, `bool`, or `text`; results may be `int`, `bool`, or `unit`. Their symbol literal names a C identifier with a non-reserved `clack_` prefix. A native source literal names a confined module-relative `.c` file. The [native guide](../native.md) defines the explicit trust boundary and main-only call rules.
 
 Imports are top-level forms and do not belong inside statement suites. They may be placed among other top-level declarations, although putting them first is the usual convention. Module paths have no leading dot. The import list may have a trailing comma but cannot use parentheses, `*`, aliases, or a renamed binding. A selected name denotes a function or record, including one reexported by that module. See the [library guide](../libraries.md) for file resolution and scope rules.
 
-Semantic type checking limits array types to `int[N]` and `bool[N]`, with `1 <= N <= 1000000`; named record types are also supported. `unit` is restricted to main's result. The broader `type` production reflects what the parser reads before those checks. Records need distinct fields and finite, nonrecursive value layouts.
+Semantic type checking limits array types to `int[N]` and `bool[N]`, with `1 <= N <= 1000000`; text and named record types are also supported. `unit` is restricted to the results of main and native procedures. The broader `type` production reflects what the parser reads before those checks. Records need distinct fields and finite, nonrecursive value layouts.
 
 Contracts must precede the function's executable statements. They may be interleaved textually; each kind retains its own declaration order during verification. Preconditions are processed before postconditions. Main cannot declare preconditions.
 
@@ -79,7 +86,7 @@ parallel_statement = "parallel", ":", NEWLINE, INDENT,
 job             = name, "=", call, NEWLINE ;
 ```
 
-Expression statements are parsed generally, then restricted to `print(value)` in main. Parallel jobs must call user functions: a constructor, builtin, or call to main is invalid. Result names must be distinct and cannot occur in any argument expression in that block. Assignment to a field, a parameter, or a nested index target is unsupported. A bare `return` belongs only to main.
+Expression statements are parsed generally, then restricted to `print(value)` or native unit calls in main. Parallel jobs must call ordinary source functions: a constructor, native binding, builtin, or call to main is invalid. Result names must be distinct and cannot occur in any argument expression in that block. Assignment to a field, a parameter, or a nested index target is unsupported. A bare `return` belongs only to main.
 
 Assignment targets and job calls are recognized from their parsed expression form. Redundant grouping parentheses do not change that form; the productions above show their unparenthesized spellings.
 
@@ -96,7 +103,7 @@ sum             = product, { ( "+" | "-" ), product } ;
 product         = unary, { ( "*" | "/" | "%" ), unary } ;
 unary           = ( "+" | "-" ), unary | postfix ;
 postfix         = primary, { ".", name | "[", expression, "]" } ;
-primary         = integer | "true" | "false" | name | call
+primary         = integer | "true" | "false" | text_literal | name | call
                 | "(", expression, ")" | array_literal ;
 call            = name, "(", [ arguments ], ")" ;
 arguments       = expression, { ",", expression }, [ "," ] ;

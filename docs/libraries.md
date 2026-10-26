@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Library tutorial](tutorials/08-libraries.md) · [Function reference](reference/functions-control-flow.md)
 
-Clack supports source libraries: files containing functions, records, and imports that another program can reuse. The compiler includes their source in the same verification and native compilation process as the entry file.
+Clack supports source libraries: files containing functions, records, and imports that another program can reuse. The compiler includes their source in the same verification and native compilation process as the entry file. `std.array` also exposes four compiler-implemented reductions with the same explicit import syntax.
 
 ## Use a standard helper
 
@@ -30,7 +30,7 @@ Output:
 false
 ```
 
-Imports are explicit. The names in the import become available in that source file. An imported function is called with ordinary call syntax and can also be used as a job in a `parallel:` block.
+Imports are explicit. The names in the import become available in that source file. An imported source function is called with ordinary call syntax and can also be used as a job in a `parallel:` block. The reductions described below use call syntax too, but are compiler operators and must be called inside a worker function when used in parallel work.
 
 ## Built-in functions
 
@@ -38,7 +38,7 @@ These two functions are available without an import:
 
 | Function | Input | Result and behavior |
 | --- | --- | --- |
-| `print(value)` | One `int` or `bool` | Prints the value and a newline. Only `main` may call it. It produces no assignable value. |
+| `print(value)` | One `int`, `bool`, or `text` | Prints the value and a newline. Only `main` may call it. It produces no assignable value. |
 | `len(values)` | A fixed array | Returns its length as an `int`. Length is part of the array type. |
 
 `len` is also allowed in proof expressions. Other function calls, including standard-library helpers, are not allowed inside `requires`, `ensures`, `assert`, `invariant`, or `decreases`. Write properties in terms of operators, fields, elements, and `len` instead.
@@ -56,7 +56,50 @@ Source: [math.clack](../clack/stdlib/math.clack).
 
 `abs` excludes the smallest signed integer because its positive magnitude cannot fit in `int`. Callers must prove that exclusion, just as they must establish the ordered interval for `clamp`. Standard imports do not bypass safety checks.
 
-## `std.array`
+## `std.array`: any supported fixed length
+
+Import `sum`, `all`, `any`, and `count` for reductions that accept any supported nonempty fixed-array length:
+
+<!-- clack:file=../examples/reductions.clack -->
+```clack
+from std.array import sum, all, any, count
+
+fn main():
+    values = [1, 2, 3, 4, 5]
+    flags = [true, false, true]
+    print(sum(values))
+    print(all(flags))
+    print(any(flags))
+    print(count(flags))
+```
+
+Run `clack run examples/reductions.clack`. Output:
+
+```text
+15
+false
+true
+2
+```
+
+| Operator | Input | Result |
+| --- | --- | --- |
+| `sum(values)` | Any nonempty `int` array | Exact left-to-right integer sum |
+| `all(values)` | Any nonempty `bool` array | Whether every element is true |
+| `any(values)` | Any nonempty `bool` array | Whether at least one element is true |
+| `count(values)` | Any nonempty `bool` array | Number of true elements, from zero through `len(values)` |
+
+The array type supplies the length. `sum([1, 2, 3])` and `sum([1, 2, 3, 4, 5])` are both valid; no user-defined generic signature or new annotation syntax is needed. The accepted array-length limit remains `1` through `1000000`. This does not promise that a very large array fits a native stack or verifies quickly.
+
+`sum` must prove that **every cumulative addition** fits signed 64-bit range. `sum([9223372036854775807, 1, -1])` is rejected even though its final mathematical sum fits. Arrays received as parameters may need preconditions to establish the required bounds. `count` counts Boolean values, not arbitrary integers, and `all` and `any` require Boolean arrays too.
+
+Arguments are evaluated before the reduction. For example, `all([false, 1 / 0 > 0])` is rejected: constructing the second array element would divide by zero. After construction, the pure array value is read by the reduction; it cannot be modified by the operation.
+
+These four names are **compiler operators**, registered in [reductions.py](../clack/reductions.py), modeled by the [verifier](../clack/verifier.py), and lowered to native loops by the [C backend](../clack/codegen.py). They are part of the trusted compiler implementation rather than source functions whose bodies are checked. The verifier constructs element-level logical terms and sum-prefix obligations, so verification work grows with array length and solver complexity. Runtime loops need no Python or solver.
+
+Reductions are currently allowed only in executable expressions. Proof annotations still permit only the `len` call; assign a reduction result to a local and assert a property about that local. A direct job such as `parallel: total = sum(values)` is also unsupported: jobs require source functions. A typed worker may call a reduction in its body and participate in a parallel block normally.
+
+## `std.array`: fixed-size source helpers
 
 Source: [array.clack](../clack/stdlib/array.clack).
 
@@ -71,7 +114,7 @@ Source: [array.clack](../clack/stdlib/array.clack).
 
 Each sum adds from left to right. Its contract requires every cumulative addition to fit in signed 64-bit range. This permits large inputs when all those intermediate sums are safe; there is no arbitrary small per-element bound. A final sum that fits does not excuse an earlier overflowing partial sum.
 
-Lengths are explicit because Clack does not yet have generic functions. For a five-element array, write a suitably verified helper or compose smaller helpers when their contracts fit your data. There is no generic `sum(values)` or `sort(values)` today.
+These functions remain available for compatibility and can be direct parallel jobs because they have ordinary source bodies and contracts. Use `sum`, `all`, or `any` when the array's length differs. General user-defined generic functions, dynamic collections, and `sort` remain unimplemented.
 
 ## Write your own library
 
@@ -99,7 +142,7 @@ The `std` namespace is reserved for bundled standard-library source. A local dir
 
 ## Module boundaries
 
-You can import functions and record types. Imported definitions keep their own module's function and type bindings, so two libraries can each have a private helper named `calculate` without those helpers colliding in the native program. Only explicitly selected names enter the importing file's scope. There is no explicit `public` or `private` keyword: a declaration can be selected by an import, while unselected helper names stay out of the caller's scope.
+You can import source functions, declared native bindings, and record types. Imported definitions keep their own module's function and type bindings, so two libraries can each have a private helper named `calculate` without those helpers colliding in the native program. Only explicitly selected names enter the importing file's scope. There is no explicit `public` or `private` keyword: a declaration can be selected by an import, while unselected helper names stay out of the caller's scope.
 
 Import names cannot collide with another imported binding or an existing declaration. Clack currently has no import aliases, wildcard imports, or module objects. Reorganize the selected names or rename a helper when needed. Import cycles are rejected; organize dependencies as a directed acyclic graph.
 
@@ -109,8 +152,8 @@ Record types remain associated with their defining module. Use their exported co
 
 The compiler verifies all declarations in every loaded source module, including helpers the entry program does not call. Importing a library does not trust a precompiled binary or accept its postconditions without checking its body. A malformed or unproved library can therefore reject a build even if the particular failing function is unused.
 
-Imported functions retain the normal purity rule: only the entry program's `main` may print. Library files may not define `main`. A library can use `parallel:` internally, but recursive function calls and import cycles remain unsupported.
+Ordinary imported source functions retain the normal purity rule: only the entry program's `main` may print or make native calls. Library files may not define `main`. A library can export explicit native declarations and their confined C providers; their implementations are reported as unproved and can be called only from main. A source library can use `parallel:` internally, but recursive function calls and import cycles remain unsupported. See [native bindings](native.md) for the boundary used by optional terminal UI libraries.
 
 Diagnostics for imported code identify its original file and source line. `--proof-dir` exports the combined program's obligations; their metadata identifies the relevant source files. The same trusted compiler and solver described in the [verification model](verification.md) remain involved.
 
-Distribute local libraries as `.clack` source files beside the program or in the expected subdirectories. There is no package version resolver, lockfile, separate library binary format, C FFI, or third-party dependency registry yet. The bundled standard-library sources are included in the Python compiler distribution.
+Distribute local libraries as `.clack` source files beside the program or in the expected subdirectories, including any declared native `.c` providers. There is no package version resolver, lockfile, separate library binary format, or third-party dependency registry yet. The bundled standard-library sources are included in the Python compiler distribution.

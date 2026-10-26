@@ -1,0 +1,1039 @@
+{
+  "label": "runtime-longer",
+  "timestamp_utc": "2026-10-26T20:28:23.807350+00:00",
+  "compiler_root": "/workspace/clack",
+  "compiler_source_sha256": "6cb0fb4e8b9daf741995193803f004f06e36768c1bfbdf5e08ceeb2c815eeddc",
+  "suite_sha256": "f290da91616210ad5cea1190bcbce2975c7fe71f304c90bb1a891e0540edb292",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "machine": "x86_64",
+  "logical_cpus_reported": 5,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "c_compiler": "cc (Debian 14.2.0-19) 14.2.0",
+  "flags": [
+    "-std=c11",
+    "-O3",
+    "-Wall",
+    "-Wextra",
+    "-pthread"
+  ],
+  "scale": 4,
+  "repeats": 9,
+  "compile_repeats": 1,
+  "all_outputs_match_reference": true,
+  "runtime": {
+    "lcg_single": {
+      "clack": {
+        "median_seconds": 0.0801656229996297,
+        "samples_seconds": [
+          0.0801656229996297,
+          0.09256384800028172,
+          0.07930583399866009,
+          0.0791749570016691,
+          0.08939921300043352,
+          0.07979658000112977,
+          0.07677091500227107,
+          0.08126020200143103,
+          0.08085303799816757
+        ],
+        "min_seconds": 0.07677091500227107,
+        "max_seconds": 0.09256384800028172
+      },
+      "c": {
+        "median_seconds": 0.08126300100047956,
+        "samples_seconds": [
+          0.07635900799868978,
+          0.086862853000639,
+          0.08046179699886125,
+          0.08041589200001908,
+          0.0885801039985381,
+          0.07851413699972909,
+          0.08126300100047956,
+          0.08456735299841966,
+          0.08488384399970528
+        ],
+        "min_seconds": 0.07635900799868978,
+        "max_seconds": 0.0885801039985381
+      },
+      "label": "LCG single",
+      "work_units": 20000000,
+      "expected_stdout": "66941813\n",
+      "clack_over_c_ratio": 0.9864959700313876,
+      "source_sha256": {
+        "clack": "855ad9dfc734a333870ffab97469178d95737df358649566143904883d3ebd92",
+        "c": "36d87f86fb7ca3eed7fe1a117f8359e302dfe3503cd36b7858416d1782be1459"
+      }
+    },
+    "lcg_sequential2": {
+      "clack": {
+        "median_seconds": 0.16609206899738638,
+        "samples_seconds": [
+          0.17390016599892988,
+          0.16362860500157694,
+          0.15842197199890506,
+          0.170443682000041,
+          0.1585528190007608,
+          0.1558651209998061,
+          0.1720951729985245,
+          0.17267108200030634,
+          0.16609206899738638
+        ],
+        "min_seconds": 0.1558651209998061,
+        "max_seconds": 0.17390016599892988
+      },
+      "c": {
+        "median_seconds": 0.16689847899760935,
+        "samples_seconds": [
+          0.1608447940016049,
+          0.17903001199738355,
+          0.17614079600025434,
+          0.16689847899760935,
+          0.15643945099873235,
+          0.15217920500072069,
+          0.16137616900232388,
+          0.1717263020000246,
+          0.18101494500297122
+        ],
+        "min_seconds": 0.15217920500072069,
+        "max_seconds": 0.18101494500297122
+      },
+      "label": "LCG sequential2",
+      "work_units": 40000000,
+      "expected_stdout": "66941813\n468592691\n",
+      "clack_over_c_ratio": 0.9951682603396612,
+      "source_sha256": {
+        "clack": "c61be949288effe8144181b91e61ce7f5c0fd6f5f893845d5fd03214abe23251",
+        "c": "ca16dadd3dea587b99d310f1e846ebb8a5c315ee8e740883b6425ccdb5edf0dc"
+      }
+    },
+    "lcg_sequential4": {
+      "clack": {
+        "median_seconds": 0.3307376509983442,
+        "samples_seconds": [
+          0.30986603899873444,
+          0.31959095500133117,
+          0.35505473200100823,
+          0.32662048100246466,
+          0.34121917199809104,
+          0.33365739199871314,
+          0.33350415200038697,
+          0.3307376509983442,
+          0.3287041309995402
+        ],
+        "min_seconds": 0.30986603899873444,
+        "max_seconds": 0.35505473200100823
+      },
+      "c": {
+        "median_seconds": 0.311434957999154,
+        "samples_seconds": [
+          0.3091936460004945,
+          0.3369872170005692,
+          0.32039535700096167,
+          0.31977260900021065,
+          0.311434957999154,
+          0.3149243629995908,
+          0.3074288780007919,
+          0.29521718799878727,
+          0.30167399699712405
+        ],
+        "min_seconds": 0.29521718799878727,
+        "max_seconds": 0.3369872170005692
+      },
+      "label": "LCG sequential4",
+      "work_units": 80000000,
+      "expected_stdout": "66941813\n468592691\n736359943\n1138010821\n",
+      "clack_over_c_ratio": 1.0619798532676046,
+      "source_sha256": {
+        "clack": "6b4a038e422eedc9fe224600de8ccfe2ec8037b5af86829d4b1b5c282bda110d",
+        "c": "f5f0468cd683dd39e4d472373f6157c6f814b537cc01f617ca81f3f28c844c73"
+      }
+    },
+    "lcg_parallel2": {
+      "clack": {
+        "median_seconds": 0.08207916899846168,
+        "samples_seconds": [
+          0.09750923300089198,
+          0.08207916899846168,
+          0.08063895300074364,
+          0.08921546100100386,
+          0.08221337600116385,
+          0.07750718500028597,
+          0.08704225899782614,
+          0.07939582600010908,
+          0.07649048100211076
+        ],
+        "min_seconds": 0.07649048100211076,
+        "max_seconds": 0.09750923300089198
+      },
+      "c": {
+        "median_seconds": 0.08741337499668589,
+        "samples_seconds": [
+          0.09600476400009939,
+          0.08741337499668589,
+          0.07812182000270695,
+          0.07976507200146443,
+          0.08784820399887394,
+          0.07939000300029875,
+          0.08938491899971268,
+          0.08314155799962464,
+          0.08940004300166038
+        ],
+        "min_seconds": 0.07812182000270695,
+        "max_seconds": 0.09600476400009939
+      },
+      "label": "LCG parallel2",
+      "work_units": 40000000,
+      "expected_stdout": "66941813\n468592691\n",
+      "clack_over_c_ratio": 0.9389772331931304,
+      "source_sha256": {
+        "clack": "bd767e0b4cafc6980248d046316892a67a77e25305b1974e35ab9f4556acd695",
+        "c": "416c857138c2ad96bc649d5871263c737dbf57ba4c88c2b2f55da0d035308339"
+      }
+    },
+    "lcg_parallel4": {
+      "clack": {
+        "median_seconds": 0.08386953399894992,
+        "samples_seconds": [
+          0.08597725900108344,
+          0.08386953399894992,
+          0.07861109700024826,
+          0.09272606300146435,
+          0.07948259099794086,
+          0.09531964199777576,
+          0.08388425299926894,
+          0.0797074510010134,
+          0.08008560199959902
+        ],
+        "min_seconds": 0.07861109700024826,
+        "max_seconds": 0.09531964199777576
+      },
+      "c": {
+        "median_seconds": 0.08297234100245987,
+        "samples_seconds": [
+          0.0938033849997737,
+          0.08297234100245987,
+          0.08179395499973907,
+          0.08961253599773045,
+          0.0845374050004466,
+          0.08253875899754348,
+          0.08276230699993903,
+          0.08297276399753173,
+          0.08266770000045653
+        ],
+        "min_seconds": 0.08179395499973907,
+        "max_seconds": 0.0938033849997737
+      },
+      "label": "LCG parallel4",
+      "work_units": 80000000,
+      "expected_stdout": "66941813\n468592691\n736359943\n1138010821\n",
+      "clack_over_c_ratio": 1.0108131575613064,
+      "source_sha256": {
+        "clack": "fe66f81879f2e267130824e22f3b81d358ef492fd75bdb34fed0b95a690c2fcb",
+        "c": "c9b392cb331a596d78a49fbc41b92f9d89e619170f783fcee40e90ef6dc202d5"
+      }
+    },
+    "gcd": {
+      "clack": {
+        "median_seconds": 0.057910035000531934,
+        "samples_seconds": [
+          0.10592586100028711,
+          0.06944921999820508,
+          0.11891146499692695,
+          0.06032404099823907,
+          0.05748987900005886,
+          0.056226593998871977,
+          0.05254515400156379,
+          0.05284222000045702,
+          0.057910035000531934
+        ],
+        "min_seconds": 0.05254515400156379,
+        "max_seconds": 0.11891146499692695
+      },
+      "c": {
+        "median_seconds": 0.056606345999171026,
+        "samples_seconds": [
+          0.06653403799646185,
+          0.055035354002029635,
+          0.055407100000593346,
+          0.054893144999368815,
+          0.061806996000086656,
+          0.056865435999498004,
+          0.054969353001069976,
+          0.056606345999171026,
+          0.0574306369999249
+        ],
+        "min_seconds": 0.054893144999368815,
+        "max_seconds": 0.06653403799646185
+      },
+      "label": "Variable-input Euclidean GCD",
+      "work_units": 1200000,
+      "expected_stdout": "15811992\n",
+      "clack_over_c_ratio": 1.0230307923669901,
+      "source_sha256": {
+        "clack": "df72a36386dd60fec9813f713b6f51cdc4a3ff906491e8e58980784a590f4532",
+        "c": "5415b0674384264002e04d7060440a664e21cee4406a675f9bf7a43d1ee31560"
+      }
+    },
+    "sqrt": {
+      "clack": {
+        "median_seconds": 0.08944399999745656,
+        "samples_seconds": [
+          0.08589239100183477,
+          0.08761054199931095,
+          0.09307376099968678,
+          0.09447597599864821,
+          0.08842948599703959,
+          0.08944399999745656,
+          0.09220101100072498,
+          0.08142397400297341,
+          0.09224119599821279
+        ],
+        "min_seconds": 0.08142397400297341,
+        "max_seconds": 0.09447597599864821
+      },
+      "c": {
+        "median_seconds": 0.08597657200152753,
+        "samples_seconds": [
+          0.08757822700135875,
+          0.10127497000212315,
+          0.08451989799868898,
+          0.09564338700147346,
+          0.0843485849982244,
+          0.08565944399742875,
+          0.08597657200152753,
+          0.08827915900110384,
+          0.08536504000221612
+        ],
+        "min_seconds": 0.0843485849982244,
+        "max_seconds": 0.10127497000212315
+      },
+      "label": "Branch-heavy integer square root",
+      "work_units": 1200000,
+      "expected_stdout": "25287913769\n",
+      "clack_over_c_ratio": 1.0403299168041664,
+      "source_sha256": {
+        "clack": "573eaa53cd6278edf92d78a5a685b88bcef6da583dfe296c4d4597a80d07377a",
+        "c": "bae15298ae5744c4d9e7575e8b29f2f3dfaea5edfc31ff348f43db9fe224f059"
+      }
+    },
+    "array": {
+      "clack": {
+        "median_seconds": 0.07825795200187713,
+        "samples_seconds": [
+          0.07825795200187713,
+          0.07641304400021909,
+          0.08709544000157621,
+          0.07544130299720564,
+          0.09662097999898833,
+          0.08269884600304067,
+          0.07457160899866722,
+          0.07638787699761451,
+          0.08943454999825917
+        ],
+        "min_seconds": 0.07457160899866722,
+        "max_seconds": 0.09662097999898833
+      },
+      "c": {
+        "median_seconds": 0.08521254000152112,
+        "samples_seconds": [
+          0.08521254000152112,
+          0.08009437199871172,
+          0.10605213600138086,
+          0.08740735199899063,
+          0.07296933199904743,
+          0.08610600699830684,
+          0.0781186259991955,
+          0.0761163020033564,
+          0.08998771299957298
+        ],
+        "min_seconds": 0.07296933199904743,
+        "max_seconds": 0.10605213600138086
+      },
+      "label": "Eight-state fixed-array updates",
+      "work_units": 64000096,
+      "expected_stdout": "4413636\n",
+      "clack_over_c_ratio": 0.9183853925781365,
+      "source_sha256": {
+        "clack": "d159533f59c796fa83f35d594baee050132292c73efb38d16e38093a0722feef",
+        "c": "30ed9867ba66ac09f7c7704095057664336707e58ef14ee13a0d562b164e984f"
+      }
+    }
+  },
+  "parallel_speedup": {
+    "2": {
+      "clack": 2.023559339404365,
+      "c": 1.9093013969994521
+    },
+    "4": {
+      "clack": 3.943477866497805,
+      "c": 3.7534792225510536
+    }
+  },
+  "in_process_compiler_pipeline": {
+    "lcg_single": {
+      "load_parse_link": {
+        "median_seconds": 0.0009944090015778784,
+        "samples_seconds": [
+          0.0009944090015778784
+        ],
+        "min_seconds": 0.0009944090015778784,
+        "max_seconds": 0.0009944090015778784
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.02523952800038387,
+        "samples_seconds": [
+          0.02523952800038387
+        ],
+        "min_seconds": 0.02523952800038387,
+        "max_seconds": 0.02523952800038387
+      },
+      "emit_c": {
+        "median_seconds": 0.00025540500064380467,
+        "samples_seconds": [
+          0.00025540500064380467
+        ],
+        "min_seconds": 0.00025540500064380467,
+        "max_seconds": 0.00025540500064380467
+      },
+      "total": {
+        "median_seconds": 0.026489342002605554,
+        "samples_seconds": [
+          0.026489342002605554
+        ],
+        "min_seconds": 0.026489342002605554,
+        "max_seconds": 0.026489342002605554
+      },
+      "obligations": 20,
+      "solver_checks": null
+    },
+    "lcg_sequential2": {
+      "load_parse_link": {
+        "median_seconds": 0.0007402459996228572,
+        "samples_seconds": [
+          0.0007402459996228572
+        ],
+        "min_seconds": 0.0007402459996228572,
+        "max_seconds": 0.0007402459996228572
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.018163120999815874,
+        "samples_seconds": [
+          0.018163120999815874
+        ],
+        "min_seconds": 0.018163120999815874,
+        "max_seconds": 0.018163120999815874
+      },
+      "emit_c": {
+        "median_seconds": 0.00015243900270434096,
+        "samples_seconds": [
+          0.00015243900270434096
+        ],
+        "min_seconds": 0.00015243900270434096,
+        "max_seconds": 0.00015243900270434096
+      },
+      "total": {
+        "median_seconds": 0.019055806002143072,
+        "samples_seconds": [
+          0.019055806002143072
+        ],
+        "min_seconds": 0.019055806002143072,
+        "max_seconds": 0.019055806002143072
+      },
+      "obligations": 24,
+      "solver_checks": null
+    },
+    "lcg_sequential4": {
+      "load_parse_link": {
+        "median_seconds": 0.0016444790016976185,
+        "samples_seconds": [
+          0.0016444790016976185
+        ],
+        "min_seconds": 0.0016444790016976185,
+        "max_seconds": 0.0016444790016976185
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.020749158997205086,
+        "samples_seconds": [
+          0.020749158997205086
+        ],
+        "min_seconds": 0.020749158997205086,
+        "max_seconds": 0.020749158997205086
+      },
+      "emit_c": {
+        "median_seconds": 0.00018204500156571157,
+        "samples_seconds": [
+          0.00018204500156571157
+        ],
+        "min_seconds": 0.00018204500156571157,
+        "max_seconds": 0.00018204500156571157
+      },
+      "total": {
+        "median_seconds": 0.022575683000468416,
+        "samples_seconds": [
+          0.022575683000468416
+        ],
+        "min_seconds": 0.022575683000468416,
+        "max_seconds": 0.022575683000468416
+      },
+      "obligations": 32,
+      "solver_checks": null
+    },
+    "lcg_parallel2": {
+      "load_parse_link": {
+        "median_seconds": 0.0013155730011931155,
+        "samples_seconds": [
+          0.0013155730011931155
+        ],
+        "min_seconds": 0.0013155730011931155,
+        "max_seconds": 0.0013155730011931155
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.020237898999766912,
+        "samples_seconds": [
+          0.020237898999766912
+        ],
+        "min_seconds": 0.020237898999766912,
+        "max_seconds": 0.020237898999766912
+      },
+      "emit_c": {
+        "median_seconds": 0.00024966699857031927,
+        "samples_seconds": [
+          0.00024966699857031927
+        ],
+        "min_seconds": 0.00024966699857031927,
+        "max_seconds": 0.00024966699857031927
+      },
+      "total": {
+        "median_seconds": 0.021803138999530347,
+        "samples_seconds": [
+          0.021803138999530347
+        ],
+        "min_seconds": 0.021803138999530347,
+        "max_seconds": 0.021803138999530347
+      },
+      "obligations": 24,
+      "solver_checks": null
+    },
+    "lcg_parallel4": {
+      "load_parse_link": {
+        "median_seconds": 0.001004875000944594,
+        "samples_seconds": [
+          0.001004875000944594
+        ],
+        "min_seconds": 0.001004875000944594,
+        "max_seconds": 0.001004875000944594
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.020126670999161433,
+        "samples_seconds": [
+          0.020126670999161433
+        ],
+        "min_seconds": 0.020126670999161433,
+        "max_seconds": 0.020126670999161433
+      },
+      "emit_c": {
+        "median_seconds": 0.00021152900080778636,
+        "samples_seconds": [
+          0.00021152900080778636
+        ],
+        "min_seconds": 0.00021152900080778636,
+        "max_seconds": 0.00021152900080778636
+      },
+      "total": {
+        "median_seconds": 0.021343075000913814,
+        "samples_seconds": [
+          0.021343075000913814
+        ],
+        "min_seconds": 0.021343075000913814,
+        "max_seconds": 0.021343075000913814
+      },
+      "obligations": 32,
+      "solver_checks": null
+    },
+    "gcd": {
+      "load_parse_link": {
+        "median_seconds": 0.001112668000132544,
+        "samples_seconds": [
+          0.001112668000132544
+        ],
+        "min_seconds": 0.001112668000132544,
+        "max_seconds": 0.001112668000132544
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.04908748800153262,
+        "samples_seconds": [
+          0.04908748800153262
+        ],
+        "min_seconds": 0.04908748800153262,
+        "max_seconds": 0.04908748800153262
+      },
+      "emit_c": {
+        "median_seconds": 0.00042892600322375074,
+        "samples_seconds": [
+          0.00042892600322375074
+        ],
+        "min_seconds": 0.00042892600322375074,
+        "max_seconds": 0.00042892600322375074
+      },
+      "total": {
+        "median_seconds": 0.050629082004888915,
+        "samples_seconds": [
+          0.050629082004888915
+        ],
+        "min_seconds": 0.050629082004888915,
+        "max_seconds": 0.050629082004888915
+      },
+      "obligations": 36,
+      "solver_checks": null
+    },
+    "sqrt": {
+      "load_parse_link": {
+        "median_seconds": 0.0011076289993070532,
+        "samples_seconds": [
+          0.0011076289993070532
+        ],
+        "min_seconds": 0.0011076289993070532,
+        "max_seconds": 0.0011076289993070532
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.04152706600143574,
+        "samples_seconds": [
+          0.04152706600143574
+        ],
+        "min_seconds": 0.04152706600143574,
+        "max_seconds": 0.04152706600143574
+      },
+      "emit_c": {
+        "median_seconds": 0.00026212499869870953,
+        "samples_seconds": [
+          0.00026212499869870953
+        ],
+        "min_seconds": 0.00026212499869870953,
+        "max_seconds": 0.00026212499869870953
+      },
+      "total": {
+        "median_seconds": 0.042896819999441504,
+        "samples_seconds": [
+          0.042896819999441504
+        ],
+        "min_seconds": 0.042896819999441504,
+        "max_seconds": 0.042896819999441504
+      },
+      "obligations": 37,
+      "solver_checks": null
+    },
+    "array": {
+      "load_parse_link": {
+        "median_seconds": 0.0019789129983109888,
+        "samples_seconds": [
+          0.0019789129983109888
+        ],
+        "min_seconds": 0.0019789129983109888,
+        "max_seconds": 0.0019789129983109888
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.1440210329965339,
+        "samples_seconds": [
+          0.1440210329965339
+        ],
+        "min_seconds": 0.1440210329965339,
+        "max_seconds": 0.1440210329965339
+      },
+      "emit_c": {
+        "median_seconds": 0.0005698890017811209,
+        "samples_seconds": [
+          0.0005698890017811209
+        ],
+        "min_seconds": 0.0005698890017811209,
+        "max_seconds": 0.0005698890017811209
+      },
+      "total": {
+        "median_seconds": 0.14656983499662601,
+        "samples_seconds": [
+          0.14656983499662601
+        ],
+        "min_seconds": 0.14656983499662601,
+        "max_seconds": 0.14656983499662601
+      },
+      "obligations": 201,
+      "solver_checks": null
+    },
+    "hello": {
+      "load_parse_link": {
+        "median_seconds": 0.00029411400100798346,
+        "samples_seconds": [
+          0.00029411400100798346
+        ],
+        "min_seconds": 0.00029411400100798346,
+        "max_seconds": 0.00029411400100798346
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.00022212499970919453,
+        "samples_seconds": [
+          0.00022212499970919453
+        ],
+        "min_seconds": 0.00022212499970919453,
+        "max_seconds": 0.00022212499970919453
+      },
+      "emit_c": {
+        "median_seconds": 6.330600081128068e-05,
+        "samples_seconds": [
+          6.330600081128068e-05
+        ],
+        "min_seconds": 6.330600081128068e-05,
+        "max_seconds": 6.330600081128068e-05
+      },
+      "total": {
+        "median_seconds": 0.0005795450015284587,
+        "samples_seconds": [
+          0.0005795450015284587
+        ],
+        "min_seconds": 0.0005795450015284587,
+        "max_seconds": 0.0005795450015284587
+      },
+      "obligations": 1,
+      "solver_checks": null
+    },
+    "stdlib": {
+      "load_parse_link": {
+        "median_seconds": 0.004720465996797429,
+        "samples_seconds": [
+          0.004720465996797429
+        ],
+        "min_seconds": 0.004720465996797429,
+        "max_seconds": 0.004720465996797429
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.06930979299795581,
+        "samples_seconds": [
+          0.06930979299795581
+        ],
+        "min_seconds": 0.06930979299795581,
+        "max_seconds": 0.06930979299795581
+      },
+      "emit_c": {
+        "median_seconds": 0.0012041549998684786,
+        "samples_seconds": [
+          0.0012041549998684786
+        ],
+        "min_seconds": 0.0012041549998684786,
+        "max_seconds": 0.0012041549998684786
+      },
+      "total": {
+        "median_seconds": 0.07523441399462172,
+        "samples_seconds": [
+          0.07523441399462172
+        ],
+        "min_seconds": 0.07523441399462172,
+        "max_seconds": 0.07523441399462172
+      },
+      "obligations": 248,
+      "solver_checks": null
+    },
+    "arithmetic128": {
+      "load_parse_link": {
+        "median_seconds": 0.003598464998503914,
+        "samples_seconds": [
+          0.003598464998503914
+        ],
+        "min_seconds": 0.003598464998503914,
+        "max_seconds": 0.003598464998503914
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.026353737997851567,
+        "samples_seconds": [
+          0.026353737997851567
+        ],
+        "min_seconds": 0.026353737997851567,
+        "max_seconds": 0.026353737997851567
+      },
+      "emit_c": {
+        "median_seconds": 0.0007114420004654676,
+        "samples_seconds": [
+          0.0007114420004654676
+        ],
+        "min_seconds": 0.0007114420004654676,
+        "max_seconds": 0.0007114420004654676
+      },
+      "total": {
+        "median_seconds": 0.03066364499682095,
+        "samples_seconds": [
+          0.03066364499682095
+        ],
+        "min_seconds": 0.03066364499682095,
+        "max_seconds": 0.03066364499682095
+      },
+      "obligations": 257,
+      "solver_checks": null
+    },
+    "branch8": {
+      "load_parse_link": {
+        "median_seconds": 0.0009475779988861177,
+        "samples_seconds": [
+          0.0009475779988861177
+        ],
+        "min_seconds": 0.0009475779988861177,
+        "max_seconds": 0.0009475779988861177
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.025742666999576613,
+        "samples_seconds": [
+          0.025742666999576613
+        ],
+        "min_seconds": 0.025742666999576613,
+        "max_seconds": 0.025742666999576613
+      },
+      "emit_c": {
+        "median_seconds": 0.0001928510027937591,
+        "samples_seconds": [
+          0.0001928510027937591
+        ],
+        "min_seconds": 0.0001928510027937591,
+        "max_seconds": 0.0001928510027937591
+      },
+      "total": {
+        "median_seconds": 0.02688309600125649,
+        "samples_seconds": [
+          0.02688309600125649
+        ],
+        "min_seconds": 0.02688309600125649,
+        "max_seconds": 0.02688309600125649
+      },
+      "obligations": 18,
+      "solver_checks": null
+    },
+    "constructors16": {
+      "load_parse_link": {
+        "median_seconds": 0.0020717630031867884,
+        "samples_seconds": [
+          0.0020717630031867884
+        ],
+        "min_seconds": 0.0020717630031867884,
+        "max_seconds": 0.0020717630031867884
+      },
+      "types_and_proofs": {
+        "median_seconds": 0.0032511509998585097,
+        "samples_seconds": [
+          0.0032511509998585097
+        ],
+        "min_seconds": 0.0032511509998585097,
+        "max_seconds": 0.0032511509998585097
+      },
+      "emit_c": {
+        "median_seconds": 0.00024102300085360184,
+        "samples_seconds": [
+          0.00024102300085360184
+        ],
+        "min_seconds": 0.00024102300085360184,
+        "max_seconds": 0.00024102300085360184
+      },
+      "total": {
+        "median_seconds": 0.0055639370038989,
+        "samples_seconds": [
+          0.0055639370038989
+        ],
+        "min_seconds": 0.0055639370038989,
+        "max_seconds": 0.0055639370038989
+      },
+      "obligations": 1,
+      "solver_checks": null
+    }
+  },
+  "native_c_compilation": {
+    "lcg_single": {
+      "clack": {
+        "median_seconds": 0.03778917599993292,
+        "samples_seconds": [
+          0.03778917599993292
+        ],
+        "min_seconds": 0.03778917599993292,
+        "max_seconds": 0.03778917599993292
+      },
+      "c": {
+        "median_seconds": 0.042253925999830244,
+        "samples_seconds": [
+          0.042253925999830244
+        ],
+        "min_seconds": 0.042253925999830244,
+        "max_seconds": 0.042253925999830244
+      }
+    },
+    "lcg_sequential2": {
+      "clack": {
+        "median_seconds": 0.04258190099790227,
+        "samples_seconds": [
+          0.04258190099790227
+        ],
+        "min_seconds": 0.04258190099790227,
+        "max_seconds": 0.04258190099790227
+      },
+      "c": {
+        "median_seconds": 0.040894728001148906,
+        "samples_seconds": [
+          0.040894728001148906
+        ],
+        "min_seconds": 0.040894728001148906,
+        "max_seconds": 0.040894728001148906
+      }
+    },
+    "lcg_sequential4": {
+      "clack": {
+        "median_seconds": 0.043983864998153877,
+        "samples_seconds": [
+          0.043983864998153877
+        ],
+        "min_seconds": 0.043983864998153877,
+        "max_seconds": 0.043983864998153877
+      },
+      "c": {
+        "median_seconds": 0.047875575997750275,
+        "samples_seconds": [
+          0.047875575997750275
+        ],
+        "min_seconds": 0.047875575997750275,
+        "max_seconds": 0.047875575997750275
+      }
+    },
+    "lcg_parallel2": {
+      "clack": {
+        "median_seconds": 0.05728612299935776,
+        "samples_seconds": [
+          0.05728612299935776
+        ],
+        "min_seconds": 0.05728612299935776,
+        "max_seconds": 0.05728612299935776
+      },
+      "c": {
+        "median_seconds": 0.04938831199979177,
+        "samples_seconds": [
+          0.04938831199979177
+        ],
+        "min_seconds": 0.04938831199979177,
+        "max_seconds": 0.04938831199979177
+      }
+    },
+    "lcg_parallel4": {
+      "clack": {
+        "median_seconds": 0.0661967160012864,
+        "samples_seconds": [
+          0.0661967160012864
+        ],
+        "min_seconds": 0.0661967160012864,
+        "max_seconds": 0.0661967160012864
+      },
+      "c": {
+        "median_seconds": 0.0560526689987455,
+        "samples_seconds": [
+          0.0560526689987455
+        ],
+        "min_seconds": 0.0560526689987455,
+        "max_seconds": 0.0560526689987455
+      }
+    },
+    "gcd": {
+      "clack": {
+        "median_seconds": 0.0383378940023249,
+        "samples_seconds": [
+          0.0383378940023249
+        ],
+        "min_seconds": 0.0383378940023249,
+        "max_seconds": 0.0383378940023249
+      },
+      "c": {
+        "median_seconds": 0.036302375003288034,
+        "samples_seconds": [
+          0.036302375003288034
+        ],
+        "min_seconds": 0.036302375003288034,
+        "max_seconds": 0.036302375003288034
+      }
+    },
+    "sqrt": {
+      "clack": {
+        "median_seconds": 0.04686463200050639,
+        "samples_seconds": [
+          0.04686463200050639
+        ],
+        "min_seconds": 0.04686463200050639,
+        "max_seconds": 0.04686463200050639
+      },
+      "c": {
+        "median_seconds": 0.03974036300132866,
+        "samples_seconds": [
+          0.03974036300132866
+        ],
+        "min_seconds": 0.03974036300132866,
+        "max_seconds": 0.03974036300132866
+      }
+    },
+    "array": {
+      "clack": {
+        "median_seconds": 0.04374169999937294,
+        "samples_seconds": [
+          0.04374169999937294
+        ],
+        "min_seconds": 0.04374169999937294,
+        "max_seconds": 0.04374169999937294
+      },
+      "c": {
+        "median_seconds": 0.04257020799923339,
+        "samples_seconds": [
+          0.04257020799923339
+        ],
+        "min_seconds": 0.04257020799923339,
+        "max_seconds": 0.04257020799923339
+      }
+    }
+  },
+  "cold_cli_check": {
+    "hello": {
+      "median_seconds": 0.11247324199939612,
+      "samples_seconds": [
+        0.11247324199939612
+      ],
+      "min_seconds": 0.11247324199939612,
+      "max_seconds": 0.11247324199939612
+    },
+    "stdlib": {
+      "median_seconds": 0.16915806999895722,
+      "samples_seconds": [
+        0.16915806999895722
+      ],
+      "min_seconds": 0.16915806999895722,
+      "max_seconds": 0.16915806999895722
+    },
+    "arithmetic128": {
+      "median_seconds": 0.1386394779983675,
+      "samples_seconds": [
+        0.1386394779983675
+      ],
+      "min_seconds": 0.1386394779983675,
+      "max_seconds": 0.1386394779983675
+    },
+    "branch8": {
+      "median_seconds": 0.11732487900007982,
+      "samples_seconds": [
+        0.11732487900007982
+      ],
+      "min_seconds": 0.11732487900007982,
+      "max_seconds": 0.11732487900007982
+    },
+    "constructors16": {
+      "median_seconds": 0.12155092299872194,
+      "samples_seconds": [
+        0.12155092299872194
+      ],
+      "min_seconds": 0.12155092299872194,
+      "max_seconds": 0.12155092299872194
+    }
+  },
+  "timing_scope": {
+    "runtime": "native subprocess wall time including process startup, output, thread setup/join, and exit; no compilation or verification",
+    "in_process_compiler_pipeline": "repeated full source load, parse/link, type/proof checks, and C emission in an already imported Python process; no native compilation",
+    "cold_cli_check": "fresh Python process plus package imports, source loading, type checking, verification, and CLI output; no native compilation"
+  },
+  "limits": [
+    "These are selected kernels, not general C/Rust parity evidence.",
+    "Short native runs include process startup; OS scheduling and CPU allocation affect scaling.",
+    "Verifier annotations are erased; hand C runs matching algorithms with the same optimization flags."
+  ]
+}

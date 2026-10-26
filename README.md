@@ -2,6 +2,8 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
+Clack 0.2 adds length-independent `sum`, `all`, `any`, and `count`, immutable text, and explicit native bindings. The compiler and bundled library total **2,155 physical lines**, up from **1,968** before this pass. Read the [measured before/after report](benchmarks/RESULTS-0.2.md) for compiler speedups, eight native benchmark cases, raw samples, and limitations.
+
 [GitHub repository](https://github.com/155xp/clack)
 
 Clack is an original working prototype inspired by the goals of languages such as Bend: make useful programs easy to express, run them efficiently, and check what they promise. This implementation does not use Bend's code.
@@ -31,6 +33,7 @@ Start with [the Clack Handbook](docs/README.md) or go directly to:
 - [Step-by-step tutorials](docs/tutorials/README.md), including a parallel data project and your own libraries.
 - [Quick reference](docs/quick-reference.md) and [full language reference](docs/reference/README.md).
 - [Built-ins and standard libraries](docs/libraries.md), [cookbook](docs/cookbook.md), and [common errors](docs/errors.md).
+- [Text and explicit native bindings](docs/native.md), including the boundary used by optional terminal UI libraries.
 - [CLI reference](docs/cli.md), [FAQ](docs/faq.md), and [compiler internals](docs/internals.md).
 
 ## Run it
@@ -100,7 +103,7 @@ fn main():
     print(values[1])
 ```
 
-`int` is a signed 64-bit integer. `bool` has `true` and `false`. Records group named fields. Arrays have a fixed element type and length, such as `int[4]`. Records and arrays are passed and copied by value. Array access must be proved in bounds before compilation.
+`int` is a signed 64-bit integer. `bool` has `true` and `false`, and `text` holds immutable UTF-8 literals such as `"Clack"`. Records group named fields. Arrays have a fixed integer or Boolean element type and length, such as `int[4]`. Records and arrays are passed and copied by value. Array access must be proved in bounds before compilation.
 
 Function inputs are immutable. Local bindings can be reassigned; local array elements can be changed. Record fields are immutable: build a replacement record when changing a field.
 
@@ -108,19 +111,22 @@ Function inputs are immutable. Local bindings can be reassigned; local array ele
 
 ```clack
 from std.math import max, clamp
-from std.array import sum4
+from std.array import sum, all, any, count
 
 fn main():
     print(max(12, 7))
     print(clamp(150, 0, 100))
-    print(sum4([10, 20, 30, 40]))
+    print(sum([1, 2, 3, 4, 5]))
+    print(count([true, false, true]))
 ```
 
-The bundled helpers are verified Clack source. You can also import functions and records from your own files, such as `from helpers import twice` for a neighboring `helpers.clack`. Library scopes remain separate, and imported declarations go through the same checks as the entry program. See the [library catalog](docs/libraries.md) and [library tutorial](docs/tutorials/08-libraries.md).
+`std.math` and the older fixed-size helpers are verified Clack source. The new `sum`, `all`, `any`, and `count` operators accept any supported fixed length; the compiler models their exact results and emits native loops. `sum` requires every intermediate addition to fit signed 64-bit range. See the [reduction example](examples/reductions.clack) and [library catalog](docs/libraries.md) for types and verification rules.
+
+You can also import functions and records from your own files, such as `from helpers import twice` for a neighboring `helpers.clack`. Library scopes remain separate, and imported source declarations go through the same checks as the entry program. The [library tutorial](docs/tutorials/08-libraries.md) explains code reuse.
 
 ## What “checked” means
 
-Every build checks all functions. Z3 must establish that:
+Every build checks all ordinary Clack functions. Z3 must establish that:
 
 - Arithmetic stays within signed 64-bit bounds, and division is defined.
 - Array indices stay in bounds.
@@ -131,17 +137,19 @@ Every build checks all functions. Z3 must establish that:
 
 An unproved obligation, solver timeout, or unsupported feature stops compilation. There is no unchecked build switch.
 
-These are proofs against the written contracts and the implemented model. They do not prove that a contract captures your intent, that the compiler is bug-free, or that the operating system will provide unlimited memory or threads. The compiler, Z3, C compiler, and native platform remain trusted. SMT-LIB exports are verification conditions, not independently checked proof certificates.
+These are proofs against the written contracts and the implemented model. Explicit `native`/`extern fn` bindings provide an optional C boundary for effects such as terminal UI; their C implementations are trusted and are reported as outside the verification model. Foreign results are unconstrained typed values, and only main may call them. See the [native guide](docs/native.md).
+
+The checks do not prove that a contract captures your intent, that the compiler is bug-free, or that the operating system will provide unlimited memory or threads. The compiler, Z3, C compiler, and native platform remain trusted. SMT-LIB exports are verification conditions, not independently checked proof certificates.
 
 ## What exists today
 
-The current compiler supports functions, conditionals, loops, assertions, records, fixed arrays, source-library imports, signed integer and Boolean expressions, and independent parallel calls. It emits C11 and builds with optimization and POSIX threads.
+The current compiler supports functions, conditionals, loops, assertions, records, fixed arrays and length-independent reductions, source-library imports, integer/Boolean expressions, immutable text, independent parallel calls, and explicit main-only native bindings. It emits C11 and builds with optimization and POSIX threads. User-defined generic functions remain future work.
 
 Native execution is a foundation for C-like performance, not evidence that every Clack program matches C or Rust. No broad performance claim has been established.
 
 One local experiment with 10 million iterations of an integer arithmetic kernel measured **41.7 ms for Clack and 43.0 ms for C**. Two Clack jobs measured **89.1 ms sequentially and 41.7 ms in parallel** (five-run medians). See the [reproducible benchmark and recorded samples](benchmarks/README.md). These measurements cover one workload on this machine.
 
-Dynamic collections, strings, floating-point types, generics, recursion, foreign-function calls, and shared-memory concurrency are future work. This first implementation is deliberately small enough to inspect and test.
+Dynamic collections, text manipulation, floating-point types, generics, recursion, and shared-memory concurrency are future work. This first implementation is deliberately small enough to inspect and test.
 
 Read [the language guide](docs/language.md), [verification model](docs/verification.md), and [design direction](docs/design.md). Try the files under [examples](examples/); programs in `examples/rejected/` demonstrate errors the compiler should catch.
 

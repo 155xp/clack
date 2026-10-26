@@ -6,7 +6,7 @@ Clack checks a small static language before emitting native code. Verification i
 
 The verifier symbolically executes function bodies. Parameters begin as arbitrary values of their declared types, restricted by the function's preconditions. Calls are checked against callee preconditions, and the callee's verified postconditions describe the result.
 
-For each obligation the verifier asks Z3 whether the current facts and the negation of the required fact can hold together. An unsatisfiable answer establishes the obligation within the model. A satisfiable answer supplies a counterexample; an unknown answer or timeout does not establish anything and must stop compilation.
+Claims that simplify unconditionally to `true` are discharged directly. For other obligations the verifier asks Z3 whether the current facts and the negation of the required fact can hold together. An unsatisfiable answer establishes the obligation within the model. A satisfiable answer supplies a counterexample; an unknown answer or timeout does not establish anything and must stop compilation. A constant-false claim is accepted only if its path is proved unreachable.
 
 The implemented checks cover executable arithmetic overflow, defined division and remainder, array bounds, call preconditions, return postconditions, assertions, and loop invariants and termination. Both branches of a conditional are checked under their respective conditions. Boolean short-circuit evaluation supplies the appropriate guard when checking the right operand.
 
@@ -18,6 +18,8 @@ Proof annotations use mathematical integers. This lets a property such as `resul
 
 Do not infer runtime safety from the final answer alone. For example, `(x + 1) - 1` still needs `x + 1` to fit, even when the final value equals `x`.
 
+The imported array reductions `sum`, `all`, `any`, and `count` are modeled compiler operators. `sum` requires each left-to-right partial addition to fit signed 64-bit range; `count` produces the exact number of true Boolean elements. Boolean reductions use their exact logical meanings. They are not source helper functions whose contracts are merely assumed, and they cannot be called inside proof annotations. Their verifier models and native loops are part of the trusted compiler. See the [library guide](libraries.md) for accepted inputs and array-length costs.
+
 ## Loop reasoning
 
 A loop invariant must hold when entering the loop and remain true after each body execution that continues the loop. The verifier reasons from an arbitrary loop head, forgetting the previous values of bindings the body may modify. It must not assume the first iteration represents every iteration.
@@ -25,6 +27,8 @@ A loop invariant must hold when entering the loop and remain true after each bod
 The termination measure must be an integer, must be nonnegative when an iteration begins, and must strictly decrease on continuing iterations. Reasoning after the loop uses the invariant together with the false loop condition. A return from inside the body must satisfy the function's postconditions directly.
 
 The current language rejects recursive call cycles. Termination of loops is checked; functions cannot hide divergence behind recursion.
+
+This statement covers ordinary Clack functions. Main may call explicitly declared native C implementations, whose blocking, recursion, and termination are outside the mathematical model.
 
 ## Parallel reasoning
 
@@ -34,7 +38,9 @@ These restrictions remove shared-memory data races from this form of parallelism
 
 ## Trust and limits
 
-The trusted chain includes the parser, type checker, verification-condition generator, Z3, C emitter, C compiler, runtime support, operating system, and hardware. This is an SMT-verified prototype, not a compiler verified in a proof assistant.
+`native` and `extern fn` establish an explicit trusted boundary for C effects such as terminal UI. C bodies are not verified, and native declarations cannot supply assumed contracts. Only main may make direct calls, and returned scalars carry no facts beyond their declared types. Guards can establish useful bounds before subsequent Clack arithmetic. The CLI reports native bindings and providers as outside the verification model. See [native bindings](native.md) for the exact restrictions and ABI.
+
+The trusted chain includes the parser, type checker, verification-condition generator, Z3, C emitter, C compiler, runtime support, any explicitly linked native implementation, operating system, and hardware. This is an SMT-verified prototype, not a compiler verified in a proof assistant. A successful check of a mixed program establishes Clack obligations under its native boundary; it does not establish memory safety or behavior of the C provider.
 
 Exported `.smt2` files expose the proof obligations for inspection and replay. They are not proof certificates, and exporting them does not independently certify the source-to-binary translation.
 

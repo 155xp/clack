@@ -28,6 +28,10 @@ A feature often crosses several layers. Adding a parser production alone does no
 
 Bundled library helpers live in [clack/stdlib](../clack/stdlib). They are ordinary Clack source and follow the same verification rules as application helpers. Add a precise contract, test useful allowed inputs and rejected calls, and include the module as a package resource when adding a new bundled source file. Do not bypass verification by treating an imported contract as an axiom. All declarations of a loaded library are checked, including unused ones.
 
+The length-independent array reductions are compiler operations instead. Their shared metadata lives in [reductions.py](../clack/reductions.py), with direct verifier models and C lowering. Changes to these operations need agreement between type checking, mathematical results, overflow obligations, evaluation order, and native behavior. Keep source helpers and compiler operators clearly distinguished in documentation.
+
+Native C providers are a third category: explicitly trusted implementations outside verification. Keep their calls in main, preserve scalar/immutable-text ABI checks and confined source paths, and test their C behavior separately. Never describe a passing Clack check as a proof of the provider's memory behavior or effects. The [native guide](native.md) defines the current boundary.
+
 Module changes should preserve file-relative local resolution, the protected bundled `std` namespace, explicit imported names, and diagnostics that point back to original source. Include cross-file tests where a change affects name resolution, record types, or the call graph.
 
 ## Make a semantic change reviewable

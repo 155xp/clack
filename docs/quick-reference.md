@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Full reference](reference/README.md)
 
-This page summarizes accepted Clack 0.1 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
+This page summarizes accepted Clack 0.2 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
 
 ## Program and functions
 
@@ -25,6 +25,7 @@ Only `main` may omit the result annotation and perform output. Other functions m
 | `number = 42` | Infer an `int` local |
 | `number = number + 1` | Reassign that local with the same type |
 | `ready = true` | Infer a `bool` local |
+| `title = "Clack"` | Infer an immutable `text` value |
 | `values = [10, 20, 30]` | Infer `int[3]` |
 | `flags = [true, false]` | Infer `bool[2]` |
 | `values[0]` | Read the first element |
@@ -120,21 +121,22 @@ The block waits for all results. Each job is a call to a user function. All argu
 
 | Function | Use |
 | --- | --- |
-| `print(value)` | Print one `int` or `bool`, only in `main` |
+| `print(value)` | Print one `int`, `bool`, or `text`, only in `main` |
 | `len(array)` | Return a fixed array's length |
 
 Import the standard helpers explicitly:
 
 ```clack
 from std.math import min, max, abs, clamp
-from std.array import sum4
+from std.array import sum, all, any, count
 
 fn main():
     print(max(12, 7))
-    print(sum4([1, 2, 3, 4]))
+    print(sum([1, 2, 3, 4, 5]))
+    print(count([true, false, true]))
 ```
 
-Local libraries use the same syntax, such as `from helpers import twice`. Generic `sum` and `sort` are not implemented. See [the library catalog](libraries.md) for all helpers and their preconditions; the [cookbook](cookbook.md) also shows how to write ordinary helpers yourself.
+`sum` accepts any supported nonempty integer array and checks every partial addition. `all`, `any`, and `count` accept Boolean arrays; `count` counts true elements. These four imported compiler operators are modeled directly and emitted as native loops. They cannot appear in proof annotations or as direct parallel jobs, though a source worker function can use them. The fixed-size source helpers remain supported. User-defined generic functions and `sort` are not implemented. Local libraries still use the same import syntax, such as `from helpers import twice`. See [the library catalog](libraries.md) for details.
 
 ```sh
 clack check program.clack
@@ -144,3 +146,7 @@ clack emit-c program.clack -o build/program.c
 ```
 
 See the [CLI reference](cli.md) for proof exports, solver timeouts, and C compiler selection.
+
+## Explicit native boundary
+
+`native "terminal.c"` includes a module-relative C provider. `extern fn title(value: text) -> unit = "clack_demo_title"` declares a main-only native call. C implementations are trusted and unproved, their returns are unconstrained typed values, and the CLI reports the boundary. See [text and native bindings](native.md) for the complete example, ABI, path rules, and call restrictions.

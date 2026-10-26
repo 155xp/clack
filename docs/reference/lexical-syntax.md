@@ -4,7 +4,7 @@
 
 ## Source structure
 
-A `.clack` file contains imports, function declarations, and record declarations. These top-level forms start at the left margin. Indentation groups the statements inside a declaration, branch, loop, or parallel block. A colon ends the opening line of each block.
+A `.clack` file contains imports, function and record declarations, and optional explicit native source/binding declarations. These top-level forms start at the left margin. Indentation groups the statements inside a declaration, branch, loop, or parallel block. A colon ends the opening line of each block; native declarations have no body.
 
 Use spaces for indentation. Four spaces per level is the documentation convention; the parser accepts other consistent widths. Tabs in indentation are rejected. A block must contain at least one statement. A main function with nothing to do can contain `return`.
 
@@ -36,14 +36,14 @@ An identifier starts with an ASCII letter or underscore. Subsequent characters m
 These words have grammatical meaning and cannot be ordinary identifiers:
 
 ```text
-fn type from import parallel if elif else while return assert
+fn type from import native extern parallel if elif else while return assert
 requires ensures invariant decreases and or not
-true false int bool unit
+true false int bool unit text
 ```
 
 The compiler additionally reserves `result`, `print`, and `len` from function names, type names, parameter names, and local bindings. `result` denotes the returned value inside postconditions. `print` and `len` identify built-ins. Field names are parsed separately; the grammatical keywords still cannot name fields.
 
-Top-level declarations and imports cannot use names beginning with `_clack_module_`; that prefix is reserved for the compiler's internal linked-library symbols.
+Top-level declarations and imports cannot use names beginning with `_clack_module_` or `_clack_reduce_`; those prefixes are reserved for internal linked-library and reduction symbols. Local bindings and parameters also cannot use the `_clack_reduce_` prefix. The public names `sum`, `all`, `any`, and `count` are not keywords; use explicit imports to access the standard operators.
 
 `main` is the required entry-point name of the root program. It is not a general callable function: another function cannot invoke it. Imported library modules must not define it. User functions, record constructors, and explicitly imported names share a module's declaration namespace, so colliding names are rejected. There are no overloaded function declarations.
 
@@ -53,7 +53,7 @@ Integer literals use decimal digits: `0`, `7`, and `123456`. Except for `0` itse
 
 Unary `-` produces negative values. The spelling `-9223372036854775808` is accepted as the minimum signed 64-bit integer. The positive number `9223372036854775808` cannot be an executable integer value. Proof annotations have a separate mathematical interpretation described under [contracts](contracts-verification.md).
 
-The Boolean literals are `true` and `false`. They are not interchangeable with `1` and `0`. String and character literals are not implemented, so `print("hello")` is not valid in this version.
+The Boolean literals are `true` and `false`. They are not interchangeable with `1` and `0`. Double-quoted JSON-style literals construct immutable `text`, so `print("hello")` is accepted in main. Text must be valid UTF-8 without embedded NUL; single quotes, triple quotes, string prefixes, and character literals are unsupported. See [text literals](../native.md#text-values) for escapes and current API limits.
 
 Array literals use square brackets and must be nonempty. Record values use their record name as a positional constructor. See [types and values](types-values.md).
 
@@ -76,7 +76,7 @@ Arithmetic operators at the same level associate left to right. For example, `20
 
 Comparison operators share one precedence level. `0 <= x < 10` means `0 <= x and x < 10`; it does not compare a Boolean intermediate with `10`. A mixed chain such as `a == b < c` also means adjacent pairwise comparisons. Each pair must have compatible scalar types.
 
-User functions have no output or shared mutation, so repeated occurrences of a function call in a comparison chain cannot expose an ordering effect. The current compiler may evaluate a shared middle expression more than once. Keep expensive computations in a local binding when using them in several comparisons.
+Ordinary user functions have no output or shared mutation, so repeated occurrences of a function call in a comparison chain cannot expose an ordering effect. Native calls are prohibited in expression chains. The current compiler may evaluate a shared middle expression more than once. Keep expensive computations in a local binding when using them in several comparisons.
 
 ## Division and Boolean guards
 

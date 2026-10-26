@@ -1,5 +1,9 @@
 # Native performance experiment
 
+The [Clack 0.2 report](RESULTS-0.2.md) compares the immutable earlier compiler with the current one, reports code size, and includes eight broader native cases plus cold command-line measurements. The [suite guide](SUITE.md) explains reproduction and timing scopes. The single-kernel experiment below is retained as the original experiment.
+
+For the broader eight-case native suite, compile-time measurements, and baseline comparisons, see [the compiler and workload suite](SUITE.md). This page preserves the original single-kernel experiment and its recorded run.
+
 Run from the repository root after installing Clack's dependencies:
 
 ```sh

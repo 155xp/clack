@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import io
+import json
 import re
 import token
 import tokenize
@@ -47,6 +48,11 @@ class IntLit(Expr):
 @dataclass(frozen=True)
 class BoolLit(Expr):
     value: bool
+
+
+@dataclass(frozen=True)
+class StringLit(Expr):
+    value: str
 
 
 @dataclass(frozen=True)
@@ -152,6 +158,7 @@ class Function:
     ensures: list[Expr]
     body: list[Stmt]
     line: int
+    foreign_symbol: str | None = None
 
 
 @dataclass(frozen=True)
@@ -169,12 +176,20 @@ class Import:
 
 
 @dataclass(frozen=True)
+class NativeFile:
+    path: str
+    line: int
+
+
+@dataclass(frozen=True)
 class Program:
     functions: list[Function]
     records: list[Record] = field(default_factory=list)
     imports: list[Import] = field(default_factory=list)
     locations: dict[int, tuple[str, int]] = field(default_factory=dict)
     symbol_names: dict[str, str] = field(default_factory=dict)
+    native_files: list[NativeFile] = field(default_factory=list)
+    native_sources: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -189,7 +204,7 @@ _IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z_0-9]*\Z")
 _INTEGER = re.compile(r"(?:0|[1-9][0-9]*)\Z")
 _KEYWORDS = frozenset(
     "fn type parallel if elif else while return assert requires ensures invariant decreases "
-    "and or not true false int bool unit from import".split()
+    "and or not true false int bool unit text from import native extern".split()
 )
 _OPERATORS = frozenset(
     {"(", ")", "[", "]", ".", ":", ",", "->", "=", "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">="}
@@ -217,7 +232,8 @@ def _lex(source: str) -> list[_Token]:
                 if item.string not in _OPERATORS:
                     raise CompileError(f"unsupported operator {item.string!r}", item.start[0], item.start[1] + 1)
             elif item.type == token.STRING:
-                raise CompileError("strings are not supported in this version", item.start[0], item.start[1] + 1)
+                if not item.string.startswith('"') or item.string.startswith('"""'):
+                    raise CompileError("use double-quoted JSON text literals", item.start[0], item.start[1] + 1)
             elif item.type not in {token.INDENT, token.DEDENT, token.NEWLINE, token.ENDMARKER}:
                 raise CompileError(f"unexpected character {item.string!r}", item.start[0], item.start[1] + 1)
             output.append(_Token(item.type, item.string, item.start[0], item.start[1] + 1))
@@ -280,7 +296,7 @@ class _Parser:
         return self.advance()
 
     def type_name(self) -> str:
-        if self.current.kind != token.NAME or self.current.text in _KEYWORDS - {"int", "bool", "unit"}:
+        if self.current.kind != token.NAME or self.current.text in _KEYWORDS - {"int", "bool", "unit", "text"}:
             raise self.error("expected a type name, such as int, bool, or Point")
         result = self.advance().text
         if self.accept("["):
@@ -307,6 +323,7 @@ class _Parser:
         functions: list[Function] = []
         records: list[Record] = []
         imports: list[Import] = []
+        native_files: list[NativeFile] = []
         while self.current.kind != token.ENDMARKER:
             if self.current.kind == token.NEWLINE:
                 self.advance()
@@ -317,11 +334,17 @@ class _Parser:
                 records.append(self.record())
             elif self.current.text == "from":
                 imports.append(self.import_statement())
+            elif self.accept("native"):
+                value = self.string()
+                native_files.append(NativeFile(value.value, value.line))
+                self.line_end()
+            elif self.accept("extern"):
+                functions.append(self.function(foreign=True))
             else:
                 raise self.error("top level declarations must start with 'fn', 'type', or 'from'")
-        if not functions and not records and not imports:
+        if not functions and not records and not imports and not native_files:
             raise self.error("a source file needs at least one function, record, or import declaration")
-        return Program(functions=functions, records=records, imports=imports)
+        return Program(functions=functions, records=records, imports=imports, native_files=native_files)
 
     def import_statement(self) -> Import:
         start = self.expect("from")
@@ -352,7 +375,7 @@ class _Parser:
             raise self.error("a record needs at least one field", start)
         return Record(name=name, fields=fields, line=start.line)
 
-    def function(self) -> Function:
+    def function(self, foreign: bool = False) -> Function:
         start = self.expect("fn")
         name = self.identifier().text
         self.expect("(")
@@ -367,10 +390,15 @@ class _Parser:
         self.expect(")")
         if self.accept("->"):
             return_type = self.type_name()
-        elif name == "main":
+        elif name == "main" and not foreign:
             return_type = "unit"
         else:
             raise self.error("function results need '-> int' or '-> bool'")
+        if foreign:
+            self.expect("=")
+            symbol = self.string().value
+            self.line_end()
+            return Function(name, params, return_type, [], [], [], start.line, symbol)
         self.block_start()
         requires: list[Expr] = []
         ensures: list[Expr] = []
@@ -533,6 +561,8 @@ class _Parser:
 
     def primary(self) -> Expr:
         item = self.current
+        if item.kind == token.STRING:
+            return self.string()
         if item.kind == token.NUMBER:
             self.advance()
             try:
@@ -570,6 +600,17 @@ class _Parser:
             self.expect(")")
             return Call(line=item.line, name=item.text, args=args)
         raise self.error(f"expected an expression, found {self.describe()}")
+
+    def string(self) -> StringLit:
+        item = self.expect_kind(token.STRING, "a double-quoted text literal")
+        try:
+            value = json.loads(item.text)
+            value.encode("utf-8")
+        except (ValueError, UnicodeError):
+            raise self.error("text needs valid JSON escapes and UTF-8 characters", item) from None
+        if "\0" in value:
+            raise self.error("text cannot contain NUL characters", item)
+        return StringLit(item.line, value)
 
 
 def parse(source: str) -> Program:
