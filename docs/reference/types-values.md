@@ -43,9 +43,11 @@ This prints `20`, `true`, and `3`. Array indexing starts at zero. For an array o
 
 Arrays contain only `int` or only `bool`. Empty arrays, mixed arrays such as `[1, true]`, nested arrays, and arrays of records are unsupported. Accepted lengths are between `1` and `1000000`, inclusive. This is an implementation limit, not a promise that every such value will fit the native stack or a chosen platform's resources.
 
+The imported `fill` operator constructs a fixed array without listing every element: `fill(0, 100)` has type `int[100]`, and `fill(false, 8)` has type `bool[8]`. Its first argument is evaluated once; its second must be a decimal integer literal from `1` through `1000000`. It does not accept a length variable or computed length and does not create a dynamic collection. Import it with `from std.array import fill`.
+
 Length is part of type identity. A function accepting `int[3]` does not accept `int[4]`, and a local first assigned a three-element array cannot later receive a four-element array. The length cannot be a parameter name or runtime expression in a type annotation. `len(array)` returns an `int` whose value is known from the type.
 
-The standard `sum`, `all`, `any`, and `count` operators accept any supported fixed length using the argument's type; they do not introduce user-defined generic type syntax. See [array reductions](../libraries.md#stdarray-any-supported-fixed-length) for element types and safety requirements.
+The standard `sum`, `minimum`, `maximum`, `all`, `any`, and `count` operators accept any supported fixed length using the argument's type; they do not introduce user-defined generic type syntax. Integer-array extrema use comparisons and accept all signed 64-bit elements. See [array operators](../libraries.md#stdarray-any-supported-fixed-length) for exact types and safety requirements.
 
 Assignment to an array element is supported only through a local variable, for example `readings[i] = value`. A function parameter is immutable, including its elements. Copy a parameter to a local when making a changed version:
 
@@ -90,7 +92,7 @@ fn main():
 
 This prints `3`, `30`, and `true`. The constructor takes one argument for each field, in declaration order. Constructors have no default values or named arguments. Each argument must have exactly the corresponding field's type.
 
-Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.3.
+Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.4.
 
 Field access uses `.` and may be chained with further field or array access. Fields cannot be assigned directly. To update a record, construct and assign a replacement. The following is a fragment inside a function where `point` is already a `Point` and the addition is known safe:
 

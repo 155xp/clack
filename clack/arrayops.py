@@ -1,4 +1,4 @@
-"""Typed array reductions supplied by the compiler through ``std.array``.
+"""Typed array operators supplied by the compiler through ``std.array``.
 
 These operators accept every supported nonempty fixed length. Their arithmetic
 and bounds are modeled by the verifier; the native backend emits ordinary loops.
@@ -12,19 +12,22 @@ PREFIX = "_clack_reduce_"
 
 
 @dataclass(frozen=True)
-class Reduction:
+class ArrayOperation:
     name: str
-    element: str
-    result: str
+    element: str | None
+    result: str | None
 
 
-REDUCTIONS = {
-    PREFIX + name: Reduction(name, element, result)
+OPERATIONS = {
+    PREFIX + name: ArrayOperation(name, element, result)
     for name, element, result in (
         ("sum", "int", "int"),
         ("all", "bool", "bool"),
         ("any", "bool", "bool"),
         ("count", "bool", "int"),
+        ("minimum", "int", "int"),
+        ("maximum", "int", "int"),
+        ("fill", None, None),
     )
 }
-EXPORTS = {operation.name: name for name, operation in REDUCTIONS.items()}
+EXPORTS = {operation.name: name for name, operation in OPERATIONS.items()}

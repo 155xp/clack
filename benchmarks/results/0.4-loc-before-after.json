@@ -1,0 +1,1154 @@
+{
+  "before": {
+    "ref": "117991a",
+    "implementation": {
+      "physical": 2274,
+      "nonblank_noncomment": 1985
+    },
+    "groups": {
+      "documentation": {
+        "physical": 3466,
+        "nonblank_noncomment": 2318
+      },
+      "benchmarks": {
+        "physical": 879,
+        "nonblank_noncomment": 774
+      },
+      "compiler": {
+        "physical": 2202,
+        "nonblank_noncomment": 1926
+      },
+      "standard_library": {
+        "physical": 72,
+        "nonblank_noncomment": 59
+      },
+      "examples": {
+        "physical": 290,
+        "nonblank_noncomment": 257
+      },
+      "tests": {
+        "physical": 2578,
+        "nonblank_noncomment": 2245
+      },
+      "tools": {
+        "physical": 206,
+        "nonblank_noncomment": 176
+      }
+    },
+    "files": [
+      {
+        "path": "README.md",
+        "group": "documentation",
+        "physical": 184,
+        "nonblank_noncomment": 126
+      },
+      {
+        "path": "benchmarks/README.md",
+        "group": "documentation",
+        "physical": 35,
+        "nonblank_noncomment": 22
+      },
+      {
+        "path": "benchmarks/RESULTS-0.2.md",
+        "group": "documentation",
+        "physical": 92,
+        "nonblank_noncomment": 66
+      },
+      {
+        "path": "benchmarks/RESULTS-0.3.md",
+        "group": "documentation",
+        "physical": 104,
+        "nonblank_noncomment": 70
+      },
+      {
+        "path": "benchmarks/SUITE.md",
+        "group": "documentation",
+        "physical": 71,
+        "nonblank_noncomment": 46
+      },
+      {
+        "path": "benchmarks/cold.py",
+        "group": "benchmarks",
+        "physical": 70,
+        "nonblank_noncomment": 63
+      },
+      {
+        "path": "benchmarks/compare.py",
+        "group": "benchmarks",
+        "physical": 241,
+        "nonblank_noncomment": 205
+      },
+      {
+        "path": "benchmarks/kernels.py",
+        "group": "benchmarks",
+        "physical": 179,
+        "nonblank_noncomment": 157
+      },
+      {
+        "path": "benchmarks/parallel.py",
+        "group": "benchmarks",
+        "physical": 110,
+        "nonblank_noncomment": 98
+      },
+      {
+        "path": "benchmarks/suite.py",
+        "group": "benchmarks",
+        "physical": 279,
+        "nonblank_noncomment": 251
+      },
+      {
+        "path": "clack/__init__.py",
+        "group": "compiler",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "clack/__main__.py",
+        "group": "compiler",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "clack/cli.py",
+        "group": "compiler",
+        "physical": 169,
+        "nonblank_noncomment": 149
+      },
+      {
+        "path": "clack/codegen.py",
+        "group": "compiler",
+        "physical": 311,
+        "nonblank_noncomment": 276
+      },
+      {
+        "path": "clack/frontend.py",
+        "group": "compiler",
+        "physical": 645,
+        "nonblank_noncomment": 543
+      },
+      {
+        "path": "clack/modules.py",
+        "group": "compiler",
+        "physical": 186,
+        "nonblank_noncomment": 163
+      },
+      {
+        "path": "clack/reductions.py",
+        "group": "compiler",
+        "physical": 30,
+        "nonblank_noncomment": 22
+      },
+      {
+        "path": "clack/stdlib/array.clack",
+        "group": "standard_library",
+        "physical": 39,
+        "nonblank_noncomment": 31
+      },
+      {
+        "path": "clack/stdlib/math.clack",
+        "group": "standard_library",
+        "physical": 33,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "clack/typecheck.py",
+        "group": "compiler",
+        "physical": 429,
+        "nonblank_noncomment": 397
+      },
+      {
+        "path": "clack/verifier.py",
+        "group": "compiler",
+        "physical": 426,
+        "nonblank_noncomment": 372
+      },
+      {
+        "path": "docs/README.md",
+        "group": "documentation",
+        "physical": 51,
+        "nonblank_noncomment": 35
+      },
+      {
+        "path": "docs/cli.md",
+        "group": "documentation",
+        "physical": 163,
+        "nonblank_noncomment": 105
+      },
+      {
+        "path": "docs/contributing.md",
+        "group": "documentation",
+        "physical": 78,
+        "nonblank_noncomment": 47
+      },
+      {
+        "path": "docs/cookbook.md",
+        "group": "documentation",
+        "physical": 144,
+        "nonblank_noncomment": 108
+      },
+      {
+        "path": "docs/design.md",
+        "group": "documentation",
+        "physical": 39,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "docs/errors.md",
+        "group": "documentation",
+        "physical": 178,
+        "nonblank_noncomment": 111
+      },
+      {
+        "path": "docs/faq.md",
+        "group": "documentation",
+        "physical": 95,
+        "nonblank_noncomment": 48
+      },
+      {
+        "path": "docs/getting-started.md",
+        "group": "documentation",
+        "physical": 103,
+        "nonblank_noncomment": 65
+      },
+      {
+        "path": "docs/internals.md",
+        "group": "documentation",
+        "physical": 93,
+        "nonblank_noncomment": 56
+      },
+      {
+        "path": "docs/language.md",
+        "group": "documentation",
+        "physical": 69,
+        "nonblank_noncomment": 50
+      },
+      {
+        "path": "docs/libraries.md",
+        "group": "documentation",
+        "physical": 159,
+        "nonblank_noncomment": 109
+      },
+      {
+        "path": "docs/native.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 74
+      },
+      {
+        "path": "docs/quick-reference.md",
+        "group": "documentation",
+        "physical": 153,
+        "nonblank_noncomment": 112
+      },
+      {
+        "path": "docs/reference/README.md",
+        "group": "documentation",
+        "physical": 20,
+        "nonblank_noncomment": 14
+      },
+      {
+        "path": "docs/reference/contracts-verification.md",
+        "group": "documentation",
+        "physical": 112,
+        "nonblank_noncomment": 66
+      },
+      {
+        "path": "docs/reference/functions-control-flow.md",
+        "group": "documentation",
+        "physical": 180,
+        "nonblank_noncomment": 118
+      },
+      {
+        "path": "docs/reference/grammar.md",
+        "group": "documentation",
+        "physical": 120,
+        "nonblank_noncomment": 92
+      },
+      {
+        "path": "docs/reference/lexical-syntax.md",
+        "group": "documentation",
+        "physical": 106,
+        "nonblank_noncomment": 72
+      },
+      {
+        "path": "docs/reference/parallelism.md",
+        "group": "documentation",
+        "physical": 85,
+        "nonblank_noncomment": 52
+      },
+      {
+        "path": "docs/reference/types-values.md",
+        "group": "documentation",
+        "physical": 119,
+        "nonblank_noncomment": 79
+      },
+      {
+        "path": "docs/tutorials/01-first-program.md",
+        "group": "documentation",
+        "physical": 74,
+        "nonblank_noncomment": 49
+      },
+      {
+        "path": "docs/tutorials/02-functions-contracts.md",
+        "group": "documentation",
+        "physical": 65,
+        "nonblank_noncomment": 42
+      },
+      {
+        "path": "docs/tutorials/03-records-arrays.md",
+        "group": "documentation",
+        "physical": 83,
+        "nonblank_noncomment": 58
+      },
+      {
+        "path": "docs/tutorials/04-loops.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 77
+      },
+      {
+        "path": "docs/tutorials/05-parallel-work.md",
+        "group": "documentation",
+        "physical": 82,
+        "nonblank_noncomment": 59
+      },
+      {
+        "path": "docs/tutorials/06-fixing-errors.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 76
+      },
+      {
+        "path": "docs/tutorials/07-project.md",
+        "group": "documentation",
+        "physical": 100,
+        "nonblank_noncomment": 73
+      },
+      {
+        "path": "docs/tutorials/08-libraries.md",
+        "group": "documentation",
+        "physical": 84,
+        "nonblank_noncomment": 59
+      },
+      {
+        "path": "docs/tutorials/README.md",
+        "group": "documentation",
+        "physical": 41,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "docs/verification.md",
+        "group": "documentation",
+        "physical": 51,
+        "nonblank_noncomment": 26
+      },
+      {
+        "path": "examples/arrays.clack",
+        "group": "examples",
+        "physical": 22,
+        "nonblank_noncomment": 19
+      },
+      {
+        "path": "examples/contracts.clack",
+        "group": "examples",
+        "physical": 14,
+        "nonblank_noncomment": 12
+      },
+      {
+        "path": "examples/hello.clack",
+        "group": "examples",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "examples/loops.clack",
+        "group": "examples",
+        "physical": 13,
+        "nonblank_noncomment": 11
+      },
+      {
+        "path": "examples/parallel.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 13
+      },
+      {
+        "path": "examples/records.clack",
+        "group": "examples",
+        "physical": 17,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/reductions.clack",
+        "group": "examples",
+        "physical": 9,
+        "nonblank_noncomment": 8
+      },
+      {
+        "path": "examples/rejected/dependent_parallel.clack",
+        "group": "examples",
+        "physical": 8,
+        "nonblank_noncomment": 7
+      },
+      {
+        "path": "examples/rejected/out_of_bounds.clack",
+        "group": "examples",
+        "physical": 4,
+        "nonblank_noncomment": 3
+      },
+      {
+        "path": "examples/rejected/overflow.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/rejected/wrong_contract.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/tutorials/01-first-program.clack",
+        "group": "examples",
+        "physical": 6,
+        "nonblank_noncomment": 6
+      },
+      {
+        "path": "examples/tutorials/02-functions-contracts.clack",
+        "group": "examples",
+        "physical": 9,
+        "nonblank_noncomment": 8
+      },
+      {
+        "path": "examples/tutorials/03-records-arrays.clack",
+        "group": "examples",
+        "physical": 21,
+        "nonblank_noncomment": 19
+      },
+      {
+        "path": "examples/tutorials/04-counted-loops.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/tutorials/04-loops.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/tutorials/05-parallel-work.clack",
+        "group": "examples",
+        "physical": 23,
+        "nonblank_noncomment": 22
+      },
+      {
+        "path": "examples/tutorials/06-fixing-errors.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 6
+      },
+      {
+        "path": "examples/tutorials/06-overflow-rejected.clack",
+        "group": "examples",
+        "physical": 6,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/tutorials/06-saturating.clack",
+        "group": "examples",
+        "physical": 11,
+        "nonblank_noncomment": 10
+      },
+      {
+        "path": "examples/tutorials/07-project.clack",
+        "group": "examples",
+        "physical": 36,
+        "nonblank_noncomment": 33
+      },
+      {
+        "path": "examples/tutorials/08-libraries.clack",
+        "group": "examples",
+        "physical": 15,
+        "nonblank_noncomment": 14
+      },
+      {
+        "path": "examples/tutorials/tutorial_helpers.clack",
+        "group": "examples",
+        "physical": 4,
+        "nonblank_noncomment": 4
+      },
+      {
+        "path": "tests/test_codegen_optimizations.py",
+        "group": "tests",
+        "physical": 137,
+        "nonblank_noncomment": 118
+      },
+      {
+        "path": "tests/test_counted_loops.py",
+        "group": "tests",
+        "physical": 197,
+        "nonblank_noncomment": 173
+      },
+      {
+        "path": "tests/test_frontend.py",
+        "group": "tests",
+        "physical": 220,
+        "nonblank_noncomment": 194
+      },
+      {
+        "path": "tests/test_libraries.py",
+        "group": "tests",
+        "physical": 352,
+        "nonblank_noncomment": 315
+      },
+      {
+        "path": "tests/test_native.py",
+        "group": "tests",
+        "physical": 242,
+        "nonblank_noncomment": 205
+      },
+      {
+        "path": "tests/test_native_modules.py",
+        "group": "tests",
+        "physical": 245,
+        "nonblank_noncomment": 214
+      },
+      {
+        "path": "tests/test_performance_safety.py",
+        "group": "tests",
+        "physical": 240,
+        "nonblank_noncomment": 212
+      },
+      {
+        "path": "tests/test_quality_regressions.py",
+        "group": "tests",
+        "physical": 155,
+        "nonblank_noncomment": 134
+      },
+      {
+        "path": "tests/test_reductions.py",
+        "group": "tests",
+        "physical": 185,
+        "nonblank_noncomment": 160
+      },
+      {
+        "path": "tests/test_solver_scaling.py",
+        "group": "tests",
+        "physical": 78,
+        "nonblank_noncomment": 64
+      },
+      {
+        "path": "tests/test_verifier_regressions.py",
+        "group": "tests",
+        "physical": 527,
+        "nonblank_noncomment": 456
+      },
+      {
+        "path": "tools/check_docs.py",
+        "group": "tools",
+        "physical": 132,
+        "nonblank_noncomment": 114
+      },
+      {
+        "path": "tools/loc.py",
+        "group": "tools",
+        "physical": 74,
+        "nonblank_noncomment": 62
+      }
+    ]
+  },
+  "after": {
+    "ref": "working tree",
+    "implementation": {
+      "physical": 2315,
+      "nonblank_noncomment": 2025
+    },
+    "groups": {
+      "documentation": {
+        "physical": 3657,
+        "nonblank_noncomment": 2456
+      },
+      "benchmarks": {
+        "physical": 910,
+        "nonblank_noncomment": 802
+      },
+      "compiler": {
+        "physical": 2243,
+        "nonblank_noncomment": 1966
+      },
+      "standard_library": {
+        "physical": 72,
+        "nonblank_noncomment": 59
+      },
+      "examples": {
+        "physical": 305,
+        "nonblank_noncomment": 271
+      },
+      "tests": {
+        "physical": 3000,
+        "nonblank_noncomment": 2615
+      },
+      "tools": {
+        "physical": 206,
+        "nonblank_noncomment": 176
+      }
+    },
+    "files": [
+      {
+        "path": "README.md",
+        "group": "documentation",
+        "physical": 188,
+        "nonblank_noncomment": 130
+      },
+      {
+        "path": "benchmarks/README.md",
+        "group": "documentation",
+        "physical": 35,
+        "nonblank_noncomment": 22
+      },
+      {
+        "path": "benchmarks/RESULTS-0.2.md",
+        "group": "documentation",
+        "physical": 92,
+        "nonblank_noncomment": 66
+      },
+      {
+        "path": "benchmarks/RESULTS-0.3.md",
+        "group": "documentation",
+        "physical": 104,
+        "nonblank_noncomment": 70
+      },
+      {
+        "path": "benchmarks/RESULTS-0.4.md",
+        "group": "documentation",
+        "physical": 100,
+        "nonblank_noncomment": 68
+      },
+      {
+        "path": "benchmarks/SUITE.md",
+        "group": "documentation",
+        "physical": 73,
+        "nonblank_noncomment": 47
+      },
+      {
+        "path": "benchmarks/cold.py",
+        "group": "benchmarks",
+        "physical": 71,
+        "nonblank_noncomment": 64
+      },
+      {
+        "path": "benchmarks/compare.py",
+        "group": "benchmarks",
+        "physical": 241,
+        "nonblank_noncomment": 205
+      },
+      {
+        "path": "benchmarks/kernels.py",
+        "group": "benchmarks",
+        "physical": 179,
+        "nonblank_noncomment": 157
+      },
+      {
+        "path": "benchmarks/parallel.py",
+        "group": "benchmarks",
+        "physical": 110,
+        "nonblank_noncomment": 98
+      },
+      {
+        "path": "benchmarks/suite.py",
+        "group": "benchmarks",
+        "physical": 309,
+        "nonblank_noncomment": 278
+      },
+      {
+        "path": "clack/__init__.py",
+        "group": "compiler",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "clack/__main__.py",
+        "group": "compiler",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "clack/arrayops.py",
+        "group": "compiler",
+        "physical": 33,
+        "nonblank_noncomment": 25
+      },
+      {
+        "path": "clack/cli.py",
+        "group": "compiler",
+        "physical": 169,
+        "nonblank_noncomment": 149
+      },
+      {
+        "path": "clack/codegen.py",
+        "group": "compiler",
+        "physical": 333,
+        "nonblank_noncomment": 298
+      },
+      {
+        "path": "clack/frontend.py",
+        "group": "compiler",
+        "physical": 645,
+        "nonblank_noncomment": 543
+      },
+      {
+        "path": "clack/modules.py",
+        "group": "compiler",
+        "physical": 186,
+        "nonblank_noncomment": 163
+      },
+      {
+        "path": "clack/stdlib/array.clack",
+        "group": "standard_library",
+        "physical": 39,
+        "nonblank_noncomment": 31
+      },
+      {
+        "path": "clack/stdlib/math.clack",
+        "group": "standard_library",
+        "physical": 33,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "clack/typecheck.py",
+        "group": "compiler",
+        "physical": 437,
+        "nonblank_noncomment": 405
+      },
+      {
+        "path": "clack/verifier.py",
+        "group": "compiler",
+        "physical": 434,
+        "nonblank_noncomment": 379
+      },
+      {
+        "path": "docs/README.md",
+        "group": "documentation",
+        "physical": 51,
+        "nonblank_noncomment": 35
+      },
+      {
+        "path": "docs/cli.md",
+        "group": "documentation",
+        "physical": 163,
+        "nonblank_noncomment": 105
+      },
+      {
+        "path": "docs/contributing.md",
+        "group": "documentation",
+        "physical": 78,
+        "nonblank_noncomment": 47
+      },
+      {
+        "path": "docs/cookbook.md",
+        "group": "documentation",
+        "physical": 159,
+        "nonblank_noncomment": 119
+      },
+      {
+        "path": "docs/design.md",
+        "group": "documentation",
+        "physical": 39,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "docs/errors.md",
+        "group": "documentation",
+        "physical": 180,
+        "nonblank_noncomment": 112
+      },
+      {
+        "path": "docs/faq.md",
+        "group": "documentation",
+        "physical": 95,
+        "nonblank_noncomment": 48
+      },
+      {
+        "path": "docs/getting-started.md",
+        "group": "documentation",
+        "physical": 103,
+        "nonblank_noncomment": 65
+      },
+      {
+        "path": "docs/internals.md",
+        "group": "documentation",
+        "physical": 95,
+        "nonblank_noncomment": 57
+      },
+      {
+        "path": "docs/language.md",
+        "group": "documentation",
+        "physical": 69,
+        "nonblank_noncomment": 50
+      },
+      {
+        "path": "docs/libraries.md",
+        "group": "documentation",
+        "physical": 191,
+        "nonblank_noncomment": 134
+      },
+      {
+        "path": "docs/native.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 74
+      },
+      {
+        "path": "docs/quick-reference.md",
+        "group": "documentation",
+        "physical": 158,
+        "nonblank_noncomment": 117
+      },
+      {
+        "path": "docs/reference/README.md",
+        "group": "documentation",
+        "physical": 20,
+        "nonblank_noncomment": 14
+      },
+      {
+        "path": "docs/reference/contracts-verification.md",
+        "group": "documentation",
+        "physical": 112,
+        "nonblank_noncomment": 66
+      },
+      {
+        "path": "docs/reference/functions-control-flow.md",
+        "group": "documentation",
+        "physical": 180,
+        "nonblank_noncomment": 118
+      },
+      {
+        "path": "docs/reference/grammar.md",
+        "group": "documentation",
+        "physical": 120,
+        "nonblank_noncomment": 92
+      },
+      {
+        "path": "docs/reference/lexical-syntax.md",
+        "group": "documentation",
+        "physical": 106,
+        "nonblank_noncomment": 72
+      },
+      {
+        "path": "docs/reference/parallelism.md",
+        "group": "documentation",
+        "physical": 85,
+        "nonblank_noncomment": 52
+      },
+      {
+        "path": "docs/reference/types-values.md",
+        "group": "documentation",
+        "physical": 121,
+        "nonblank_noncomment": 80
+      },
+      {
+        "path": "docs/tutorials/01-first-program.md",
+        "group": "documentation",
+        "physical": 74,
+        "nonblank_noncomment": 49
+      },
+      {
+        "path": "docs/tutorials/02-functions-contracts.md",
+        "group": "documentation",
+        "physical": 65,
+        "nonblank_noncomment": 42
+      },
+      {
+        "path": "docs/tutorials/03-records-arrays.md",
+        "group": "documentation",
+        "physical": 83,
+        "nonblank_noncomment": 58
+      },
+      {
+        "path": "docs/tutorials/04-loops.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 77
+      },
+      {
+        "path": "docs/tutorials/05-parallel-work.md",
+        "group": "documentation",
+        "physical": 82,
+        "nonblank_noncomment": 59
+      },
+      {
+        "path": "docs/tutorials/06-fixing-errors.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 76
+      },
+      {
+        "path": "docs/tutorials/07-project.md",
+        "group": "documentation",
+        "physical": 100,
+        "nonblank_noncomment": 73
+      },
+      {
+        "path": "docs/tutorials/08-libraries.md",
+        "group": "documentation",
+        "physical": 111,
+        "nonblank_noncomment": 80
+      },
+      {
+        "path": "docs/tutorials/README.md",
+        "group": "documentation",
+        "physical": 41,
+        "nonblank_noncomment": 28
+      },
+      {
+        "path": "docs/verification.md",
+        "group": "documentation",
+        "physical": 51,
+        "nonblank_noncomment": 26
+      },
+      {
+        "path": "examples/arrays.clack",
+        "group": "examples",
+        "physical": 22,
+        "nonblank_noncomment": 19
+      },
+      {
+        "path": "examples/contracts.clack",
+        "group": "examples",
+        "physical": 14,
+        "nonblank_noncomment": 12
+      },
+      {
+        "path": "examples/hello.clack",
+        "group": "examples",
+        "physical": 3,
+        "nonblank_noncomment": 2
+      },
+      {
+        "path": "examples/loops.clack",
+        "group": "examples",
+        "physical": 13,
+        "nonblank_noncomment": 11
+      },
+      {
+        "path": "examples/parallel.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 13
+      },
+      {
+        "path": "examples/records.clack",
+        "group": "examples",
+        "physical": 17,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/reductions.clack",
+        "group": "examples",
+        "physical": 9,
+        "nonblank_noncomment": 8
+      },
+      {
+        "path": "examples/rejected/dependent_parallel.clack",
+        "group": "examples",
+        "physical": 8,
+        "nonblank_noncomment": 7
+      },
+      {
+        "path": "examples/rejected/out_of_bounds.clack",
+        "group": "examples",
+        "physical": 4,
+        "nonblank_noncomment": 3
+      },
+      {
+        "path": "examples/rejected/overflow.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/rejected/wrong_contract.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/tutorials/01-first-program.clack",
+        "group": "examples",
+        "physical": 6,
+        "nonblank_noncomment": 6
+      },
+      {
+        "path": "examples/tutorials/02-functions-contracts.clack",
+        "group": "examples",
+        "physical": 9,
+        "nonblank_noncomment": 8
+      },
+      {
+        "path": "examples/tutorials/03-records-arrays.clack",
+        "group": "examples",
+        "physical": 21,
+        "nonblank_noncomment": 19
+      },
+      {
+        "path": "examples/tutorials/04-counted-loops.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/tutorials/04-loops.clack",
+        "group": "examples",
+        "physical": 16,
+        "nonblank_noncomment": 15
+      },
+      {
+        "path": "examples/tutorials/05-parallel-work.clack",
+        "group": "examples",
+        "physical": 23,
+        "nonblank_noncomment": 22
+      },
+      {
+        "path": "examples/tutorials/06-fixing-errors.clack",
+        "group": "examples",
+        "physical": 7,
+        "nonblank_noncomment": 6
+      },
+      {
+        "path": "examples/tutorials/06-overflow-rejected.clack",
+        "group": "examples",
+        "physical": 6,
+        "nonblank_noncomment": 5
+      },
+      {
+        "path": "examples/tutorials/06-saturating.clack",
+        "group": "examples",
+        "physical": 11,
+        "nonblank_noncomment": 10
+      },
+      {
+        "path": "examples/tutorials/07-project.clack",
+        "group": "examples",
+        "physical": 36,
+        "nonblank_noncomment": 33
+      },
+      {
+        "path": "examples/tutorials/08-array-operators.clack",
+        "group": "examples",
+        "physical": 15,
+        "nonblank_noncomment": 14
+      },
+      {
+        "path": "examples/tutorials/08-libraries.clack",
+        "group": "examples",
+        "physical": 15,
+        "nonblank_noncomment": 14
+      },
+      {
+        "path": "examples/tutorials/tutorial_helpers.clack",
+        "group": "examples",
+        "physical": 4,
+        "nonblank_noncomment": 4
+      },
+      {
+        "path": "tests/test_array_native.py",
+        "group": "tests",
+        "physical": 171,
+        "nonblank_noncomment": 154
+      },
+      {
+        "path": "tests/test_array_operators.py",
+        "group": "tests",
+        "physical": 135,
+        "nonblank_noncomment": 116
+      },
+      {
+        "path": "tests/test_array_scaling.py",
+        "group": "tests",
+        "physical": 116,
+        "nonblank_noncomment": 100
+      },
+      {
+        "path": "tests/test_codegen_optimizations.py",
+        "group": "tests",
+        "physical": 137,
+        "nonblank_noncomment": 118
+      },
+      {
+        "path": "tests/test_counted_loops.py",
+        "group": "tests",
+        "physical": 197,
+        "nonblank_noncomment": 173
+      },
+      {
+        "path": "tests/test_frontend.py",
+        "group": "tests",
+        "physical": 220,
+        "nonblank_noncomment": 194
+      },
+      {
+        "path": "tests/test_libraries.py",
+        "group": "tests",
+        "physical": 352,
+        "nonblank_noncomment": 315
+      },
+      {
+        "path": "tests/test_native.py",
+        "group": "tests",
+        "physical": 242,
+        "nonblank_noncomment": 205
+      },
+      {
+        "path": "tests/test_native_modules.py",
+        "group": "tests",
+        "physical": 245,
+        "nonblank_noncomment": 214
+      },
+      {
+        "path": "tests/test_performance_safety.py",
+        "group": "tests",
+        "physical": 240,
+        "nonblank_noncomment": 212
+      },
+      {
+        "path": "tests/test_quality_regressions.py",
+        "group": "tests",
+        "physical": 155,
+        "nonblank_noncomment": 134
+      },
+      {
+        "path": "tests/test_reductions.py",
+        "group": "tests",
+        "physical": 185,
+        "nonblank_noncomment": 160
+      },
+      {
+        "path": "tests/test_solver_scaling.py",
+        "group": "tests",
+        "physical": 78,
+        "nonblank_noncomment": 64
+      },
+      {
+        "path": "tests/test_verifier_regressions.py",
+        "group": "tests",
+        "physical": 527,
+        "nonblank_noncomment": 456
+      },
+      {
+        "path": "tools/check_docs.py",
+        "group": "tools",
+        "physical": 132,
+        "nonblank_noncomment": 114
+      },
+      {
+        "path": "tools/loc.py",
+        "group": "tools",
+        "physical": 74,
+        "nonblank_noncomment": 62
+      }
+    ]
+  }
+}

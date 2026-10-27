@@ -30,7 +30,7 @@ Commands in these lessons assume you stay in the repository root with this envir
 
 Every lesson contains a complete source file, a command, exact output, and exercises with answers. The complete files live in [examples/tutorials](../../examples/tutorials/). They are checked with the repository's documentation checks so the listings and runnable files stay in sync.
 
-`print` and `len` are available without imports. Names such as `double`, `count_nonzero`, and `analyze` are ordinary functions defined in the first seven lessons. Lesson eight explicitly imports supplied source helpers and a local function. Clack also supplies explicitly imported `sum`, `all`, `any`, and `count` operators for any supported fixed-array length; try the [reduction example](../../examples/reductions.clack) and read the [library catalog](../libraries.md). No import is hidden from the examples.
+`print` and `len` are available without imports. Names such as `double`, `count_nonzero`, and `analyze` are ordinary functions defined in the first seven lessons. Lesson eight explicitly imports supplied source helpers and a local function. Clack also supplies explicitly imported array operators for filling arrays, selecting integer minima/maxima, and reducing supported fixed lengths. Lesson eight includes a [fill-and-extrema example](../../examples/tutorials/08-array-operators.clack); the [library catalog](../libraries.md) lists every operator. No import is hidden from the examples.
 
 ## How to use the exercises
 

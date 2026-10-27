@@ -21,7 +21,7 @@ There is also a practical tradeoff: arbitrary program correctness cannot be deci
 | Parallelism | Independent function calls using POSIX threads and value arguments |
 | Effects | Output restricted to main; no mutable globals |
 | Native boundary | Explicit main-only scalar/text C calls; provider implementations remain outside verification |
-| Libraries | Explicit source imports, isolated module names, verified math/fixed-size helpers, and compiler-modeled reductions for any supported fixed-array length |
+| Libraries | Explicit source imports, isolated module names, verified math/fixed-size helpers, and compiler-modeled fill and reductions for any supported fixed-array length |
 
 ## Next steps
 

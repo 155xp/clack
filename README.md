@@ -2,7 +2,7 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
-Clack 0.3 adds counted `for` loops, isolated solver reuse, less thread creation for parallel blocks, and compiler phase timings. Read the [measured before/after report](benchmarks/RESULTS-0.3.md) for speed and line-count changes, raw samples, and limitations. Arrays, length-independent reductions, immutable text, and explicit native bindings remain supported.
+Clack 0.4 adds `fill`, `minimum`, and `maximum` for fixed arrays, alongside compiler improvements. Read the [measured before/after report](benchmarks/RESULTS-0.4.md) for speed and line-count changes, raw samples, and limitations. Counted loops, checked contracts, immutable text, and explicit native bindings remain supported.
 
 [GitHub repository](https://github.com/155xp/clack)
 
@@ -125,16 +125,20 @@ Function inputs are immutable. Local bindings can be reassigned; local array ele
 
 ```clack
 from std.math import max, clamp
-from std.array import sum, all, any, count
+from std.array import fill, minimum, maximum, sum, count
 
 fn main():
     print(max(12, 7))
     print(clamp(150, 0, 100))
     print(sum([1, 2, 3, 4, 5]))
+    values = fill(7, 5)
+    values[2] = -3
+    print(minimum(values))
+    print(maximum(values))
     print(count([true, false, true]))
 ```
 
-`std.math` and the older fixed-size helpers are verified Clack source. The new `sum`, `all`, `any`, and `count` operators accept any supported fixed length; the compiler models their exact results and emits native loops. `sum` requires every intermediate addition to fit signed 64-bit range. See the [reduction example](examples/reductions.clack) and [library catalog](docs/libraries.md) for types and verification rules.
+`std.math` and the older fixed-size helpers are verified Clack source. The array operators are modeled directly by the compiler and emitted as native loops. `fill(value, count)` builds an integer or Boolean array; its count must be a positive integer literal. `minimum` and `maximum` find integer-array bounds, while `sum`, `all`, `any`, and `count` reduce arrays of any supported fixed length. `sum` requires every intermediate addition to fit signed 64-bit range. See the [library catalog](docs/libraries.md) for examples and exact types.
 
 You can also import functions and records from your own files, such as `from helpers import twice` for a neighboring `helpers.clack`. Library scopes remain separate, and imported source declarations go through the same checks as the entry program. The [library tutorial](docs/tutorials/08-libraries.md) explains code reuse.
 

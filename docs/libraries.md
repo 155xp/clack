@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Library tutorial](tutorials/08-libraries.md) · [Function reference](reference/functions-control-flow.md)
 
-Clack supports source libraries: files containing functions, records, and imports that another program can reuse. The compiler includes their source in the same verification and native compilation process as the entry file. `std.array` also exposes four compiler-implemented reductions with the same explicit import syntax.
+Clack supports source libraries: files containing functions, records, and imports that another program can reuse. The compiler includes their source in the same verification and native compilation process as the entry file. `std.array` also exposes seven compiler-implemented array operators with the same explicit import syntax.
 
 ## Use a standard helper
 
@@ -30,7 +30,7 @@ Output:
 false
 ```
 
-Imports are explicit. The names in the import become available in that source file. An imported source function is called with ordinary call syntax and can also be used as a job in a `parallel:` block. The reductions described below use call syntax too, but are compiler operators and must be called inside a worker function when used in parallel work.
+Imports are explicit. The names in the import become available in that source file. An imported source function is called with ordinary call syntax and can also be used as a job in a `parallel:` block. The array operators described below use call syntax too, but must be called inside a worker function when used in parallel work.
 
 ## Built-in functions
 
@@ -85,19 +85,51 @@ true
 | Operator | Input | Result |
 | --- | --- | --- |
 | `sum(values)` | Any nonempty `int` array | Exact left-to-right integer sum |
+| `minimum(values)` | Any nonempty `int` array | Smallest element |
+| `maximum(values)` | Any nonempty `int` array | Largest element |
 | `all(values)` | Any nonempty `bool` array | Whether every element is true |
 | `any(values)` | Any nonempty `bool` array | Whether at least one element is true |
 | `count(values)` | Any nonempty `bool` array | Number of true elements, from zero through `len(values)` |
+| `fill(value, count)` | An `int` or `bool` value; a positive integer literal count | A fixed array with every element initialized to that value |
 
 The array type supplies the length. `sum([1, 2, 3])` and `sum([1, 2, 3, 4, 5])` are both valid; no user-defined generic signature or new annotation syntax is needed. The accepted array-length limit remains `1` through `1000000`. This does not promise that a very large array fits a native stack or verifies quickly.
 
 `sum` must prove that **every cumulative addition** fits signed 64-bit range. `sum([9223372036854775807, 1, -1])` is rejected even though its final mathematical sum fits. Arrays received as parameters may need preconditions to establish the required bounds. `count` counts Boolean values, not arbitrary integers, and `all` and `any` require Boolean arrays too.
 
+`minimum` and `maximum` compare elements without arithmetic, so both accept the full signed 64-bit element range. They return an existing element. The two-input source helpers remain `std.math.min(a, b)` and `std.math.max(a, b)`; the array operators use different names so the imports can coexist.
+
 Arguments are evaluated before the reduction. For example, `all([false, 1 / 0 > 0])` is rejected: constructing the second array element would divide by zero. After construction, the pure array value is read by the reduction; it cannot be modified by the operation.
 
-These four names are **compiler operators**, registered in [reductions.py](../clack/reductions.py), modeled by the [verifier](../clack/verifier.py), and lowered to native loops by the [C backend](../clack/codegen.py). They are part of the trusted compiler implementation rather than source functions whose bodies are checked. The verifier constructs element-level logical terms and sum-prefix obligations, so verification work grows with array length and solver complexity. Runtime loops need no Python or solver.
+These seven names are **compiler operators**, registered in [arrayops.py](../clack/arrayops.py), modeled by the [verifier](../clack/verifier.py), and lowered to native loops by the [C backend](../clack/codegen.py). They are part of the trusted compiler implementation rather than source functions whose bodies are checked. Reductions construct element-level logical terms and sum-prefix obligations, so verification work grows with array length and solver complexity. `fill` has a constant-array logical representation; reducing its result can still require element-level work. Runtime loops need no Python or solver.
 
-Reductions are currently allowed only in executable expressions. Proof annotations still permit only the `len` call; assign a reduction result to a local and assert a property about that local. A direct job such as `parallel: total = sum(values)` is also unsupported: jobs require source functions. A typed worker may call a reduction in its body and participate in a parallel block normally.
+These operators are currently allowed only in executable expressions. Proof annotations still permit only the `len` call; assign an operator's result to a local and assert a property about that local. A direct job such as `parallel: total = sum(values)` is also unsupported: jobs require source functions. A typed worker may call an array operator in its body and participate in a parallel block normally.
+
+## Fill an array and find its bounds
+
+`fill(7, 5)` infers `int[5]`, and `fill(true, 4)` infers `bool[4]`. The count must be a decimal integer literal between `1` and `1000000`. A variable such as `fill(0, size)` or an expression such as `fill(0, 2 + 3)` is rejected even if its value could be proved constant. This keeps the array type fixed during compilation; `fill` does not allocate a dynamically sized collection.
+
+The value expression is evaluated once, then copied to each element. Copies and updates retain the usual array value semantics:
+
+<!-- clack:file=../examples/tutorials/08-array-operators.clack -->
+```clack
+from std.array import fill, minimum, maximum, sum, all, count
+
+fn main():
+    values = fill(7, 5)
+    changed = values
+    changed[2] = -3
+    print(len(values))
+    print(minimum(changed))
+    print(maximum(changed))
+    print(sum(changed))
+    print(values[2])
+    flags = fill(true, 4)
+    flags[1] = false
+    print(count(flags))
+    print(all(flags))
+```
+
+Run `clack run examples/tutorials/08-array-operators.clack`. It prints `5`, `-3`, `7`, `25`, `7`, `3`, and `false`, one per line. Changing `changed[2]` leaves `values[2]` equal to `7`.
 
 ## `std.array`: fixed-size source helpers
 

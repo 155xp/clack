@@ -39,7 +39,7 @@ fn main():
 
 This prints `100` and `100`. The imported source functions in this example use ordinary call syntax and verified contracts; they are not extra compiler built-ins. Importing a name is explicit; qualified calls such as `std.math.clamp(...)`, wildcard imports, and import aliases are unsupported.
 
-`std.math` provides the source functions `min`, `max`, `abs`, and `clamp`. `std.array` provides length-independent compiler operators `sum`, `all`, `any`, and `count`, alongside the compatible source functions `sum2`, `sum3`, `sum4`, `sum8`, `all4`, and `any4`. `sum` accepts any supported nonempty integer array; `all`, `any`, and `count` accept Boolean arrays, and `count` counts true elements. The compiler models these four operators directly and emits native loops; they do not have source function bodies.
+`std.math` provides the source functions `min`, `max`, `abs`, and `clamp`. `std.array` provides compiler operators `fill`, `sum`, `minimum`, `maximum`, `all`, `any`, and `count`, alongside the compatible source functions `sum2`, `sum3`, `sum4`, `sum8`, `all4`, and `any4`. `fill` builds a fixed integer or Boolean array from one value and a positive literal count. `sum`, `minimum`, and `maximum` accept nonempty integer arrays; `all`, `any`, and `count` accept Boolean arrays. The compiler models these seven operators directly and emits native loops; they do not have source function bodies.
 
 Both forms of summation require every left-to-right cumulative sum to fit in a signed 64-bit integer. They do not impose a blanket small-value bound on each element. `abs` excludes the minimum signed integer, whose positive magnitude is not representable. See the [library catalog](../libraries.md) for the operator/source-function distinction and verification costs for large arrays.
 
@@ -175,6 +175,6 @@ A return may exit a loop. Every loop needs a verified termination argument: `for
 | `print(value)` | One `int`, `bool`, or `text` | Prints one line; callable only in `main`; no assignable value |
 | `len(values)` | One fixed scalar array | Returns its length as `int`; allowed in executable and proof expressions |
 
-This table lists the two functions available without imports. The source helpers and compiler-implemented reductions supplied through explicit standard imports are listed in the [library guide](../libraries.md). Reductions may be used in executable expressions but not proof annotations or direct parallel jobs. Source worker functions may call them normally.
+This table lists the two functions available without imports. The source helpers and compiler-implemented array operators supplied through explicit standard imports are listed in the [library guide](../libraries.md). Array operators may be used in executable expressions but not proof annotations or direct parallel jobs. Source worker functions may call them normally.
 
 There are no built-in console input, file, network, command-line, clock, or random-number APIs. Explicit trusted native bindings may provide operating-system effects in main, including terminal UI drawing and input. Native POSIX threads implement `parallel` rather than being exposed as low-level language objects.

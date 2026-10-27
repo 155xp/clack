@@ -12,7 +12,7 @@ import hashlib
 from pathlib import Path
 
 from . import frontend as ast
-from .reductions import EXPORTS, PREFIX as REDUCTION_PREFIX
+from .arrayops import EXPORTS, PREFIX as ARRAY_PREFIX
 
 
 _RESERVED_PREFIX = "_clack_module_"
@@ -82,8 +82,8 @@ class _Loader:
         declarations = [*program.records, *program.functions]
         for declaration in declarations:
             name = declaration.name
-            if name.startswith((_RESERVED_PREFIX, REDUCTION_PREFIX)):
-                self.fail(module, "compiler-internal names are reserved for linked libraries and reductions", declaration.line)
+            if name.startswith((_RESERVED_PREFIX, ARRAY_PREFIX)):
+                self.fail(module, "compiler-internal names are reserved for linked libraries and array operators", declaration.line)
             if name in _DECLARATION_RESERVED:
                 self.fail(module, f"{name!r} is reserved and cannot name a declaration", declaration.line)
             if name in module.scope:
@@ -106,7 +106,7 @@ class _Loader:
             for name in declaration.names:
                 if name == "main":
                     self.fail(module, "main is an entry point and cannot be imported", declaration.line)
-                if name in _DECLARATION_RESERVED or name.startswith((_RESERVED_PREFIX, REDUCTION_PREFIX)):
+                if name in _DECLARATION_RESERVED or name.startswith((_RESERVED_PREFIX, ARRAY_PREFIX)):
                     self.fail(module, f"{name!r} is reserved and cannot be imported", declaration.line)
                 if name in module.scope:
                     self.fail(module, f"import {name!r} conflicts with another declaration or import", declaration.line)

@@ -43,7 +43,7 @@ true false int bool unit text
 
 The compiler additionally reserves `result`, `print`, and `len` from function names, type names, parameter names, and local bindings. `result` denotes the returned value inside postconditions. `print` and `len` identify built-ins. Field names are parsed separately; the grammatical keywords still cannot name fields.
 
-Top-level declarations and imports cannot use names beginning with `_clack_module_` or `_clack_reduce_`; those prefixes are reserved for internal linked-library and reduction symbols. Local bindings and parameters also cannot use the `_clack_reduce_` prefix. The public names `sum`, `all`, `any`, and `count` are not keywords; use explicit imports to access the standard operators.
+Top-level declarations and imports cannot use names beginning with `_clack_module_` or `_clack_reduce_`; those prefixes are reserved for internal linked-library and array-operator symbols. Local bindings and parameters also cannot use the `_clack_reduce_` prefix. The public names `fill`, `sum`, `minimum`, `maximum`, `all`, `any`, and `count` are not keywords; use explicit imports to access the standard operators.
 
 `main` is the required entry-point name of the root program. It is not a general callable function: another function cannot invoke it. Imported library modules must not define it. User functions, record constructors, and explicitly imported names share a module's declaration namespace, so colliding names are rejected. There are no overloaded function declarations.
 

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import re
 
 from . import frontend as f
-from .reductions import PREFIX as REDUCTION_PREFIX, REDUCTIONS
+from .arrayops import PREFIX as ARRAY_PREFIX, OPERATIONS
 
 
 @dataclass
@@ -71,7 +71,7 @@ class _Checker:
         raise f.CompileError(message, line=line)
 
     def valid_name(self, name: str, line: int, role: str) -> None:
-        if name in _RESERVED or name.startswith(REDUCTION_PREFIX):
+        if name in _RESERVED or name.startswith(ARRAY_PREFIX):
             self.fail(f"{name!r} is reserved and cannot name a {role}", line)
 
     def valid_type(self, name: str, line: int, allow_unit: bool = False) -> None:
@@ -236,14 +236,22 @@ class _Checker:
                 if len(args) != 1 or array_type(args[0]) is None:
                     self.fail("len needs exactly one fixed array", expr.line)
                 typ = "int"
-            elif expr.name in REDUCTIONS:
-                operation = REDUCTIONS[expr.name]
+            elif expr.name in OPERATIONS:
+                operation = OPERATIONS[expr.name]
                 if self.program.symbol_names.get(expr.name) != f"std.array.{operation.name}":
-                    self.fail("array reductions require an explicit import from std.array", expr.line)
-                shape = array_type(args[0]) if len(args) == 1 else None
-                if shape is None or shape[0] != operation.element:
-                    self.fail(f"{operation.name} needs exactly one fixed {operation.element} array", expr.line)
-                typ = operation.result
+                    self.fail("array operators require an explicit import from std.array", expr.line)
+                if operation.name == "fill":
+                    if len(args) != 2 or args[0] not in {"int", "bool"}:
+                        self.fail("fill needs an int or bool value and a literal array length", expr.line)
+                    length = expr.args[1]
+                    if not isinstance(length, f.IntLit) or not 1 <= length.value <= 1_000_000:
+                        self.fail("fill length must be an integer literal between 1 and 1000000", length.line)
+                    typ = f"{args[0]}[{length.value}]"
+                else:
+                    shape = array_type(args[0]) if len(args) == 1 else None
+                    if shape is None or shape[0] != operation.element:
+                        self.fail(f"{operation.name} needs exactly one fixed {operation.element} array", expr.line)
+                    typ = operation.result
             elif expr.name == "print":
                 if self.fn is None or self.fn.name != "main":
                     self.fail("print is allowed only in main; worker functions are pure", expr.line)

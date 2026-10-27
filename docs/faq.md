@@ -16,7 +16,7 @@ An indentation-based syntax does not require an interpreted runtime. It also doe
 
 It has an efficient starting point: signed machine integers, by-value native records and fixed arrays, optimized C output, and no interpreter in the resulting binary. The recorded native suite compares eight cases across four algorithm families with equivalent C and checks every output. Those results describe the measured workloads, not a universal promise.
 
-There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [latest benchmark report](../benchmarks/RESULTS-0.3.md) separates compiler improvements, thread overhead, and native execution measurements, with raw samples and reproduction commands.
+There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [latest benchmark report](../benchmarks/RESULTS-0.4.md) separates compiler improvements, thread overhead, and native execution measurements, with raw samples and reproduction commands.
 
 ## How much type annotation is required?
 
@@ -32,9 +32,9 @@ Counted `for i in range(stop)` loops supply index bounds and termination automat
 
 ## Is there a standard library with sum, min, or sorting?
 
-Yes. Import scalar helpers with `from std.math import min, max, abs, clamp`. For arrays, use `from std.array import sum, all, any, count`. `sum` accepts any supported nonempty integer-array length; the other three accept Boolean arrays, and `count` returns the number of true elements. Every partial integer sum must fit signed 64-bit range.
+Yes. Import scalar helpers with `from std.math import min, max, abs, clamp`. For arrays, import `fill`, `minimum`, `maximum`, `sum`, `all`, `any`, or `count` from `std.array`. `fill(0, 100)` creates an `int[100]`; its count must be a positive integer literal. `minimum` and `maximum` select integer-array extrema, and `sum` accepts any supported nonempty integer-array length. The other three reductions accept Boolean arrays, and `count` returns the number of true elements. Every partial integer sum must fit signed 64-bit range.
 
-The four length-independent array reductions are compiler operators: their semantics are modeled directly by the verifier and emitted as native loops. `print` and `len` are the two operations available without an import. The older `sum2`, `sum3`, `sum4`, `sum8`, `all4`, and `any4` remain ordinary verified source helpers for their exact lengths. Some tutorials define `sum4` themselves to explain the implementation. Dynamic collections, user-defined generic functions, and `sort` are still future work.
+These seven array operations are compiler operators: their semantics are modeled directly by the verifier and emitted as native loops. `print` and `len` are the two operations available without an import. The older `sum2`, `sum3`, `sum4`, `sum8`, `all4`, and `any4` remain ordinary verified source helpers for their exact lengths. Some tutorials define `sum4` themselves to explain the implementation. Dynamic collections, user-defined generic functions, and `sort` are still future work.
 
 The [library reference](libraries.md) gives signatures and preconditions. The [library tutorial](tutorials/08-libraries.md) shows both bundled helpers and your own modules.
 

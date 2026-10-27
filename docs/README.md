@@ -1,6 +1,6 @@
 # The Clack Handbook
 
-Documentation for **Clack 0.3**, the native language implemented in this repository.
+Documentation for **Clack 0.4**, the native language implemented in this repository.
 
 Clack combines a small syntax with static types, value records, fixed arrays, checked contracts, and independent parallel calls. This handbook teaches the current compiler. Proposed features live in the [design direction](design.md).
 
@@ -34,7 +34,7 @@ You can follow the tutorials with basic programming knowledge. The first lessons
 
 Read [how the compiler works](internals.md), then the [contribution guide](contributing.md). The [performance experiment](../benchmarks/README.md) includes the kernel, timing procedure, recorded samples, and limitations.
 
-The [design direction](design.md) separates implemented behavior from possible extensions. `print` and `len` are available without imports. Standard modules supply verified source helpers plus the explicitly imported array operators `sum`, `all`, `any`, and `count`, which the compiler models directly. Earlier tutorials define their own helpers to explain how they work; later lessons import reusable versions. See the [library catalog](libraries.md) for the exact available operations and their implementation boundaries.
+The [design direction](design.md) separates implemented behavior from possible extensions. `print` and `len` are available without imports. Standard modules supply verified source helpers plus the explicitly imported array operators `fill`, `sum`, `minimum`, `maximum`, `all`, `any`, and `count`, which the compiler models directly. Earlier tutorials define their own helpers to explain how they work; later lessons import reusable versions. See the [library catalog](libraries.md) for the exact available operations and their implementation boundaries.
 
 ## Reading and running examples
 

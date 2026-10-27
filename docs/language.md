@@ -56,7 +56,7 @@ fn main():
     print(sum([10, 20, 30, 40]))
 ```
 
-This prints `100` twice. `sum` accepts any supported fixed integer-array length and proves that every partial addition fits. `all`, `any`, and `count` operate on fixed Boolean arrays. These four operators are modeled directly by the compiler; ordinary source helpers are verified from their bodies.
+This prints `100` twice. `sum` accepts any supported fixed integer-array length and proves that every partial addition fits. `minimum` and `maximum` select integer-array extrema without arithmetic. `all`, `any`, and `count` operate on fixed Boolean arrays. `fill(value, count)` constructs a fixed integer or Boolean array using a positive literal count. These seven operators are modeled directly by the compiler; ordinary source helpers are verified from their bodies.
 
 Local libraries use the same form: `from helpers import twice` loads `helpers.clack` relative to the importing file. Imports bring in checked definitions; all reached source module code is verified, including unused helpers. The [library guide](libraries.md) explains reusable files, source helpers, and compiler operators.
 
@@ -66,4 +66,4 @@ Local libraries use the same form: `from helpers import twice` loads `helpers.cl
 - Use the [reference index](reference/README.md) or [complete grammar](reference/grammar.md) to look up syntax.
 - Try the [example programs](../examples/) and compare their source with the generated C.
 - Read [native bindings](native.md) for the explicit trusted C boundary used by optional terminal UI packages.
-- Read the [design direction](design.md) for planned text manipulation, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.3.
+- Read the [design direction](design.md) for planned text manipulation, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.4.

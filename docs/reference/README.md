@@ -1,6 +1,6 @@
 # Clack language reference
 
-This reference specifies the language accepted by Clack 0.3. It describes the current compiler, including its restrictions. The [design direction](../design.md) covers features that are still proposals.
+This reference specifies the language accepted by Clack 0.4. It describes the current compiler, including its restrictions. The [design direction](../design.md) covers features that are still proposals.
 
 If you are learning Clack for the first time, start with the [tutorials](../tutorials/README.md). Use this reference when you need the exact rule for an expression, declaration, proof, or parallel block.
 

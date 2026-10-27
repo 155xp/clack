@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clack-language"
-version = "0.3.0"
+version = "0.4.0"
 description = "A small native language with checked contracts and structured parallel jobs"
 requires-python = ">=3.11"
 dependencies = ["z3-solver==4.16.0.0"]

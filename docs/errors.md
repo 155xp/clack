@@ -163,6 +163,8 @@ Text requires double-quoted JSON-style literals; unsupported quoting reports `us
 
 Clack also has no dynamic arrays, `break`, `continue`, exceptions, or user-defined operators. Counted loops use `for i in range(stop)` or `range(start, stop)`; steps and range values outside that header are unsupported. Check the [current reference](reference/README.md) and [design direction](design.md) before assuming familiar syntax is available.
 
+To construct a fixed array, import `fill` from `std.array` and write `fill(0, 100)` or `fill(false, 8)`. Its count must be a decimal integer literal between `1` and `1000000`; a local variable or calculation such as `2 + 3` cannot supply the type's length. `minimum` and `maximum` need nonempty integer arrays, while `all`, `any`, and `count` need Boolean arrays.
+
 Native calls are explicit main-only statements or direct assignments. `native calls belong only in main's direct assignments or unit call statements` means a call was nested, used in a condition, or attempted from a helper. Assign a native return to a local first, then check that local before arithmetic. The [native guide](native.md) explains the supported ABI and why native implementations are unproved.
 
 ## An import cannot be loaded or does not export the requested name

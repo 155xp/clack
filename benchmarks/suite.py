@@ -170,7 +170,28 @@ def main() -> int:
             + "    return value\n\nfn main():\n    print(increment(5))\n"
         ),
         "branch8": branch8,
+        "array512": "from std.array import sum\nfn main():\n    total = sum([" + ", ".join(str(i % 7) for i in range(512)) + "])\n    assert total == 1533\n    print(total)\n",
     }
+    fixtures["unused150"] = "".join(
+        f"fn unused{i}(x: int) -> int:\n    requires 0 <= x <= 100\n    ensures result == x + 20\n    y = x\n"
+        + "    y = y + 1\n" * 20 + "    return y\n\n" for i in range(150)
+    ) + """fn identity(x: int) -> int:
+    ensures result == x
+    return x
+
+fn used(x: int) -> int:
+    ensures result == x
+    return identity(x)
+
+fn unused_parallel() -> int:
+    parallel:
+        left = identity(1)
+        right = identity(2)
+    return left
+
+fn main():
+    print(used(42))
+"""
     nested = "7"
     for depth in range(17):
         nested = f"Layer{depth}({nested})"
@@ -210,7 +231,15 @@ def main() -> int:
                               for stage in ["load_parse_link", "types_and_proofs", "emit_c", "total"]}
             pipeline[name]["obligations"] = measurements[-1]["obligations"]
             pipeline[name]["solver_checks"] = measurements[-1]["solver_checks"]
+            pipeline[name]["generated_c_bytes"] = len(generated[name].encode("utf-8"))
             print(f"Verified {name}: {pipeline[name]['total']['median_seconds'] * 1000:.2f} ms", flush=True)
+        fixture_compile = {}
+        for name, expected in {"stdlib": "10\n", "unused150": "42\n"}.items():
+            source_file, binary = folder / f"{name}.c", folder / name
+            source_file.write_text(generated[name], encoding="utf-8")
+            fixture_compile[name] = summary([checked_run([*command, *FLAGS, str(source_file), "-o", str(binary)])[0]
+                                             for _ in range(args.compile_repeats)])
+            checked_run([str(binary)], expected)
         for case in cases:
             name = case["name"]
             native_compile[name] = {}
@@ -257,7 +286,8 @@ def main() -> int:
               "python": sys.version, "c_compiler": version.stdout.splitlines()[0], "flags": FLAGS,
               "scale": args.scale, "repeats": args.repeats, "compile_repeats": args.compile_repeats,
               "all_outputs_match_reference": True, "runtime": results, "parallel_speedup": scaling,
-              "in_process_compiler_pipeline": pipeline, "native_c_compilation": native_compile, "cold_cli_check": cold,
+              "in_process_compiler_pipeline": pipeline, "native_c_compilation": native_compile,
+              "fixture_native_compilation": fixture_compile, "cold_cli_check": cold,
               "timing_scope": {"runtime": "native subprocess wall time including process startup, output, thread setup/join, and exit; no compilation or verification",
                                "in_process_compiler_pipeline": "repeated full source load, parse/link, type/proof checks, and C emission in an already imported Python process; no native compilation",
                                "cold_cli_check": "fresh Python process plus package imports, source loading, type checking, verification, and CLI output; no native compilation"},

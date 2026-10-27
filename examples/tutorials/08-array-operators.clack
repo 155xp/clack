@@ -1,0 +1,15 @@
+from std.array import fill, minimum, maximum, sum, all, count
+
+fn main():
+    values = fill(7, 5)
+    changed = values
+    changed[2] = -3
+    print(len(values))
+    print(minimum(changed))
+    print(maximum(changed))
+    print(sum(changed))
+    print(values[2])
+    flags = fill(true, 4)
+    flags[1] = false
+    print(count(flags))
+    print(all(flags))

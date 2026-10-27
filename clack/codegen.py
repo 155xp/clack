@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 
 from . import frontend as ast
-from .reductions import REDUCTIONS
+from .arrayops import OPERATIONS
 from .typecheck import array_type
 
 
@@ -51,11 +51,13 @@ class _Emitter:
         self.records = {record.name: record for record in getattr(program, "records", [])}
         self.functions = {function.name: function for function in program.functions}
         self.tasks: dict[int, _Task] = {}
-        self.reductions: set[tuple[str, str]] = set()
+        self.array_operations: set[tuple[str, str]] = set()
         self.serial = 0
-        self._collect_tasks()
+        self._collect_reachable()
 
-    def _collect_tasks(self) -> None:
+    def _collect_reachable(self) -> None:
+        reachable = {"main"}
+        pending = ["main"]
         def visit(node) -> None:
             if isinstance(node, list):
                 for value in node:
@@ -64,15 +66,21 @@ class _Emitter:
                 if isinstance(node, ast.Parallel):
                     for binding in node.bindings:
                         self.tasks[id(binding)] = _Task(len(self.tasks), binding, self.functions[binding.value.name])
-                if isinstance(node, ast.Call) and node.name in REDUCTIONS:
-                    self.reductions.add((node.name, self.expr_types[id(node.args[0])]))
+                if isinstance(node, ast.Call) and node.name in OPERATIONS:
+                    shape = node if OPERATIONS[node.name].name == "fill" else node.args[0]
+                    self.array_operations.add((node.name, self.expr_types[id(shape)]))
+                if isinstance(node, ast.Call) and node.name in self.functions and node.name not in reachable:
+                    reachable.add(node.name)
+                    pending.append(node.name)
                 for field in fields(node):
                     visit(getattr(node, field.name))
-        visit(self.program.functions)
+        while pending:
+            visit(self.functions[pending.pop()])
+        self.functions = {name: fn for name, fn in self.functions.items() if name in reachable}
 
     def _type_definitions(self) -> list[str]:
         types = set(self.expr_types.values())
-        for function in self.program.functions:
+        for function in self.functions.values():
             types.add(function.return_type)
             types.update(value for _, value in function.params)
             types.update(self.local_types.get(function.name, {}).values())
@@ -105,20 +113,32 @@ class _Emitter:
             record_definition(name)
         return output
 
-    def _reduction_name(self, name: str, type_name: str) -> str:
-        return f"clack_reduce_{REDUCTIONS[name].name}_{array_type(type_name)[1]}"
+    def _operation_name(self, name: str, type_name: str) -> str:
+        element, length = array_type(type_name)
+        return f"clack_reduce_{OPERATIONS[name].name}_{element}_{length}"
 
-    def _reduction_definitions(self) -> list[str]:
+    def _operation_definitions(self) -> list[str]:
         output = []
-        for name, type_name in sorted(self.reductions):
-            operation = REDUCTIONS[name]
+        for name, type_name in sorted(self.array_operations):
+            operation = OPERATIONS[name]
+            if operation.name == "fill":
+                output.extend([
+                    f"static {_ctype(type_name)} {self._operation_name(name, type_name)}({_ctype(array_type(type_name)[0])} value) {{",
+                    f"    {_ctype(type_name)} result;",
+                    f"    for (size_t i = 0; i < {array_type(type_name)[1]}; ++i) result.data[i] = value;",
+                    "    return result;", "}",
+                ])
+                continue
             numeric = operation.result == "int"
+            extrema = operation.name in {"minimum", "maximum"}
             step = {"sum": "result += values->data[i];", "count": "result += values->data[i];",
-                    "all": "if (!values->data[i]) return false;", "any": "if (values->data[i]) return true;"}[operation.name]
+                    "all": "if (!values->data[i]) return false;", "any": "if (values->data[i]) return true;",
+                    "minimum": "if (values->data[i] < result) result = values->data[i];",
+                    "maximum": "if (values->data[i] > result) result = values->data[i];"}[operation.name]
             output.extend([
-                f"static {_ctype(operation.result)} {self._reduction_name(name, type_name)}(const {_ctype(type_name)} *values) {{",
-                *(["    int64_t result = 0;"] if numeric else []),
-                f"    for (size_t i = 0; i < {array_type(type_name)[1]}; ++i) {{ {step} }}",
+                f"static {_ctype(operation.result)} {self._operation_name(name, type_name)}(const {_ctype(type_name)} *values) {{",
+                *([f"    int64_t result = {'values->data[0]' if extrema else '0'};"] if numeric else []),
+                f"    for (size_t i = {1 if extrema else 0}; i < {array_type(type_name)[1]}; ++i) {{ {step} }}",
                 f"    return {'result' if numeric else 'true' if operation.name == 'all' else 'false'};", "}",
             ])
         return output
@@ -154,12 +174,14 @@ class _Emitter:
             op = {"and": "&&", "or": "||"}.get(expression.op, expression.op)
             return f"({self.expression(expression.left)} {op} {self.expression(expression.right)})"
         if kind == "Call":
-            if expression.name in REDUCTIONS:
+            if expression.name in OPERATIONS:
                 value = expression.args[0]
+                if OPERATIONS[expression.name].name == "fill":
+                    return f"{self._operation_name(expression.name, self.expr_types[id(expression)])}({self.expression(value)})"
                 type_name = self.expr_types[id(value)]
                 source = self.expression(value)
                 argument = f"&({source})" if isinstance(value, (ast.Name, ast.ArrayLit)) else f"((const {_ctype(type_name)}[]){{ {source} }})"
-                return f"{self._reduction_name(expression.name, type_name)}({argument})"
+                return f"{self._operation_name(expression.name, type_name)}({argument})"
             if expression.name in self.records:
                 record = self.records[expression.name]
                 fields = ", ".join(f".{_field(name)} = {self.expression(value)}" for (name, _), value in zip(record.fields, expression.args))
@@ -287,13 +309,13 @@ class _Emitter:
             "#include <pthread.h>",
             "",
             *self._type_definitions(),
-            *self._reduction_definitions(),
+            *self._operation_definitions(),
             "",
-            *[self._prototype(function) + ";" for function in self.program.functions],
+            *[self._prototype(function) + ";" for function in self.functions.values()],
             "",
             *self._worker_definitions(),
         ]
-        for function in self.program.functions:
+        for function in self.functions.values():
             if function.foreign_symbol is not None:
                 continue
             output.append("")

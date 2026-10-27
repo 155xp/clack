@@ -18,7 +18,7 @@ Proof annotations use mathematical integers. This lets a property such as `resul
 
 Do not infer runtime safety from the final answer alone. For example, `(x + 1) - 1` still needs `x + 1` to fit, even when the final value equals `x`.
 
-The imported array reductions `sum`, `all`, `any`, and `count` are modeled compiler operators. `sum` requires each left-to-right partial addition to fit signed 64-bit range; `count` produces the exact number of true Boolean elements. Boolean reductions use their exact logical meanings. They are not source helper functions whose contracts are merely assumed, and they cannot be called inside proof annotations. Their verifier models and native loops are part of the trusted compiler. See the [library guide](libraries.md) for accepted inputs and array-length costs.
+The imported array operators are modeled directly by the compiler. `fill` constructs an array whose elements all equal its once-evaluated input; its literal count fixes the type. `minimum` and `maximum` select exact integer-array extrema using comparisons. `sum` requires each left-to-right partial addition to fit signed 64-bit range, while `count` produces the exact number of true Boolean elements and `all`/`any` use their logical meanings. These are not source helpers whose contracts are merely assumed, and they cannot be called inside proof annotations. Their verifier models and native loops are part of the trusted compiler. See the [library guide](libraries.md) for accepted inputs and array-length costs.
 
 ## Loop reasoning
 

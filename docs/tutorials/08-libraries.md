@@ -60,6 +60,33 @@ Each intermediate addition must fit into a signed 64-bit integer. A final sum fi
 
 The functions used in this lesson are implemented in Clack source and verified with the program. The new length-independent reductions are different: they are compiler operators modeled by the verifier and emitted as native loops. Both groups require explicit imports. Only `print` and `len` are available without an import.
 
+## Fill an array and select its smallest or largest value
+
+<!-- clack:file=../../examples/tutorials/08-array-operators.clack -->
+```clack
+from std.array import fill, minimum, maximum, sum, all, count
+
+fn main():
+    values = fill(7, 5)
+    changed = values
+    changed[2] = -3
+    print(len(values))
+    print(minimum(changed))
+    print(maximum(changed))
+    print(sum(changed))
+    print(values[2])
+    flags = fill(true, 4)
+    flags[1] = false
+    print(count(flags))
+    print(all(flags))
+```
+
+Run `clack run examples/tutorials/08-array-operators.clack`. The output is `5`, `-3`, `7`, `25`, `7`, `3`, and `false`, one per line.
+
+`fill(7, 5)` creates an `int[5]` initialized to seven. The value is evaluated once, and the count is a decimal integer literal from `1` through `1000000`. A runtime length or an expression such as `2 + 3` is not accepted there. `fill(true, 4)` similarly creates a `bool[4]`. These are fixed arrays with normal value semantics: changing `changed[2]` leaves the original `values[2]` equal to seven.
+
+`minimum` and `maximum` work on any supported nonempty integer array. They compare values without adding or negating them, so they support the full signed range. Their names are distinct from the two-argument scalar helpers `std.math.min` and `std.math.max`. Like the other compiler array operators, they belong in executable statements, not inside proof annotations or as direct parallel jobs. The [library catalog](../libraries.md) lists their complete rules and verification costs.
+
 ## Reuse your own functions
 
 `from tutorial_helpers import twice` looks for `tutorial_helpers.clack` relative to the importing file's directory. You do not need to run from that directory or change the process search path. Imports name specific functions or record types; they do not introduce a module object. There is no alias syntax in the current language.

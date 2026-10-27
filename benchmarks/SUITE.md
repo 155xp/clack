@@ -35,6 +35,8 @@ Cold and in-process fixture checks cover a minimal program, standard-library imp
 
 A nested-record-constructor fixture checks whether C emission visits each child expression once. The source has 17 finite record layers, with no recursive types. It exposes repeated traversal costs without enlarging the native runtime workload or relying on a flaky wall-time assertion in the regression suite.
 
+A 512-element integer-literal sum checks the cost of creating exact constant values, proving their range, and verifying every partial sum. Its asserted reference total is 1,533. An unused-code fixture contains 150 arithmetic helpers, a small used helper chain, and an unused parallel helper. All source bodies must still verify. The report records generated C bytes and separately measures C compilation for that fixture and the standard-library fixture, with native output checked after compilation. These measurements distinguish source verification from avoiding unnecessary backend work. The paired [cold-check script](cold.py) also includes the array fixture to show how import and process startup affect the change.
+
 ## Compare an immutable baseline
 
 Use the same benchmark source and parameters for both compiler revisions. An explicit compiler root lets the benchmark import a snapshot without changing the active checkout:

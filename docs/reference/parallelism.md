@@ -25,7 +25,7 @@ This prints `544`. Both jobs satisfy `square`'s precondition. Their verified pos
 
 Each job has the form `name = worker(arguments)`, where `worker` is a locally declared or imported ordinary Clack function other than `main`. A job must be a direct function call. A constructor, native binding, built-in, arithmetic expression, branch, or arbitrary statement cannot occupy a job line. Standard helpers such as an explicitly imported `sum4` can be jobs because they are ordinary verified Clack functions.
 
-The imported `sum`, `all`, `any`, and `count` operators are implemented by the compiler, so they are not direct job targets. Put a reduction inside a typed worker function when the larger operation should run as a job. Such a worker follows the same ordinary contract and purity rules as any other function.
+The imported array operators (`fill`, `sum`, `minimum`, `maximum`, `all`, `any`, and `count`) are implemented by the compiler, so they are not direct job targets. Put an array operation inside a typed worker function when the larger operation should run as a job. Such a worker follows the same ordinary contract and purity rules as any other function.
 
 The block contains at least one job, and result names must be distinct. Each name follows the ordinary local-binding rules: an existing binding may receive another value of the same type, but parameters cannot be overwritten. A job may return an integer, Boolean, array, or record.
 

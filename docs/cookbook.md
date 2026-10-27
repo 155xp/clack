@@ -2,7 +2,22 @@
 
 [Handbook](README.md) · [Tutorials](tutorials/README.md) · [Error guide](errors.md)
 
-These patterns show how to write ordinary Clack functions. `print` and `len` are available without imports; `std.math` and `std.array` supply explicitly imported source helpers. `std.array` also supplies the compiler-implemented reductions `sum`, `all`, `any`, and `count` for any supported fixed length. The [library catalog](libraries.md) explains that distinction. You can reuse these operations or study the functions below to understand their contracts. Each example below is a complete program you can save in its own `.clack` file.
+These patterns show how to write ordinary Clack functions. `print` and `len` are available without imports; `std.math` and `std.array` supply explicitly imported source helpers. `std.array` also supplies compiler operators for filling arrays, selecting integer extrema, and reducing any supported fixed length. The [library catalog](libraries.md) explains that distinction. Each example below is a complete program you can save in its own `.clack` file.
+
+## Start a fixed array with one value
+
+```clack
+from std.array import fill, minimum, maximum, sum
+
+fn main():
+    readings = fill(10, 5)
+    readings[2] = -4
+    print(minimum(readings))
+    print(maximum(readings))
+    print(sum(readings))
+```
+
+Output: `-4`, `10`, `36`. `fill(10, 5)` creates an `int[5]` and evaluates its value argument once. The count must be a positive integer literal, not a variable or calculation. `minimum` and `maximum` select existing elements using comparisons, so they work across the full signed 64-bit range.
 
 ## Minimum and maximum
 
@@ -28,7 +43,7 @@ fn main():
     print(maximum(12, 7))
 ```
 
-Output: `7`, then `12` on the next line. The two postconditions describe both ordering and membership in the input pair. A function returning an unrelated very small number would fail the second promise of `minimum`.
+Output: `7`, then `12` on the next line. The two postconditions describe both ordering and membership in the input pair. A function returning an unrelated very small number would fail the second promise of `minimum`. These example functions compare two scalars; the standard pair helpers are `std.math.min` and `std.math.max`, while `std.array.minimum` and `std.array.maximum` consume arrays.
 
 ## Absolute value with an explicit domain
 

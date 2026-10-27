@@ -15,7 +15,7 @@ from pathlib import Path
 import z3
 
 from . import frontend as ast
-from .reductions import REDUCTIONS
+from .arrayops import OPERATIONS
 from .typecheck import array_type, check
 
 
@@ -138,7 +138,9 @@ class _Verifier:
     def int_result(self, term: z3.ArithRef, state: State, line: int, spec: bool) -> Value:
         result = Value("int", term)
         if not spec:
-            self.prove(state, self.bounds(result), line, "integer arithmetic stays within signed 64-bit range")
+            # Fold numeral bounds exactly; false claims still need their path.
+            claim = z3.BoolVal(MIN_INT <= term.as_long() <= MAX_INT) if z3.is_int_value(term) else self.bounds(result)
+            self.prove(state, claim, line, "integer arithmetic stays within signed 64-bit range")
         return result
 
     def expr(self, expression: ast.Expr, state: State, spec: bool = False) -> Value:
@@ -214,8 +216,10 @@ class _Verifier:
                 value = self.expr(expression.args[0], state, spec)
                 return Value("int", z3.IntVal(array_type(value.type)[1]))
             args = [self.expr(value, state, spec) for value in expression.args]
-            if expression.name in REDUCTIONS:
-                operation = REDUCTIONS[expression.name]
+            if expression.name in OPERATIONS:
+                operation = OPERATIONS[expression.name]
+                if operation.name == "fill":
+                    return Value(self.info.expr_types[id(expression)], z3.K(z3.IntSort(), args[0].term))
                 values = [z3.Select(args[0].term, i) for i in range(array_type(args[0].type)[1])]
                 if operation.name == "sum":
                     total, bounds = values[0], []
@@ -223,6 +227,10 @@ class _Verifier:
                         total = total + value
                         bounds.append(self.bounds(Value("int", total)))
                     self.prove(state, z3.And(*bounds), line, "every partial sum stays within signed 64-bit range")
+                elif operation.name in {"minimum", "maximum"}:
+                    total = values[0]
+                    for value in values[1:]:
+                        total = z3.If(total <= value if operation.name == "minimum" else total >= value, total, value)
                 else:
                     total = {"all": z3.And, "any": z3.Or, "count": lambda xs: z3.Sum([z3.If(x, 1, 0) for x in xs])}[operation.name](values)
                 return Value(operation.result, total)
