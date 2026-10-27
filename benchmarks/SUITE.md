@@ -13,8 +13,8 @@ The suite checks eight native workloads against independent results and matching
 | LCG, one job | Integer multiplication and remainder dependency chain | Modular exponentiation |
 | LCG, two sequential jobs | Two independent scalar kernels | Modular exponentiation |
 | LCG, four sequential jobs | Four independent scalar kernels | Modular exponentiation |
-| LCG, two parallel jobs | Two native threads, creation and join | Modular exponentiation |
-| LCG, four parallel jobs | Four native threads, creation and join | Modular exponentiation |
+| LCG, two parallel jobs | Two concurrent jobs, thread creation and join | Modular exponentiation |
+| LCG, four parallel jobs | Four concurrent jobs, thread creation and join | Modular exponentiation |
 | Variable-input Euclidean GCD | Nested variable-length remainder loops | Python `math.gcd` |
 | Integer square root | Repeated binary search and branches | Python `math.isqrt` |
 | Eight-state array update | Fixed-array reads, writes, and recurrence state | Logarithmic matrix exponentiation |
@@ -31,7 +31,7 @@ The JSON report separates three kinds of cost:
 
 Native C compilation is measured separately for both generated and hand-written source. Every statistic includes its raw samples and median, minimum, and maximum. The report also records the compiler fingerprint, benchmark fingerprint, exact source hashes, compiler flags, Python version, and platform.
 
-Cold and in-process fixture checks cover a minimal program, standard-library imports, a synthetic 128-assignment arithmetic workload, and a synthetic eight-Boolean-branch function. The arithmetic fixture isolates trivial verification overhead. The branch fixture counts enabled flags and checks its result bounds; eight independent conditions expose whether a verifier retains every path separately or safely joins continuation states. These synthetic programs should not stand in for application compile time.
+Cold and in-process fixture checks cover a minimal program, standard-library imports, two synthetic 128-assignment arithmetic workloads, and a synthetic eight-Boolean-branch function. The constant arithmetic fixture isolates trivial verification overhead. The symbolic arithmetic fixture repeatedly increments a bounded function parameter and proves its exact result; its safety checks require reasoning about an arbitrary input. The branch fixture counts enabled flags and checks its result bounds; eight independent conditions expose whether a verifier retains every path separately or safely joins continuation states. These synthetic programs should not stand in for application compile time.
 
 A nested-record-constructor fixture checks whether C emission visits each child expression once. The source has 17 finite record layers, with no recursive types. It exposes repeated traversal costs without enlarging the native runtime workload or relying on a flaky wall-time assertion in the regression suite.
 
@@ -49,6 +49,18 @@ git archive COMMIT_SHA | tar -x -C /tmp/clack-before
 Replace `COMMIT_SHA` with the revision you want to compare. The script verifies that it imported the selected compiler tree. A snapshot needs its compiler source, while the Python environment supplies the pinned solver dependency.
 
 `--scale N` multiplies runtime work, with `1 <= N <= 20`. Default work is designed to last tens of milliseconds on the recorded machine, so process startup remains visible but does not normally dominate. Use larger work on faster machines, and keep it identical across comparisons. `--only gcd,array`, for example, selects particular native cases during development; compiler fixtures still run.
+
+## Small parallel jobs
+
+[parallel.py](parallel.py) compares actual native output from two compiler trees on repeated small parallel blocks:
+
+```sh
+.venv/bin/python benchmarks/parallel.py --before /tmp/clack-before --repeats 11 --output build/parallel.json
+```
+
+The default workload executes 2,000 blocks containing one, two, or four identity workers. Both revisions verify the same source and compile it with identical flags. Output must match before timing begins, and timed samples are interleaved in a seeded shuffled order. The JSON includes every sample and checks that neither compiler tree changed during measurement.
+
+This isolates thread overhead. Clack 0.3 lets the caller execute the last job while other jobs run on native threads. A single-job block therefore needs no new thread; this also lets the C optimizer fold this intentionally trivial loop. Those results do not predict throughput for substantial workers. The main suite retains its hand-written C comparison, which launches one worker thread per parallel job, so the scheduling policies differ even though the computation and compiler flags match.
 
 ## Reading results honestly
 

@@ -7,6 +7,7 @@ SMT transcripts are reproducible queries, not independently checked certificates
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -49,7 +50,8 @@ class _Verifier:
     def __init__(self, program: ast.Program, timeout_ms: int, proof_dir: Path | None):
         self.program = program
         self.info = check(program)
-        self.timeout_ms = timeout_ms
+        self.solver = z3.Solver()
+        self.solver.set(timeout=timeout_ms)
         self.proof_dir = proof_dir
         self.sorts: dict[str, z3.SortRef] = {"int": z3.IntSort(), "bool": z3.BoolSort(), "text": z3.StringSort()}
         self.serial = 0
@@ -98,38 +100,40 @@ class _Verifier:
         # A constant True claim needs no solver. False still needs its path:
         # an unreachable operation may legitimately have a false safety goal.
         trivial = z3.is_true(z3.simplify(claim))
-        status = z3.unsat
-        if not trivial or self.proof_dir is not None:
-            solver = z3.Solver()
-            solver.set(timeout=self.timeout_ms)
-            solver.add(state.path, z3.Not(claim))
-            if not trivial:
-                status = solver.check()
-        number = len(self.obligations) + 1
-        location = getattr(self.program, "locations", {}).get(line)
-        names = getattr(self.program, "symbol_names", {})
-        entry = {"id": number, "function": names.get(self.function.name, self.function.name),
-                 "line": location[1] if location else line, "claim": message, "status": str(status)}
-        if location:
-            entry["source"] = location[0]
-        if self.proof_dir is not None:
-            filename = f"{number:04d}.smt2"
-            entry["query"] = filename
-            (self.proof_dir / filename).write_text(solver.to_smt2(), encoding="utf-8")
-        self.obligations.append(entry)
-        if status == z3.unsat:
-            return
-        if status == z3.unknown:
-            raise ast.CompileError(f"cannot prove {message}: {solver.reason_unknown()} (strict mode rejects unknown results)", line)
-        model = solver.model()
-        shown: list[str] = []
-        for name, value in state.env.items():
-            display = str(model.eval(value.term, model_completion=True))
-            if len(display) > 150:
-                display = display[:147] + "..."
-            shown.append(f"{name} = {display}")
-        witness = "; ".join(shown[:12]) or "no inputs"
-        raise ast.CompileError(f"cannot prove {message}\n  counterexample: {witness}", line)
+        # Reuse solver machinery, never assertions: each obligation has its
+        # own push/pop scope, including exported queries and failure paths.
+        solver = self.solver
+        with solver if not trivial or self.proof_dir is not None else nullcontext():
+            status = z3.unsat
+            if not trivial or self.proof_dir is not None:
+                solver.add(state.path, z3.Not(claim))
+                if not trivial:
+                    status = solver.check()
+            number = len(self.obligations) + 1
+            location = getattr(self.program, "locations", {}).get(line)
+            names = getattr(self.program, "symbol_names", {})
+            entry = {"id": number, "function": names.get(self.function.name, self.function.name),
+                     "line": location[1] if location else line, "claim": message, "status": str(status)}
+            if location:
+                entry["source"] = location[0]
+            if self.proof_dir is not None:
+                filename = f"{number:04d}.smt2"
+                entry["query"] = filename
+                (self.proof_dir / filename).write_text(solver.to_smt2(), encoding="utf-8")
+            self.obligations.append(entry)
+            if status == z3.unsat:
+                return
+            if status == z3.unknown:
+                raise ast.CompileError(f"cannot prove {message}: {solver.reason_unknown()} (strict mode rejects unknown results)", line)
+            model = solver.model()
+            shown: list[str] = []
+            for name, value in state.env.items():
+                display = str(model.eval(value.term, model_completion=True))
+                if len(display) > 150:
+                    display = display[:147] + "..."
+                shown.append(f"{name} = {display}")
+            witness = "; ".join(shown[:12]) or "no inputs"
+            raise ast.CompileError(f"cannot prove {message}\n  counterexample: {witness}", line)
 
     def int_result(self, term: z3.ArithRef, state: State, line: int, spec: bool) -> Value:
         result = Value("int", term)
@@ -280,9 +284,30 @@ class _Verifier:
             elif isinstance(statement, ast.If):
                 names.update(self.assigned(statement.then_body))
                 names.update(self.assigned(statement.else_body))
-            elif isinstance(statement, ast.While):
+            elif isinstance(statement, (ast.While, ast.For)):
                 names.update(self.assigned(statement.body))
         return names
+
+    def counted_loop(self, statement: ast.For, state: State) -> State:
+        # Snapshot both endpoints once, including any verified call summaries.
+        start, stop = self.expr(statement.start, state), self.expr(statement.stop, state)
+        self.serial += 1
+        lower, upper = f"for.start@{self.serial}", f"for.stop@{self.serial}"
+        state.env.update({lower: start, upper: stop, statement.name: start})
+        line = statement.line
+        index = ast.Name(line, statement.name)
+        first, last = ast.Name(line, lower), ast.Name(line, upper)
+        invariant = ast.Binary(line, "and", ast.Binary(line, ">=", index, first),
+                               ast.Binary(line, "or", ast.Binary(line, "<=", index, last),
+                                          ast.Binary(line, "==", index, first)))
+        step = ast.Assign(line, statement.name, ast.Binary(line, "+", index, ast.IntLit(line, 1)))
+        loop = ast.While(line, ast.Binary(line, "<", index, last),
+                         [invariant, *statement.invariants], ast.Binary(line, "-", last, index),
+                         [*statement.body, step])
+        state = self.loop(loop, state)
+        for name in (lower, upper, statement.name):
+            del state.env[name]
+        return state
 
     def loop(self, statement: ast.While, state: State) -> State:
         # Prove initiation with actual incoming values.
@@ -347,6 +372,8 @@ class _Verifier:
                     continue
                 elif isinstance(statement, ast.While):
                     state = self.loop(statement, state)
+                elif isinstance(statement, ast.For):
+                    state = self.counted_loop(statement, state)
                 elif isinstance(statement, ast.Parallel):
                     # All arguments see the incoming environment. Function
                     # summaries may add facts but cannot mutate any inputs.

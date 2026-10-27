@@ -174,11 +174,11 @@ class NativeTests(unittest.TestCase):
 #include <errno.h>
 static int native_test_created;
 static int native_test_joined;
-static pthread_t native_test_threads[3];
+static pthread_t native_test_threads[2];
 static int native_test_create(pthread_t *thread, const pthread_attr_t *attr,
                               void *(*worker)(void *), void *arg) {
     int slot = native_test_created++;
-    assert(slot < 3);
+    assert(slot < 2);
     if (FAIL_THREADS) return EAGAIN;
     int status = pthread_create(thread, attr, worker, arg);
     assert(status == 0);
@@ -188,7 +188,7 @@ static int native_test_create(pthread_t *thread, const pthread_attr_t *attr,
 }
 static int native_test_join(pthread_t thread, void **result) {
     assert(!FAIL_THREADS);
-    assert(native_test_created == 3);
+    assert(native_test_created == 2);
     native_test_joined++;
     return pthread_join(thread, result);
 }
@@ -198,7 +198,7 @@ static int native_test_join(pthread_t thread, void **result) {
             c_source = c_source.replace("#include <pthread.h>\n", "#include <pthread.h>\n" + wrappers, 1)
             before, separator, after = c_source.rpartition("    return 0;")
             self.assertTrue(separator)
-            return before + f"    assert(native_test_created == 3);\n    assert(native_test_joined == {0 if fail_threads else 3});\n" + separator + after
+            return before + f"    assert(native_test_created == 2);\n    assert(native_test_joined == {0 if fail_threads else 2});\n" + separator + after
 
         for fail_threads in (False, True):
             with self.subTest(thread_creation_fails=fail_threads):

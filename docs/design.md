@@ -14,7 +14,7 @@ There is also a practical tradeoff: arbitrary program correctness cannot be deci
 
 | Area | Current implementation |
 | --- | --- |
-| Syntax | Indentation, inferred local types, plain functions and records |
+| Syntax | Indentation, inferred local types, plain functions and records, counted `for` loops |
 | Execution | Optimized C11 output and native executables |
 | Data | Signed 64-bit integers, Booleans, immutable literal text, fixed scalar arrays, value records |
 | Verification | SMT checks for arithmetic, bounds, contracts, assertions, loops |

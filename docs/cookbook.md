@@ -128,6 +128,17 @@ fn main():
 
 Output: `3`, then `2`. Record results also work in a `parallel:` block. See the [parallel tutorial](tutorials/05-parallel-work.md) and [project](tutorials/07-project.md) for combining independent record-valued computations.
 
+## Visit array indices
+
+```clack
+fn main():
+    values = [10, 20, 30]
+    for i in range(len(values)):
+        print(values[i])
+```
+
+Output: `10`, `20`, `30`. The compiler supplies index bounds and termination. `range(start, stop)` starts at an explicit integer and still excludes the stop. For an accumulator, add an invariant relating the changing value to completed iterations, as shown in the [loop tutorial](tutorials/04-loops.md).
+
 ## Pick the right next pattern
 
 For summing any supported fixed integer array, import `sum` from `std.array`; the [reduction example](../examples/reductions.clack) also demonstrates Boolean reductions. To write your own algorithm, start with [the functions tutorial](tutorials/02-functions-contracts.md) and [array tutorial](tutorials/03-records-arrays.md), then learn to carry bounds through [a loop invariant](tutorials/04-loops.md). For failures, prefer a guard or a meaningful input contract; an `assert` cannot turn an unproved fact into a trusted assumption.

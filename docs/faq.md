@@ -14,9 +14,9 @@ An indentation-based syntax does not require an interpreted runtime. It also doe
 
 ## Is it as fast as C or Rust?
 
-It has an efficient starting point: signed machine integers, by-value native records and fixed arrays, optimized C output, and no interpreter in the resulting binary. One recorded arithmetic workload had similar Clack and C timings. That is useful evidence for that kernel, not a universal promise.
+It has an efficient starting point: signed machine integers, by-value native records and fixed arrays, optimized C output, and no interpreter in the resulting binary. The recorded native suite compares eight cases across four algorithm families with equivalent C and checks every output. Those results describe the measured workloads, not a universal promise.
 
-There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [benchmark guide](../benchmarks/README.md) explains the recorded experiment and how to reproduce it.
+There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [latest benchmark report](../benchmarks/RESULTS-0.3.md) separates compiler improvements, thread overhead, and native execution measurements, with raw samples and reproduction commands.
 
 ## How much type annotation is required?
 
@@ -28,7 +28,7 @@ Array lengths are part of their types. `[1, 2, 3]` has type `int[3]`, so it cann
 
 No. The verifier generates safety obligations for ordinary executable operations and tries to establish them automatically. You state behavioral promises with `requires` and `ensures`; `assert` asks it to prove a fact at a particular point.
 
-Loops need invariants and a decreasing integer measure. These supply information that cannot generally be inferred automatically. A straight-line function may need very little annotation, while a more complicated loop needs a stronger explanation. The [tutorials](tutorials/README.md) build up to this gradually.
+Counted `for i in range(stop)` loops supply index bounds and termination automatically. Add invariants when facts about other changing values must survive iteration. General `while` loops need invariants and an explicit decreasing integer measure. A straight-line function may need very little annotation, while a more complicated loop needs a stronger explanation. The [tutorials](tutorials/README.md) build up to this gradually.
 
 ## Is there a standard library with sum, min, or sorting?
 
@@ -60,7 +60,7 @@ Division and array indexing inside annotations still have to be well-defined. Ma
 
 A `parallel:` block runs independent calls concurrently and waits for all of them. It is structured parallel work, not an asynchronous event loop or a collection of futures that outlive their scope. Results become available after the block.
 
-The current backend creates POSIX threads for the jobs. There is no persistent worker pool, task-stealing scheduler, cancellation interface, GPU backend, automatic loop parallelization, or `async`/`await`. A failed thread launch executes that job synchronously to preserve result semantics.
+The current backend creates POSIX threads for all but the last job, which runs on the caller. A single job runs directly. There is no persistent worker pool, task-stealing scheduler, cancellation interface, GPU backend, automatic loop parallelization, or `async`/`await`. A failed thread launch executes that job synchronously to preserve result semantics.
 
 ## How are data races avoided?
 
@@ -82,7 +82,7 @@ Bundled `std` modules come from installed package resources rather than a local 
 
 ## Can I write recursive functions?
 
-Direct and mutual recursion are still rejected, including cycles that cross module boundaries. Loops express repeated work and carry explicit termination measures. Native implementations may call C functions or block, but their termination and behavior are not proved; using that boundary does not extend the verified recursion model. The [design direction](design.md) describes possible extensions separately.
+Direct and mutual recursion are still rejected, including cycles that cross module boundaries. Loops express repeated work; counted for loops supply their progress measure, and while loops require an explicit one. Native implementations may call C functions or block, but their termination and behavior are not proved; using that boundary does not extend the verified recursion model. The [design direction](design.md) describes possible extensions separately.
 
 ## Can I use text or make a terminal UI?
 

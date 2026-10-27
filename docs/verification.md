@@ -26,6 +26,8 @@ A loop invariant must hold when entering the loop and remain true after each bod
 
 The termination measure must be an integer, must be nonnegative when an iteration begins, and must strictly decrease on continuing iterations. Reasoning after the loop uses the invariant together with the false loop condition. A return from inside the body must satisfy the function's postconditions directly.
 
+Counted `for` loops supply their own index bounds and termination measure over bounds evaluated once. Optional user invariants establish relationships involving other changing values. General `while` loops require both invariants and an explicit `decreases` measure. Both forms use the same arbitrary-iteration checking discipline.
+
 The current language rejects recursive call cycles. Termination of loops is checked; functions cannot hide divergence behind recursion.
 
 This statement covers ordinary Clack functions. Main may call explicitly declared native C implementations, whose blocking, recursion, and termination are outside the mathematical model.

@@ -52,7 +52,7 @@ The exact output is:
 
 ## Understand the supplied helpers
 
-`sum4` sums exactly four integers and promises their exact sum. `sum2`, `sum3`, and `sum8` cover the other supplied fixed sizes. These named source functions remain supported. Clack 0.2 also provides `from std.array import sum` for any supported fixed length, so a five-element array no longer needs a new helper. See the [reduction example](../../examples/reductions.clack) for `sum`, `all`, `any`, and `count`.
+`sum4` sums exactly four integers and promises their exact sum. `sum2`, `sum3`, and `sum8` cover the other supplied fixed sizes. These named source functions remain supported. Clack also provides `from std.array import sum` for any supported fixed length, so a five-element array does not need a new helper. See the [reduction example](../../examples/reductions.clack) for `sum`, `all`, `any`, and `count`.
 
 Each intermediate addition must fit into a signed 64-bit integer. A final sum fitting is not enough if an earlier prefix would overflow. The helpers state those requirements in their contracts, so callers must establish them just as they establish requirements for their own functions. The small literal array in this lesson makes those facts straightforward.
 

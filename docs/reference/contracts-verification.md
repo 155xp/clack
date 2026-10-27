@@ -83,6 +83,8 @@ For each loop the compiler checks:
 
 After the loop, the verifier knows the invariant and the false condition. It does not retain an old value of a modified binding merely because that value was known before the loop. A return from the body proves the function's postconditions directly.
 
+For a counted `for` loop, the compiler supplies invariant facts about the index and snapshotted bounds, plus a decreasing measure. Optional user invariants carry facts about other changing locals and are checked after the generated index increment. A counted loop does not infer an accumulator's relationship to its inputs. See [counted loops](functions-control-flow.md#counted-for-loops) for an example.
+
 For `while i < n` with invariant `0 <= i <= n`, the false condition gives `i >= n`, so together they establish `i == n`. Without the upper-bound part of the invariant, the exit state might include values larger than `n`.
 
 The measure is mathematical and may be negative after the final iteration if the loop will not continue. What matters is nonnegativity at each active iteration and strict decrease along each body path that reaches the next condition. A condition such as `true` does not waive the termination check.

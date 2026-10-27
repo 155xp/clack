@@ -140,6 +140,15 @@ class While(Stmt):
 
 
 @dataclass(frozen=True)
+class For(Stmt):
+    name: str
+    start: Expr
+    stop: Expr
+    invariants: list[Expr]
+    body: list[Stmt]
+
+
+@dataclass(frozen=True)
 class Assert(Stmt):
     condition: Expr
 
@@ -203,7 +212,7 @@ class _Token:
 _IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z_0-9]*\Z")
 _INTEGER = re.compile(r"(?:0|[1-9][0-9]*)\Z")
 _KEYWORDS = frozenset(
-    "fn type parallel if elif else while return assert requires ensures invariant decreases "
+    "fn type parallel if elif else while for in range return assert requires ensures invariant decreases "
     "and or not true false int bool unit text from import native extern".split()
 )
 _OPERATORS = frozenset(
@@ -459,6 +468,24 @@ class _Parser:
             if not body:
                 raise self.error("a while loop needs an executable body", start)
             return While(line=start.line, condition=condition, invariants=invariants, decreases=decreases, body=body)
+        if self.accept("for"):
+            name = self.identifier().text
+            self.expect("in")
+            self.expect("range")
+            self.expect("(")
+            first = self.expression()
+            begin, stop = (first, self.expression()) if self.accept(",") else (IntLit(start.line, 0), first)
+            self.expect(")")
+            self.block_start()
+            invariants = []
+            while self.accept("invariant"):
+                invariants.append(self.expression())
+                self.line_end()
+            body = self.statements()
+            self.expect_kind(token.DEDENT, "end of loop")
+            if not body:
+                raise self.error("a for loop needs an executable body", start)
+            return For(start.line, name, begin, stop, invariants, body)
         if self.accept("return"):
             value = None if self.current.kind == token.NEWLINE else self.expression()
             self.line_end()
@@ -470,7 +497,7 @@ class _Parser:
         if start.text in {"requires", "ensures"}:
             raise self.error("function contracts must appear before executable statements")
         if start.text in {"invariant", "decreases"}:
-            raise self.error("loop annotations must appear at the start of a while body")
+            raise self.error("loop annotations must appear at the start of a loop body")
         value = self.expression()
         if self.accept("="):
             assigned_value = self.expression()

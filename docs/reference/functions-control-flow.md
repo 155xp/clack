@@ -104,9 +104,46 @@ The verifier checks a branch with its condition added to the known facts. Thus a
 
 Only `print(...)` and main's native unit calls may stand alone as expression statements. A non-unit helper or foreign result cannot simply be discarded by writing `helper(...)`. Assign the result to a local and use it as appropriate. `_` is an ordinary local name if a result is deliberately not needed.
 
+## Counted for loops
+
+Use a counted loop to visit integer indices without writing a counter or a termination measure:
+
+```clack
+fn main():
+    values = [10, 20, 30]
+    for i in range(len(values)):
+        print(values[i])
+    for i in range(3, 5):
+        print(i)
+```
+
+This prints `10`, `20`, `30`, `3`, and `4`. `range(stop)` means `range(0, stop)`. Both forms advance by one and exclude the upper bound. Bounds are integer expressions evaluated once, left to right, before iteration begins. Changing a local used to compute a bound does not change that loop's range. If the start is greater than or equal to the stop, the body runs zero times. Bounds may use the full signed 64-bit range; the compiler proves its generated increment safe without computing an executable `stop - start`.
+
+The index is immutable and scoped to the body. It cannot shadow a binding already available before the loop, including a parameter or an outer loop's index. Separate loops may reuse an index name. New body locals are unavailable after the loop because it may execute zero times; initialize a result before the loop when it is needed afterward.
+
+Clack supplies the index bounds and termination argument. Optional `invariant` clauses at the start of the body describe relationships involving other changing values:
+
+```clack
+fn count_to(n: int) -> int:
+    requires 0 <= n <= 1000000
+    ensures result == n
+    total = 0
+    for i in range(n):
+        invariant total == i
+        total = total + 1
+    return total
+
+fn main():
+    print(count_to(3))
+```
+
+This prints `3`. The user invariant is checked at entry and after each iteration's generated index increment. It states that the accumulated count equals the number of completed iterations. Automatic index facts do not preserve arbitrary relationships between changed locals; such facts still need a suitable invariant.
+
+`range` is only a for-header form, not a collection or ordinary callable value. Steps, descending iteration, `break`, and `continue` are unsupported. A return inside the body must prove the enclosing function's postconditions.
+
 ## While loops
 
-`while` is the only loop form. Its condition is a Boolean. The body begins with one or more `invariant` clauses, followed by exactly one `decreases` clause, then executable statements:
+Use `while` for a loop controlled by a Boolean condition. Its body begins with one or more `invariant` clauses, followed by exactly one `decreases` clause, then executable statements:
 
 ```clack
 fn count_to(n: int) -> int:
@@ -125,7 +162,7 @@ fn main():
 
 This prints `3`. Annotations are proof expressions, not executable statements. The body must still contain an executable statement after the annotations.
 
-A return may exit a loop. There are no `break`, `continue`, `for`, `range`, or generator constructs. Every loop needs a verified termination argument. See [contracts and verification](contracts-verification.md) for what the annotations must establish.
+A return may exit a loop. Every loop needs a verified termination argument: `for` supplies its own, while `while` requires an explicit measure. See [contracts and verification](contracts-verification.md) for what the annotations must establish.
 
 ## Parallel blocks
 

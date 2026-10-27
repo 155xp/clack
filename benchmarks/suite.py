@@ -163,6 +163,12 @@ def main() -> int:
         "hello": "fn main():\n    print(42)\n",
         "stdlib": "from std.math import min, max, abs, clamp\nfrom std.array import sum4\nfn main():\n    print(clamp(sum4([1, 2, 3, 4]), 0, 100))\n",
         "arithmetic128": "fn main():\n    value = 0\n" + "    value = value + 1\n" * 128 + "    print(value)\n",
+        "symbolic128": (
+            "fn increment(x: int) -> int:\n    requires 0 <= x <= 100000\n"
+            "    ensures result == x + 128\n    value = x\n"
+            + "    value = value + 1\n" * 128
+            + "    return value\n\nfn main():\n    print(increment(5))\n"
+        ),
         "branch8": branch8,
     }
     nested = "7"

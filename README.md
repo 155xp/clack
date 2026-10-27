@@ -2,7 +2,7 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
-Clack 0.2 adds length-independent `sum`, `all`, `any`, and `count`, immutable text, and explicit native bindings. The compiler and bundled library total **2,155 physical lines**, up from **1,968** before this pass. Read the [measured before/after report](benchmarks/RESULTS-0.2.md) for compiler speedups, eight native benchmark cases, raw samples, and limitations.
+Clack 0.3 adds counted `for` loops, isolated solver reuse, less thread creation for parallel blocks, and compiler phase timings. Read the [measured before/after report](benchmarks/RESULTS-0.3.md) for speed and line-count changes, raw samples, and limitations. Arrays, length-independent reductions, immutable text, and explicit native bindings remain supported.
 
 [GitHub repository](https://github.com/155xp/clack)
 
@@ -52,6 +52,9 @@ The compiler uses Python and Z3. The resulting executable uses neither Python no
 # Check types, arithmetic safety, contracts, and loop termination.
 .venv/bin/python -m clack check examples/contracts.clack
 
+# Show compiler phase timings on standard error.
+.venv/bin/python -m clack build examples/parallel.clack --timings
+
 # Save verification conditions in SMT-LIB format for inspection.
 .venv/bin/python -m clack check examples/contracts.clack --proof-dir build/proofs
 
@@ -85,9 +88,20 @@ fn main():
     print(left + right)
 ```
 
-Each call runs as a native thread, and the block waits for all results. Arguments are values; a worker cannot change another worker's data. The compiler rejects dependencies between jobs in the same block. Use another block or a normal statement when one job needs an earlier result.
+The caller runs one job while native threads run the others, and the block waits for all results. A block with one job runs directly. Arguments are values; a worker cannot change another worker's data. The compiler rejects dependencies between jobs in the same block. Use another block or a normal statement when one job needs an earlier result.
 
 This makes small independent jobs easy to express. Thread creation has a cost, so larger jobs are the intended use. This prototype has no worker pool, GPU backend, or automatic speedup guarantee.
+
+## Counted loops
+
+```clack
+fn main():
+    values = [10, 20, 30]
+    for i in range(len(values)):
+        print(values[i])
+```
+
+`range(stop)` starts at zero; `range(start, stop)` starts at the first bound. Both stop before the upper bound and increase by one. The compiler supplies index bounds and termination reasoning. Add an `invariant` when a changing accumulator or other state needs a relationship carried across iterations. See the [loop tutorial](docs/tutorials/04-loops.md).
 
 ## Data without a type puzzle
 
@@ -133,7 +147,7 @@ Every build checks all ordinary Clack functions. Z3 must establish that:
 - Calls satisfy the callee's `requires` clauses.
 - Returned values satisfy the function's `ensures` clauses.
 - Every `assert` follows from the current facts.
-- Loop invariants hold initially and remain true, and a `decreases` measure establishes termination.
+- Loop invariants hold initially and remain true; `for` supplies counted-loop progress, while `while` requires a `decreases` measure.
 
 An unproved obligation, solver timeout, or unsupported feature stops compilation. There is no unchecked build switch.
 

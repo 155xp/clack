@@ -2,9 +2,41 @@
 
 [Previous: Records and arrays](03-records-arrays.md) · [Tutorial index](README.md) · [Next: Parallel work](05-parallel-work.md)
 
-The goal of this lesson is to visit an array safely and explain why the loop finishes. We will count the nonzero values in a fixed batch of four entries.
+The goal of this lesson is to visit an array safely and explain why the loop finishes. Start with a counted loop, then use an explicit while loop to see the reasoning behind it.
+
+## Start with a counted loop
+
+<!-- clack:file=../../examples/tutorials/04-counted-loops.clack -->
+```clack
+fn count_to(n: int) -> int:
+    requires 0 <= n <= 1000000
+    ensures result == n
+    total = 0
+    for i in range(n):
+        invariant total == i
+        total = total + 1
+    return total
+
+fn main():
+    values = [10, 20, 30]
+    for i in range(len(values)):
+        print(values[i])
+    for i in range(3, 5):
+        print(i)
+    print(count_to(10))
+```
+
+Run `clack run examples/tutorials/04-counted-loops.clack`. It prints `10`, `20`, `30`, `3`, `4`, and `10`, one per line.
+
+`range(stop)` starts at zero; `range(start, stop)` uses the given start. Both advance by one and stop before the upper bound. Bounds are evaluated once. A range whose start is at least its stop does nothing. The compiler supplies the index bounds, checks indexing, and establishes termination. The array-printing loop needs no annotations.
+
+The index is immutable and exists only inside its body. It cannot shadow an existing binding, but separate loops may reuse `i`. Initialize values needed after the loop before entering it; body locals may never be created if the range is empty.
+
+The count function changes `total`, so `invariant total == i` carries the relationship needed to prove its result. Before the first iteration both are zero. Every completed iteration increases both by one, including the compiler's generated index increment. At exit, the invariant and final index establish `total == n`. Counted loops automate index progress, not arbitrary facts about accumulators.
 
 ## Count a batch
+
+An explicit while loop exposes the index and termination annotations. This example counts the nonzero values in a fixed batch of four entries:
 
 <!-- clack:file=../../examples/tutorials/04-loops.clack -->
 ```clack
@@ -55,7 +87,7 @@ These small bounds also prove that the executable increments fit into signed 64-
 
 `decreases len(values) - i` is the number of entries remaining. It is nonnegative when an iteration begins and gets smaller after the body. An integer cannot keep decreasing through nonnegative values forever, so this establishes loop termination in the language's execution model.
 
-All invariants come first in a loop body, followed by one `decreases` annotation, followed by executable statements. There is no unchecked loop mode. A missing invariant, an unproved invariant, or a nondecreasing termination measure stops compilation.
+In a while body, all invariants come first, followed by one `decreases` annotation, then executable statements. A counted for body allows optional invariants and supplies the termination measure itself. There is no unchecked loop mode. A missing required annotation, an unproved invariant, or a nondecreasing termination measure stops compilation.
 
 ## Know what was proved
 

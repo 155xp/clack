@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Full reference](reference/README.md)
 
-This page summarizes accepted Clack 0.2 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
+This page summarizes accepted Clack 0.3 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
 
 ## Program and functions
 
@@ -79,18 +79,19 @@ A complete loop example:
 fn count_to(n: int) -> int:
     requires 0 <= n <= 1000000
     ensures result == n
-    i = 0
-    while i < n:
-        invariant 0 <= i <= n
-        decreases n - i
-        i = i + 1
-    return i
+    total = 0
+    for i in range(n):
+        invariant total == i
+        total = total + 1
+    return total
 
 fn main():
     print(count_to(10))
 ```
 
-Every loop needs one or more initial `invariant` lines followed by one `decreases` line. There is no `for`, `break`, or `continue` yet.
+`for i in range(stop)` visits `0` through `stop - 1`; `range(start, stop)` uses an explicit start. Bounds are evaluated once. The index is immutable, cannot shadow an existing binding, and is available only inside the body. Empty or reversed ranges do nothing. Index bounds and termination are automatic; optional `invariant` lines describe changing values such as `total` above.
+
+Use `while condition:` for other loop shapes. A while body begins with one or more `invariant` lines followed by one `decreases` line. `break`, `continue`, range steps, and range values outside a for header are not implemented.
 
 ## Contracts
 
@@ -115,7 +116,7 @@ parallel:
 print(first + second)
 ```
 
-The block waits for all results. Each job is a call to a user function. All arguments see the incoming state; they must not mention any result name from the block. Values are copied, and workers cannot print. Jobs use native POSIX threads, with synchronous execution if thread creation fails. A block does not guarantee a speedup.
+The block waits for all results. Each job is a call to a user function. All arguments see the incoming state; they must not mention any result name from the block. Values are copied, and workers cannot print. The caller runs the last job while POSIX threads run the preceding jobs, with synchronous fallback if thread creation fails. A single job runs directly. A block does not guarantee a speedup.
 
 ## Built-ins and commands
 
@@ -141,7 +142,7 @@ fn main():
 ```sh
 clack check program.clack
 clack run program.clack
-clack build program.clack -o build/program
+clack build program.clack -o build/program --timings
 clack emit-c program.clack -o build/program.c
 ```
 

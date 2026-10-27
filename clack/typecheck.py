@@ -25,7 +25,7 @@ class TypeInfo:
 
 _ARRAY = re.compile(r"(int|bool)\[([0-9]+)\]\Z")
 _RESERVED = frozenset(
-    "fn type parallel if elif else while return assert requires ensures invariant "
+    "fn type parallel if elif else while for in range return assert requires ensures invariant "
     "decreases and or not true false int bool unit text result print len from import native extern".split()
 )
 
@@ -64,6 +64,7 @@ class _Checker:
         self.calls: dict[str, set[str]] = {}
         self.fn: f.Function | None = None
         self.params: set[str] = set()
+        self.indices: set[str] = set()
 
     @staticmethod
     def fail(message: str, line: int) -> None:
@@ -137,7 +138,7 @@ class _Checker:
             self.valid_type(fn.return_type, fn.line, allow_unit=fn.name == "main" or fn.foreign_symbol is not None)
             if fn.foreign_symbol is not None:
                 symbol = fn.foreign_symbol
-                if not re.fullmatch(r"clack_[A-Za-z_0-9]+", symbol) or symbol.startswith(("clack_fn_", "clack_t_", "clack_v_", "clack_worker_", "clack_task_", "clack_reduce_")):
+                if not re.fullmatch(r"clack_[A-Za-z_0-9]+", symbol) or symbol.startswith(("clack_fn_", "clack_t_", "clack_v_", "clack_worker_", "clack_task_", "clack_reduce_", "clack_for_")):
                     self.fail("native symbols need a clack_ prefix and a non-reserved C identifier", fn.line)
                 signature = (tuple(typ for _, typ in fn.params), fn.return_type)
                 if fn.return_type not in {"int", "bool", "unit"} or any(typ not in {"int", "bool", "text"} for _, typ in fn.params):
@@ -278,6 +279,8 @@ class _Checker:
 
     def bind(self, name: str, typ: str, line: int, scope: dict[str, str]) -> None:
         self.valid_name(name, line, "variable")
+        if name in self.indices:
+            self.fail(f"for index {name!r} is immutable", line)
         if name in self.params:
             self.fail(f"parameter {name!r} is immutable; assign to a new local variable", line)
         if typ == "unit":
@@ -343,6 +346,20 @@ class _Checker:
                 self.need(self.expr(stmt.decreases, scope, proof=True), "int", stmt.line, "decreases")
                 self.block(stmt.body, scope)
                 # A loop may run zero times, so its new locals are unavailable.
+            elif isinstance(stmt, f.For):
+                self.valid_name(stmt.name, stmt.line, "for index")
+                if stmt.name in scope:
+                    self.fail(f"for index {stmt.name!r} would shadow an existing binding; choose a new name", stmt.line)
+                self.need(self.expr(stmt.start, scope), "int", stmt.line, "range start")
+                self.need(self.expr(stmt.stop, scope), "int", stmt.line, "range stop")
+                inner = {**scope, stmt.name: "int"}
+                for invariant in stmt.invariants:
+                    self.need(self.expr(invariant, inner, proof=True), "bool", invariant.line, "invariant")
+                self.indices.add(stmt.name)
+                try:
+                    self.block(stmt.body, inner)
+                finally:
+                    self.indices.remove(stmt.name)
             elif isinstance(stmt, f.Parallel):
                 if not stmt.bindings:
                     self.fail("parallel needs at least one independent job", stmt.line)

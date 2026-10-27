@@ -17,6 +17,10 @@
       "stdout": "3\n0\n"
     },
     {
+      "path": "examples/tutorials/04-counted-loops.clack",
+      "stdout": "10\n20\n30\n3\n4\n10\n"
+    },
+    {
       "path": "examples/tutorials/05-parallel-work.clack",
       "stdout": "3\n2\n5\n0\n"
     },

@@ -1,6 +1,6 @@
 # Grammar
 
-This grammar describes Clack 0.2's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
+This grammar describes Clack 0.3's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
 
 Quoted strings are literal tokens. `A | B` chooses an alternative, `[ A ]` makes a form optional, and `{ A }` repeats it zero or more times. A comma between grammar items means sequence; it is not a source comma unless quoted.
 
@@ -66,7 +66,7 @@ suite           = ":", NEWLINE, INDENT,
                   statement, { statement }, DEDENT ;
 statement       = assignment | array_assignment | return_statement
                 | assertion | expression_statement
-                | if_statement | while_statement | parallel_statement ;
+                | if_statement | while_statement | for_statement | parallel_statement ;
 assignment      = name, "=", expression, NEWLINE ;
 array_assignment = name, "[", expression, "]", "=", expression, NEWLINE ;
 return_statement = "return", [ expression ], NEWLINE ;
@@ -78,6 +78,9 @@ if_statement    = "if", expression, suite,
 while_statement = "while", expression, ":", NEWLINE, INDENT,
                   invariant, { invariant }, decreases,
                   statement, { statement }, DEDENT ;
+for_statement   = "for", name, "in", "range", "(",
+                  expression, [ ",", expression ], ")", ":", NEWLINE, INDENT,
+                  { invariant }, statement, { statement }, DEDENT ;
 invariant       = "invariant", expression, NEWLINE ;
 decreases       = "decreases", expression, NEWLINE ;
 
@@ -89,6 +92,8 @@ job             = name, "=", call, NEWLINE ;
 Expression statements are parsed generally, then restricted to `print(value)` or native unit calls in main. Parallel jobs must call ordinary source functions: a constructor, native binding, builtin, or call to main is invalid. Result names must be distinct and cannot occur in any argument expression in that block. Assignment to a field, a parameter, or a nested index target is unsupported. A bare `return` belongs only to main.
 
 Assignment targets and job calls are recognized from their parsed expression form. Redundant grouping parentheses do not change that form; the productions above show their unparenthesized spellings.
+
+For headers accept one stop bound or a start and stop, with no step argument or trailing comma. Both bounds must be integers. The immutable index is scoped to the body, and optional invariants precede executable statements. The compiler supplies counted-loop bounds and termination; `range` is not accepted as an ordinary expression.
 
 ## Expressions
 

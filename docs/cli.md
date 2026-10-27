@@ -57,7 +57,7 @@ clack build examples/parallel.clack -o build/my-program
 
 Without `-o`, the output is `build/` followed by the source filename without its suffix. The build directory belongs to the current working directory, not necessarily the directory containing the source file. The compiler creates missing output directories.
 
-Verification and C compilation must succeed before an existing executable is replaced. `build` and `run` compile every resolved `native` C provider with the generated file. `build` and `emit-c` refuse to overwrite any input source, including imported Clack or native C files. The generated C used during a normal build is temporary; request `emit-c` separately to keep a readable copy.
+Verification and C compilation must succeed before an existing executable is replaced. `build` and `run` compile every resolved `native` C provider with the generated file. `build` and `emit-c` protect input sources, including imported Clack or native C files. Both replace their destinations atomically after success, so an output hard-linked to an input is replaced without changing that input. A destination that resolves to an input path is rejected. The generated C used during a normal build is temporary; request `emit-c` separately to keep a readable copy.
 
 ## Run without keeping a binary
 
@@ -105,6 +105,20 @@ clack build examples/hello.clack --cc 'ccache clang'
 
 The command is split into arguments using shell-like quoting and invoked directly. It is not executed through a shell: shell pipes, redirects, and variable substitutions inside `--cc` are not interpreted. Clack appends `-std=c11 -O3 -Wall -Wextra -pthread`, the temporary C path, and the output arguments.
 
+## See where compilation time goes
+
+Every source command accepts `--timings`:
+
+```sh
+clack check examples/contracts.clack --timings
+clack build examples/parallel.clack --timings
+clack run examples/arrays.clack --timings
+```
+
+The compiler writes a `clack timings:` line to standard error with milliseconds for each attempted phase: `load` parses and links source modules, `verify` includes static checking and proofs, `emit` generates C, and `cc` builds the native executable. Only phases reached by that command appear. Program output and emitted C stay on standard output.
+
+These phase measurements exclude Python/compiler import startup, output-file writing, and execution of the native program. They help identify compiler bottlenecks; use a separate process timer for complete command latency or a benchmark harness for native runtime. A failed attempted phase may still report elapsed time.
+
 ## Give a proof more time
 
 Every source command accepts a positive `--timeout-ms`, defaulting to `5000`:
@@ -137,6 +151,8 @@ The directory contains numbered SMT-LIB queries such as `0001.smt2` and an `obli
 Names, counts, and line numbers depend on the program. For a program loaded from files, entries also include a `source` path; the `line` identifies the original source line and imported function names use a readable module name. The solver checks the current facts together with the negation of the claim. `unsat` means no counterexample exists in that query's model; `sat` means one exists; `unknown` means the query was not established.
 
 An attempted verification writes results accumulated before failure. A parse or type error can occur before any new export is created. Reusing a directory does not remove older numbered files, so use the manifest from the current run, or choose a fresh directory. These files are reproducible verification conditions, not independently checked proof certificates. The [verification model](verification.md) explains the trust boundary.
+
+The CLI rejects proof-export paths that would overwrite any loaded input, including a symbolic or hard link to an input. Keep exports in a separate directory such as `build/proofs`.
 
 ## Exit status and common setup problems
 

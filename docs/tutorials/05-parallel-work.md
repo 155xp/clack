@@ -50,7 +50,7 @@ The exact output is:
 
 The helper is repeated here so this is a complete runnable file. The library lesson will show how to reuse a helper from another source file.
 
-Each line of the `parallel:` block calls a user-defined function and gives its result a distinct name. The compiler creates native POSIX threads for those jobs. The block waits for all jobs to finish before execution continues below it. If the platform cannot create a thread, that job runs synchronously with the same result semantics.
+Each line of the `parallel:` block calls a user-defined function and gives its result a distinct name. The caller runs the last job while native POSIX threads run the preceding jobs. The block waits for all jobs to finish before execution continues below it. If the platform cannot create a thread, that job runs synchronously with the same result semantics. A block with one job runs directly.
 
 No worker can call `print`; output belongs to main. That means the output order comes from the four print statements after the block, rather than from whichever worker happens to finish first.
 

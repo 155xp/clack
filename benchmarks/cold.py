@@ -2,6 +2,7 @@
 """Interleave two compiler revisions to measure fresh-process CLI latency."""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,8 @@ import subprocess
 import sys
 import tempfile
 import time
+
+from suite import source_fingerprint
 
 
 def main():
@@ -26,6 +29,7 @@ def main():
     for root in roots.values():
         if not (root / "clack/cli.py").is_file():
             parser.error(f"not a Clack source tree: {root}")
+    fingerprints = {label: source_fingerprint(root) for label, root in roots.items()}
     fixtures = {
         "hello": "fn main():\n    print(42)\n",
         "stdlib": "from std.math import clamp\nfrom std.array import sum4\nfn main():\n    print(clamp(sum4([1,2,3,4]),0,100))\n",
@@ -48,7 +52,10 @@ def main():
                 if result.returncode:
                     raise RuntimeError(result.stderr)
                 samples[name][label].append(elapsed)
+    if fingerprints != {label: source_fingerprint(root) for label, root in roots.items()}:
+        raise RuntimeError("compiler source changed during measurement; repeat with stable trees")
     report = {"scope": "Interleaved fresh-process CLI checks; includes Python/Z3 startup; no C emission or native compilation.",
+              "compiler_source_sha256": fingerprints, "benchmark_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               "seed": 2026, "repeats": args.repeats,
               "results": {name: {label: {"median_seconds": statistics.median(values), "samples_seconds": values}
                                  for label, values in labels.items()} for name, labels in samples.items()}}

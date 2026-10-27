@@ -58,7 +58,7 @@ These fragments assume the `square` definition and a surrounding function, with 
 
 Helpers receive values, parameters are immutable, and there is no mutable global state. Only `main` can print, and helpers cannot call `main`. A worker can mutate its local bindings and local array copies without exposing that state to another worker.
 
-As a result, supported jobs have no shared mutable language data to race over. This is a restriction on the language's permitted effects, not a dynamic race detector. There are no user-visible shared references, atomics, locks, or channels. Version 0.2's explicit native bindings are restricted to main and cannot be reached from workers; the C implementations themselves are outside the proof model.
+As a result, supported jobs have no shared mutable language data to race over. This is a restriction on the language's permitted effects, not a dynamic race detector. There are no user-visible shared references, atomics, locks, or channels. Explicit native bindings are restricted to main and cannot be reached from workers; the C implementations themselves are outside the proof model.
 
 Each worker's contract is checked in the same way as an ordinary call. Parallelism does not weaken preconditions, permit overflow, or turn unknown solver results into accepted programs. The callee's verified postconditions describe its output after the block.
 
@@ -66,13 +66,13 @@ Each worker's contract is checked in the same way as an ordinary call. Paralleli
 
 A parallel block may appear inside a helper or a loop. A helper called as a job may itself create a parallel block, wait for its child jobs, and return a result. Nested work is therefore supported through ordinary function calls.
 
-The static call graph must remain acyclic. Nested blocks do not enable recursive task spawning, and every enclosing loop still needs an invariant and a termination measure. The block waits for all of its own jobs before the caller continues; there are no detached tasks.
+The static call graph must remain acyclic. Nested blocks do not enable recursive task spawning. Enclosing while loops need invariants and a termination measure; counted for loops supply index bounds and progress automatically. The block waits for all of its own jobs before the caller continues; there are no detached tasks.
 
 The current implementation does not bound the number of simultaneously active native threads with a worker pool. A deep chain of helpers or a large fan-out can create more threads than is useful. Keep the first programs' groups small and jobs substantial, and measure the workload you care about.
 
 ## Native execution and failure behavior
 
-The C backend prepares separate argument/result storage for every job. It attempts to create one POSIX thread per job, then joins successfully started threads before assigning the result bindings. On the normal path, all jobs are launched before the first join.
+The C backend prepares separate argument/result storage for every job and snapshots every argument before starting any job. For a block with N jobs, it attempts to create POSIX threads for the first N−1, runs the last job on the calling thread, then joins the successfully started threads before assigning result bindings. A one-job block runs directly without creating a thread. This lets the caller contribute work and avoids one thread creation and join per block.
 
 If `pthread_create` fails, that job runs synchronously in the caller. It still produces the same language-level value. Synchronous fallback can delay launching later jobs, so the implementation does not promise simultaneous execution or a particular interleaving. If joining a successfully created thread fails, the generated process aborts; that operating-system failure is outside the mathematical contract model.
 

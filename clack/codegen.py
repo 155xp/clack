@@ -52,6 +52,7 @@ class _Emitter:
         self.functions = {function.name: function for function in program.functions}
         self.tasks: dict[int, _Task] = {}
         self.reductions: set[tuple[str, str]] = set()
+        self.serial = 0
         self._collect_tasks()
 
     def _collect_tasks(self) -> None:
@@ -212,18 +213,19 @@ class _Emitter:
             task = self.tasks[id(binding)]
             initializers = ", ".join(f".arg_{index} = {self.expression(value)}" for index, value in enumerate(binding.value.args))
             initializer = "{ " + initializers + " }" if initializers else "{0}"
-            output.extend([
-                f"{inner}clack_task_{task.number} task_{task.number} = {initializer};",
-                f"{inner}pthread_t thread_{task.number};",
-                f"{inner}bool started_{task.number};",
-            ])
-        for binding in statement.bindings:
+            output.append(f"{inner}clack_task_{task.number} task_{task.number} = {initializer};")
+            if binding is not statement.bindings[-1]:
+                output.extend([f"{inner}pthread_t thread_{task.number};", f"{inner}bool started_{task.number};"])
+        for binding in statement.bindings[:-1]:
             task = self.tasks[id(binding)]
             output.extend([
                 f"{inner}started_{task.number} = pthread_create(&thread_{task.number}, NULL, clack_worker_{task.number}, &task_{task.number}) == 0;",
                 f"{inner}if (!started_{task.number}) (void)clack_worker_{task.number}(&task_{task.number});",
             ])
-        for binding in statement.bindings:
+        # The caller participates instead of idling behind one extra pthread.
+        task = self.tasks[id(statement.bindings[-1])]
+        output.append(f"{inner}(void)clack_worker_{task.number}(&task_{task.number});")
+        for binding in statement.bindings[:-1]:
             task = self.tasks[id(binding)]
             output.append(f"{inner}if (started_{task.number} && pthread_join(thread_{task.number}, NULL) != 0) abort();")
         for binding in statement.bindings:
@@ -252,6 +254,15 @@ class _Emitter:
                     output.append(indent + "} else {")
                     output.extend(self.statements(statement.else_body, indent + "    "))
                 output.append(indent + "}")
+            elif kind == "For":
+                self.serial += 1
+                start, stop = f"clack_for_{self.serial}_start", f"clack_for_{self.serial}_stop"
+                output.extend([f"{indent}{{",
+                               f"{indent}    const int64_t {start} = {self.expression(statement.start)};",
+                               f"{indent}    const int64_t {stop} = {self.expression(statement.stop)};",
+                               f"{indent}    for (int64_t {_var(statement.name)} = {start}; {_var(statement.name)} < {stop}; ++{_var(statement.name)}) {{"])
+                output.extend(self.statements(statement.body, indent + "        "))
+                output.extend([indent + "    }", indent + "}"])
             elif kind == "While":
                 output.append(f"{indent}while ({self.expression(statement.condition)}) {{")
                 output.extend(self.statements(statement.body, indent + "    "))

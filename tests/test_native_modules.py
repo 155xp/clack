@@ -184,6 +184,7 @@ class NativeModuleTests(unittest.TestCase):
             'extern fn invalid() -> int[2] = "clack_test_invalid"',
             'extern fn invalid() -> int = "not-a-C-identifier"',
             'extern fn invalid() -> int = "bad\\u0000symbol"',
+            'extern fn invalid() -> int = "clack_for_1_start"',
         ]
         for declaration in declarations:
             with self.subTest(declaration=declaration):

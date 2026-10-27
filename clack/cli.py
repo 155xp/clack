@@ -6,10 +6,12 @@ import argparse
 from collections.abc import Sequence
 import os
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import sys
 import tempfile
+from time import perf_counter
 
 from . import __version__
 from .frontend import CompileError
@@ -32,11 +34,32 @@ def _parser() -> argparse.ArgumentParser:
         command.add_argument("source", type=Path, help="a .clack source file")
         command.add_argument("--timeout-ms", type=_positive, default=5000, help="solver timeout per obligation (default: 5000)")
         command.add_argument("--proof-dir", type=Path, help="save SMT queries and their obligation results")
+        command.add_argument("--timings", action="store_true", help="report compiler phase timings on standard error")
         if name in {"build", "emit-c"}:
             command.add_argument("-o", "--output", type=Path)
         if name in {"build", "run"}:
             command.add_argument("--cc", default=os.environ.get("CC", "cc"), help="C compiler command (default: CC or cc)")
     return parser
+
+
+def _protect_proofs(directory: Path | None, inputs: set[Path]) -> None:
+    if directory is None:
+        return
+    directory = directory.resolve()
+    candidates = inputs | (set(directory.iterdir()) if directory.is_dir() else set())
+    for candidate in candidates:
+        if candidate.parent != directory or not (candidate.name == "obligations.json" or re.fullmatch(r"[0-9]{4,}\.smt2", candidate.name)):
+            continue
+        if candidate.resolve() in inputs or (candidate.exists() and any(candidate.samefile(path) for path in inputs)):
+            raise RuntimeError("proof outputs must differ from every input source, including imported libraries")
+
+
+def _write_c(source: str, output: Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".clack-", dir=output.parent) as directory:
+        temporary = Path(directory) / "program.c"
+        temporary.write_text(source, encoding="utf-8")
+        os.replace(temporary, output)
 
 
 def _compile(c_source: str, output: Path, cc: str, native_sources: Sequence[str] = ()) -> None:
@@ -61,6 +84,17 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     source = ""
     program = None
+    timings: list[str] = []
+
+    def measure(phase, action, *values, **options):
+        if not args.timings:
+            return action(*values, **options)
+        started = perf_counter()
+        try:
+            return action(*values, **options)
+        finally:
+            timings.append(f"{phase}={(perf_counter() - started) * 1000:.2f}ms")
+
     try:
         # Keep --help / --version usable before the solver is installed.
         from .codegen import emit_c
@@ -68,23 +102,23 @@ def main(argv: list[str] | None = None) -> int:
         from .verifier import verify
 
         source = args.source.read_text(encoding="utf-8")
-        program = load_program(args.source)
-        checked = verify(program, timeout_ms=args.timeout_ms, proof_dir=args.proof_dir)
+        program = measure("load", load_program, args.source)
+        source_paths = {Path(path).resolve() for path, _ in program.locations.values()}
+        source_paths.update(Path(path).resolve() for path in program.native_sources)
+        _protect_proofs(args.proof_dir, source_paths)
+        checked = measure("verify", verify, program, timeout_ms=args.timeout_ms, proof_dir=args.proof_dir)
         count = len(checked.obligations)
         native_count = sum(fn.foreign_symbol is not None for fn in program.functions)
         native_note = f" Native bindings: {native_count}; C sources: {len(program.native_sources)} (outside verification model)." if native_count or program.native_sources else ""
         if args.command == "check":
             print(f"Verified {args.source}: {count} obligations proved across {len(program.functions) - native_count} Clack functions.{native_note}")
             return 0
-        c_source = emit_c(program, checked.local_types, checked.expr_types)
-        source_paths = {Path(path).resolve() for path, _ in program.locations.values()}
-        source_paths.update(Path(path).resolve() for path in program.native_sources)
+        c_source = measure("emit", emit_c, program, checked.local_types, checked.expr_types)
         if args.command == "emit-c":
             if args.output:
                 if args.output.resolve() in source_paths:
                     raise RuntimeError("output must differ from every input source, including imported libraries")
-                args.output.parent.mkdir(parents=True, exist_ok=True)
-                args.output.write_text(c_source, encoding="utf-8")
+                _write_c(c_source, args.output)
             else:
                 sys.stdout.write(c_source)
             return 0
@@ -92,12 +126,12 @@ def main(argv: list[str] | None = None) -> int:
             output = args.output or Path("build") / args.source.stem
             if output.resolve() in source_paths:
                 raise RuntimeError("output must differ from every input source, including imported libraries")
-            _compile(c_source, output, args.cc, program.native_sources)
+            measure("cc", _compile, c_source, output, args.cc, program.native_sources)
             print(f"Built {output} ({count} obligations proved).{native_note}")
             return 0
         with tempfile.TemporaryDirectory(prefix="clack-run-") as directory:
             output = Path(directory) / "program"
-            _compile(c_source, output, args.cc, program.native_sources)
+            measure("cc", _compile, c_source, output, args.cc, program.native_sources)
             result = subprocess.run([str(output)])
             return result.returncode if result.returncode >= 0 else 128 - result.returncode
     except CompileError as error:
@@ -130,3 +164,6 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("clack: interrupted", file=sys.stderr)
         return 130
+    finally:
+        if timings:
+            print("clack timings: " + ", ".join(timings), file=sys.stderr)

@@ -1,6 +1,6 @@
 # The Clack Handbook
 
-Documentation for **Clack 0.2**, the native language implemented in this repository.
+Documentation for **Clack 0.3**, the native language implemented in this repository.
 
 Clack combines a small syntax with static types, value records, fixed arrays, checked contracts, and independent parallel calls. This handbook teaches the current compiler. Proposed features live in the [design direction](design.md).
 

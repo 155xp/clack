@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Types](reference/types-values.md) · [CLI](cli.md)
 
-Clack 0.2 supports immutable `text` values and an explicit native C boundary. This is enough for labels, terminal output, and optional terminal UI libraries while keeping verified worker functions separate from operating-system effects.
+Clack supports immutable `text` values and an explicit native C boundary. This is enough for labels, terminal output, and optional terminal UI libraries while keeping verified worker functions separate from operating-system effects.
 
 ## Text values
 
@@ -74,7 +74,7 @@ The run prints `Clack` and then `81`. The successful `check` message also identi
 
 The `native` path is relative to the file declaring it. It must identify a `.c` file below that module's directory: absolute paths, `..` traversal, and symlink escapes are rejected. Imported modules may declare their own providers, and resolved C paths are linked once. The compiler also protects these input files from being overwritten by build outputs.
 
-An `extern fn` declaration has no body or `requires`/`ensures` clauses. It names the C symbol after `=`. Symbols must begin with `clack_`, use ASCII C identifier characters, and avoid compiler prefixes such as `clack_fn_`, `clack_t_`, `clack_v_`, `clack_worker_`, `clack_task_`, and `clack_reduce_`.
+An `extern fn` declaration has no body or `requires`/`ensures` clauses. It names the C symbol after `=`. Symbols must begin with `clack_`, use ASCII C identifier characters, and avoid compiler prefixes such as `clack_fn_`, `clack_t_`, `clack_v_`, `clack_worker_`, `clack_task_`, `clack_reduce_`, and `clack_for_`.
 
 ## C ABI
 

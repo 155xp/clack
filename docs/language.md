@@ -33,7 +33,7 @@ Store the program in a `.clack` file. With the compiler installed and the virtua
 | Libraries | Explicit `from module import name` for standard or local definitions | [Library guide](libraries.md) |
 | Mutation | Locals may change; parameters and record fields are immutable | [Functions and control flow](reference/functions-control-flow.md) |
 | Copies | Assignment, arguments, and results have value semantics | [Types and values](reference/types-values.md) |
-| Loops | `while`, with invariants and a decreasing integer measure | [Contracts and verification](reference/contracts-verification.md) |
+| Loops | Counted `for` with automatic progress; `while` with invariants and a decreasing measure | [Control flow](reference/functions-control-flow.md#counted-for-loops) |
 | Jobs | Direct independent function calls inside `parallel:` | [Parallel execution](reference/parallelism.md) |
 | Output | Only `main` may `print` one integer, Boolean, or text value at a time | [Built-ins](reference/functions-control-flow.md) |
 
@@ -66,4 +66,4 @@ Local libraries use the same form: `from helpers import twice` loads `helpers.cl
 - Use the [reference index](reference/README.md) or [complete grammar](reference/grammar.md) to look up syntax.
 - Try the [example programs](../examples/) and compare their source with the generated C.
 - Read [native bindings](native.md) for the explicit trusted C boundary used by optional terminal UI packages.
-- Read the [design direction](design.md) for planned text manipulation, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.2.
+- Read the [design direction](design.md) for planned text manipulation, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.3.

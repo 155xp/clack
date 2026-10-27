@@ -36,7 +36,7 @@ An identifier starts with an ASCII letter or underscore. Subsequent characters m
 These words have grammatical meaning and cannot be ordinary identifiers:
 
 ```text
-fn type from import native extern parallel if elif else while return assert
+fn type from import native extern parallel if elif else while for in range return assert
 requires ensures invariant decreases and or not
 true false int bool unit text
 ```
