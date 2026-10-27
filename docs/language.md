@@ -66,4 +66,4 @@ Local libraries use the same form: `from helpers import twice` loads `helpers.cl
 - Use the [reference index](reference/README.md) or [complete grammar](reference/grammar.md) to look up syntax.
 - Try the [example programs](../examples/) and compare their source with the generated C.
 - Read [native bindings](native.md) for the explicit trusted C boundary used by optional terminal UI packages.
-- Read the [design direction](design.md) for planned text concatenation and indexing, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.5.
+- Read the [design direction](design.md) for planned text concatenation and indexing, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.6.

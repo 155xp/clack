@@ -1,0 +1,11 @@
+from geometry import Point, Rect, translate, squared_distance, contains, intersects, area, bounding_rect
+
+fn main():
+    origin = Point(0, 0)
+    moved = translate(origin, 3, 4)
+    box = bounding_rect(origin, moved)
+    touching = Rect(3, 4, 8, 9)
+    print(squared_distance(origin, moved))
+    print(area(box))
+    print(contains(box, moved))
+    print(intersects(box, touching))

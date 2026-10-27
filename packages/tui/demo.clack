@@ -1,0 +1,16 @@
+from tui import begin, panel, label, row, metric, progress, option, run, end
+
+fn main():
+    begin("Clack build dashboard")
+    panel("Compiler")
+    label("Native code. Small language. Clear promises.")
+    row("Target", "C11 / native")
+    metric("Jobs ready", 4)
+    progress("Build", 7, 10)
+    panel("Actions")
+    option(1, "Run benchmarks")
+    option(2, "Read documentation")
+    option(3, "Finish")
+    selected = run()
+    end()
+    print(selected)

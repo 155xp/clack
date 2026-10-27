@@ -1,6 +1,6 @@
 # The Clack Handbook
 
-Documentation for **Clack 0.5**, the native language implemented in this repository.
+Documentation for **Clack 0.6**, the native language implemented in this repository.
 
 Clack combines a small syntax with static types, value records, fixed arrays, checked contracts, and independent parallel calls. This handbook teaches the current compiler. Proposed features live in the [design direction](design.md).
 
@@ -27,6 +27,8 @@ You can follow the tutorials with basic programming knowledge. The first lessons
 | Compiler flags and outputs | [Command-line reference](cli.md) |
 | Small reusable patterns | [Cookbook](cookbook.md) |
 | Imports, built-ins, and standard helpers | [Libraries](libraries.md) |
+| Optional numeric, ML, algorithm, and terminal packages | [Package guide](packages.md) and [catalog](../packages/catalog.json) |
+| Generating Clack with coding agents | [Agent guide](agents.md), [structured reference](agent-reference.json), and [llms.txt](../llms.txt) |
 | Text, C providers, and terminal UI boundaries | [Native bindings](native.md) |
 | Common questions and limitations | [FAQ](faq.md) |
 

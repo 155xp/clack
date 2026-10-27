@@ -1,0 +1,29 @@
+# Clack
+
+> A small native language with checked contracts, explicit source imports, and independent parallel calls. This index describes the implemented Clack 0.6 language and its optional source packages.
+
+The compiler uses Python and Z3 during development, emits C11, and builds native executables. Generated programs need neither Python nor Z3. Ordinary loaded Clack functions are verified before emission. Explicit native C providers remain trusted and unproved.
+
+## Start
+
+- [Agent guide](docs/agents.md): Supported syntax, verification workflow, imports, repair rules, and native boundaries.
+- [Structured language reference](docs/agent-reference.json): Machine-readable capabilities, commands, types, and semantics.
+- [Handbook](docs/README.md): Human documentation entrypoint.
+- [Quick reference](docs/quick-reference.md): Accepted syntax and common forms.
+- [Grammar](docs/reference/grammar.md): Implemented grammar, not proposed extensions.
+
+## Packages and examples
+
+- [Optional packages](docs/packages.md): Installation, application layout, domains, and validation.
+- [Package catalog](packages/catalog.json): Source modules, demos, and checks.
+- [Package directory](packages/README.md): Geometry, matrix, fixed-point, statistics, algorithms, ML, and TUI guides.
+- [Tutorials](docs/tutorials/README.md): Runnable source lessons and expected outputs.
+
+## Verification and execution
+
+- [CLI](docs/cli.md): check, build, run, emit-c, timings, and SMT exports.
+- [Verification model](docs/verification.md): Proved properties and trusted components.
+- [Errors](docs/errors.md): Diagnostics and specification repairs.
+- [Native bindings](docs/native.md): Text semantics and the explicit C ABI.
+- [Performance measurements](benchmarks/RESULTS-0.6.md): Libraries, text compilation, selected ML workload, samples, and limits.
+- [Design direction](docs/design.md): Future proposals; these are not accepted syntax.

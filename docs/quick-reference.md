@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Full reference](reference/README.md)
 
-This page summarizes accepted Clack 0.5 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
+This page summarizes accepted Clack 0.6 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
 
 ## Program and functions
 
@@ -144,7 +144,7 @@ fn main():
     print(count([true, false, true]))
 ```
 
-`fill(value, count)` accepts an integer or Boolean value and a decimal integer literal count from `1` through `1000000`; it evaluates the value once. `minimum` and `maximum` select an integer array's smallest and largest elements without overflow. `sum` checks every partial addition. `all`, `any`, and `count` accept Boolean arrays; `count` counts true elements. These seven imported operators are modeled directly and emitted as native loops. They cannot appear in proof annotations or as direct parallel jobs, though a source worker function can use them. Fixed-size source helpers remain supported. User-defined generic functions and `sort` are not implemented. See [the library catalog](libraries.md) for details.
+`fill(value, count)` accepts an integer or Boolean value and a decimal integer literal count from `1` through `1000000`; it evaluates the value once. `minimum` and `maximum` select an integer array's smallest and largest elements without overflow. `sum` checks every partial addition. `all`, `any`, and `count` accept Boolean arrays; `count` counts true elements. These seven imported operators are modeled directly and emitted as native loops. They cannot appear in proof annotations or as direct parallel jobs, though a source worker function can use them. Fixed-size source helpers remain supported. User-defined generic functions and a length-independent `sort` are not implemented; the optional [algorithms package](../packages/algorithms/README.md) provides `sort4`. See [the standard library catalog](libraries.md) and [package guide](packages.md) for details.
 
 ```sh
 clack check program.clack

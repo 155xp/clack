@@ -14,10 +14,15 @@ def group(name):
     path = Path(name)
     if name.startswith("clack/"):
         return "standard_library" if path.suffix == ".clack" else "compiler" if path.suffix == ".py" else None
+    if name.startswith("packages/"):
+        if path.suffix in {".clack", ".c"}:
+            return "package_examples" if path.name.endswith("demo.clack") else "optional_libraries"
+        if path.suffix == ".py":
+            return "package_tests"
     for folder, extension in (("tests", ".py"), ("benchmarks", ".py"), ("tools", ".py"), ("examples", ".clack")):
         if path.parts[0] == folder and path.suffix == extension:
             return folder
-    if path.suffix == ".md" and (path.parts[0] in {"docs", "benchmarks"} or name == "README.md"):
+    if (path.suffix == ".md" and (path.parts[0] in {"docs", "benchmarks", "packages"} or name == "README.md")) or name in {"llms.txt", "docs/agent-reference.json", "packages/catalog.json"}:
         return "documentation"
 
 
@@ -27,8 +32,8 @@ def count(ref=None):
         names = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", "-z", tree], cwd=ROOT).decode().split("\0")
         read = lambda name: subprocess.check_output(["git", "show", f"{tree}:{name}"], cwd=ROOT, text=True)
     else:
-        names = ["README.md"]
-        for folder in ("clack", "tests", "benchmarks", "tools", "examples", "docs"):
+        names = ["README.md", "llms.txt"]
+        for folder in ("clack", "tests", "benchmarks", "tools", "examples", "docs", "packages"):
             names.extend(str(path.relative_to(ROOT)) for path in (ROOT / folder).rglob("*")
                          if path.is_file() and "__pycache__" not in path.parts)
         read = lambda name: (ROOT / name).read_text(encoding="utf-8")

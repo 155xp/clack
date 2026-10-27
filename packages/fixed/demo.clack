@@ -1,0 +1,16 @@
+from fixed import Fixed, from_int, from_ratio, to_int, add, subtract, multiply, divide
+
+fn main():
+    half_more = from_ratio(3, 2)
+    print(half_more.raw)
+    squared = multiply(half_more, half_more)
+    print(squared.raw)
+    divided = divide(half_more, Fixed(500))
+    print(divided.raw)
+    negative = to_int(Fixed(-1999))
+    print(negative)
+    whole = from_int(2)
+    added = add(whole, half_more)
+    removed = subtract(added, half_more)
+    print(added.raw)
+    print(removed.raw)

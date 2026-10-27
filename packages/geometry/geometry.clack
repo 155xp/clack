@@ -1,0 +1,63 @@
+# Integer geometry. Rectangles use closed x/y intervals; top is the lower y.
+from std.math import min, max
+
+type Point:
+    x: int
+    y: int
+
+type Rect:
+    left: int
+    top: int
+    right: int
+    bottom: int
+
+fn translate(point: Point, dx: int, dy: int) -> Point:
+    requires -1000000 <= point.x <= 1000000
+    requires -1000000 <= point.y <= 1000000
+    requires -1000000 <= dx <= 1000000
+    requires -1000000 <= dy <= 1000000
+    ensures result.x == point.x + dx and result.y == point.y + dy
+    return Point(point.x + dx, point.y + dy)
+
+fn squared_distance(a: Point, b: Point) -> int:
+    requires -1000000 <= a.x <= 1000000
+    requires -1000000 <= a.y <= 1000000
+    requires -1000000 <= b.x <= 1000000
+    requires -1000000 <= b.y <= 1000000
+    ensures result == (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
+    ensures 0 <= result <= 8000000000000
+    dx = a.x - b.x
+    dy = a.y - b.y
+    return dx * dx + dy * dy
+
+fn contains(rect: Rect, point: Point) -> bool:
+    requires rect.left <= rect.right and rect.top <= rect.bottom
+    ensures result == (rect.left <= point.x <= rect.right and rect.top <= point.y <= rect.bottom)
+    return rect.left <= point.x <= rect.right and rect.top <= point.y <= rect.bottom
+
+fn intersects(a: Rect, b: Rect) -> bool:
+    requires a.left <= a.right and a.top <= a.bottom
+    requires b.left <= b.right and b.top <= b.bottom
+    ensures result == (a.left <= b.right and b.left <= a.right and a.top <= b.bottom and b.top <= a.bottom)
+    return a.left <= b.right and b.left <= a.right and a.top <= b.bottom and b.top <= a.bottom
+
+fn area(rect: Rect) -> int:
+    requires -1000000 <= rect.left <= 1000000
+    requires -1000000 <= rect.top <= 1000000
+    requires -1000000 <= rect.right <= 1000000
+    requires -1000000 <= rect.bottom <= 1000000
+    requires rect.left <= rect.right and rect.top <= rect.bottom
+    ensures result == (rect.right - rect.left) * (rect.bottom - rect.top)
+    ensures 0 <= result <= 4000000000000
+    return (rect.right - rect.left) * (rect.bottom - rect.top)
+
+fn bounding_rect(a: Point, b: Point) -> Rect:
+    ensures result.left <= a.x and result.left <= b.x
+    ensures result.left == a.x or result.left == b.x
+    ensures result.right >= a.x and result.right >= b.x
+    ensures result.right == a.x or result.right == b.x
+    ensures result.top <= a.y and result.top <= b.y
+    ensures result.top == a.y or result.top == b.y
+    ensures result.bottom >= a.y and result.bottom >= b.y
+    ensures result.bottom == a.y or result.bottom == b.y
+    return Rect(min(a.x, b.x), min(a.y, b.y), max(a.x, b.x), max(a.y, b.y))

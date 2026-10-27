@@ -1,0 +1,19 @@
+from ml import zero4, predict4, perceptron_step4, nearest_centroid4
+
+fn main():
+    model = zero4()
+    for epoch in range(8):
+        invariant -1000000 <= model.weights[0] <= 1000000
+        invariant -1000000 <= model.weights[1] <= 1000000
+        invariant -1000000 <= model.weights[2] <= 1000000
+        invariant -1000000 <= model.weights[3] <= 1000000
+        invariant -1000000 <= model.bias <= 1000000
+        model = perceptron_step4(model, [0, 0, 0, 0], false, 1)
+        model = perceptron_step4(model, [0, 1, 0, 0], true, 1)
+        model = perceptron_step4(model, [1, 0, 0, 0], true, 1)
+        model = perceptron_step4(model, [1, 1, 0, 0], true, 1)
+    print(predict4(model, [0, 0, 0, 0]))
+    print(predict4(model, [0, 1, 0, 0]))
+    print(predict4(model, [1, 0, 0, 0]))
+    print(predict4(model, [1, 1, 0, 0]))
+    print(nearest_centroid4([8, 8, 0, 0], [0, 0, 0, 0], [10, 10, 0, 0]))

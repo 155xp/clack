@@ -1,0 +1,108 @@
+# Small integer models. Four features; weights/bias stay within +/-1000000.
+from std.math import clamp
+
+type Linear4:
+    weights: int[4]
+    bias: int
+
+fn zero4() -> Linear4:
+    ensures result.weights[0] == 0 and result.weights[1] == 0
+    ensures result.weights[2] == 0 and result.weights[3] == 0 and result.bias == 0
+    return Linear4([0, 0, 0, 0], 0)
+
+fn score4(model: Linear4, features: int[4]) -> int:
+    requires -1000000 <= model.weights[0] <= 1000000
+    requires -1000000 <= model.weights[1] <= 1000000
+    requires -1000000 <= model.weights[2] <= 1000000
+    requires -1000000 <= model.weights[3] <= 1000000
+    requires -1000000 <= model.bias <= 1000000
+    requires -1000 <= features[0] <= 1000
+    requires -1000 <= features[1] <= 1000
+    requires -1000 <= features[2] <= 1000
+    requires -1000 <= features[3] <= 1000
+    ensures result == model.weights[0] * features[0] + model.weights[1] * features[1] + model.weights[2] * features[2] + model.weights[3] * features[3] + model.bias
+    ensures -4001000000 <= result <= 4001000000
+    return model.weights[0] * features[0] + model.weights[1] * features[1] + model.weights[2] * features[2] + model.weights[3] * features[3] + model.bias
+
+fn predict4(model: Linear4, features: int[4]) -> bool:
+    requires -1000000 <= model.weights[0] <= 1000000
+    requires -1000000 <= model.weights[1] <= 1000000
+    requires -1000000 <= model.weights[2] <= 1000000
+    requires -1000000 <= model.weights[3] <= 1000000
+    requires -1000000 <= model.bias <= 1000000
+    requires -1000 <= features[0] <= 1000
+    requires -1000 <= features[1] <= 1000
+    requires -1000 <= features[2] <= 1000
+    requires -1000 <= features[3] <= 1000
+    ensures result == (model.weights[0] * features[0] + model.weights[1] * features[1] + model.weights[2] * features[2] + model.weights[3] * features[3] + model.bias >= 0)
+    return score4(model, features) >= 0
+
+fn bounded_add(value: int, delta: int) -> int:
+    requires -1000000 <= value <= 1000000
+    requires -1000000 <= delta <= 1000000
+    ensures -1000000 <= result <= 1000000
+    ensures (value + delta < -1000000 and result == -1000000) or (value + delta > 1000000 and result == 1000000) or (-1000000 <= value + delta <= 1000000 and result == value + delta)
+    return clamp(value + delta, -1000000, 1000000)
+
+fn perceptron_step4(model: Linear4, features: int[4], label: bool, rate: int) -> Linear4:
+    requires -1000000 <= model.weights[0] <= 1000000
+    requires -1000000 <= model.weights[1] <= 1000000
+    requires -1000000 <= model.weights[2] <= 1000000
+    requires -1000000 <= model.weights[3] <= 1000000
+    requires -1000000 <= model.bias <= 1000000
+    requires -1000 <= features[0] <= 1000
+    requires -1000 <= features[1] <= 1000
+    requires -1000 <= features[2] <= 1000
+    requires -1000 <= features[3] <= 1000
+    requires 1 <= rate <= 1000
+    ensures -1000000 <= result.weights[0] <= 1000000
+    ensures -1000000 <= result.weights[1] <= 1000000
+    ensures -1000000 <= result.weights[2] <= 1000000
+    ensures -1000000 <= result.weights[3] <= 1000000
+    ensures -1000000 <= result.bias <= 1000000
+    ensures label != (model.weights[0] * features[0] + model.weights[1] * features[1] + model.weights[2] * features[2] + model.weights[3] * features[3] + model.bias >= 0) or (result.weights[0] == model.weights[0] and result.weights[1] == model.weights[1] and result.weights[2] == model.weights[2] and result.weights[3] == model.weights[3] and result.bias == model.bias)
+    if predict4(model, features) == label:
+        return model
+    if label:
+        signed_rate = rate
+    else:
+        signed_rate = -rate
+    return Linear4([
+        bounded_add(model.weights[0], signed_rate * features[0]),
+        bounded_add(model.weights[1], signed_rate * features[1]),
+        bounded_add(model.weights[2], signed_rate * features[2]),
+        bounded_add(model.weights[3], signed_rate * features[3]),
+    ], bounded_add(model.bias, signed_rate))
+
+fn squared_distance4(left: int[4], right: int[4]) -> int:
+    requires -1000000 <= left[0] <= 1000000
+    requires -1000000 <= left[1] <= 1000000
+    requires -1000000 <= left[2] <= 1000000
+    requires -1000000 <= left[3] <= 1000000
+    requires -1000000 <= right[0] <= 1000000
+    requires -1000000 <= right[1] <= 1000000
+    requires -1000000 <= right[2] <= 1000000
+    requires -1000000 <= right[3] <= 1000000
+    ensures result == (left[0] - right[0]) * (left[0] - right[0]) + (left[1] - right[1]) * (left[1] - right[1]) + (left[2] - right[2]) * (left[2] - right[2]) + (left[3] - right[3]) * (left[3] - right[3])
+    ensures 0 <= result <= 16000000000000
+    a = left[0] - right[0]
+    b = left[1] - right[1]
+    c = left[2] - right[2]
+    d = left[3] - right[3]
+    return a * a + b * b + c * c + d * d
+
+fn nearest_centroid4(features: int[4], negative: int[4], positive: int[4]) -> bool:
+    requires -1000000 <= features[0] <= 1000000
+    requires -1000000 <= features[1] <= 1000000
+    requires -1000000 <= features[2] <= 1000000
+    requires -1000000 <= features[3] <= 1000000
+    requires -1000000 <= negative[0] <= 1000000
+    requires -1000000 <= negative[1] <= 1000000
+    requires -1000000 <= negative[2] <= 1000000
+    requires -1000000 <= negative[3] <= 1000000
+    requires -1000000 <= positive[0] <= 1000000
+    requires -1000000 <= positive[1] <= 1000000
+    requires -1000000 <= positive[2] <= 1000000
+    requires -1000000 <= positive[3] <= 1000000
+    ensures result == ((features[0] - positive[0]) * (features[0] - positive[0]) + (features[1] - positive[1]) * (features[1] - positive[1]) + (features[2] - positive[2]) * (features[2] - positive[2]) + (features[3] - positive[3]) * (features[3] - positive[3]) <= (features[0] - negative[0]) * (features[0] - negative[0]) + (features[1] - negative[1]) * (features[1] - negative[1]) + (features[2] - negative[2]) * (features[2] - negative[2]) + (features[3] - negative[3]) * (features[3] - negative[3]))
+    return squared_distance4(features, positive) <= squared_distance4(features, negative)

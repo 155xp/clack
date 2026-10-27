@@ -1,0 +1,12 @@
+native "terminal.c"
+
+extern fn begin(title: text) -> unit = "clack_tui_begin"
+extern fn panel(title: text) -> unit = "clack_tui_panel"
+extern fn label(value: text) -> unit = "clack_tui_label"
+extern fn row(name: text, value: text) -> unit = "clack_tui_row"
+extern fn metric(name: text, value: int) -> unit = "clack_tui_metric"
+extern fn progress(name: text, value: int, total: int) -> unit = "clack_tui_progress"
+extern fn option(id: int, name: text) -> unit = "clack_tui_option"
+extern fn run() -> int = "clack_tui_run"
+extern fn end() -> unit = "clack_tui_end"
+extern fn menu3(title: text, first: text, second: text, third: text) -> int = "clack_tui_menu3"

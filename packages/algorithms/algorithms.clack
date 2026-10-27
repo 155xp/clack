@@ -1,0 +1,104 @@
+# Four-element comparison algorithms; all signed 64-bit inputs are accepted.
+
+fn sort4(values: int[4]) -> int[4]:
+    ensures result[0] <= result[1] <= result[2] <= result[3]
+    ensures (
+        (result[0] == values[0] and result[1] == values[1] and result[2] == values[2] and result[3] == values[3])
+        or (result[0] == values[0] and result[1] == values[1] and result[2] == values[3] and result[3] == values[2])
+        or (result[0] == values[0] and result[1] == values[2] and result[2] == values[1] and result[3] == values[3])
+        or (result[0] == values[0] and result[1] == values[2] and result[2] == values[3] and result[3] == values[1])
+        or (result[0] == values[0] and result[1] == values[3] and result[2] == values[1] and result[3] == values[2])
+        or (result[0] == values[0] and result[1] == values[3] and result[2] == values[2] and result[3] == values[1])
+        or (result[0] == values[1] and result[1] == values[0] and result[2] == values[2] and result[3] == values[3])
+        or (result[0] == values[1] and result[1] == values[0] and result[2] == values[3] and result[3] == values[2])
+        or (result[0] == values[1] and result[1] == values[2] and result[2] == values[0] and result[3] == values[3])
+        or (result[0] == values[1] and result[1] == values[2] and result[2] == values[3] and result[3] == values[0])
+        or (result[0] == values[1] and result[1] == values[3] and result[2] == values[0] and result[3] == values[2])
+        or (result[0] == values[1] and result[1] == values[3] and result[2] == values[2] and result[3] == values[0])
+        or (result[0] == values[2] and result[1] == values[0] and result[2] == values[1] and result[3] == values[3])
+        or (result[0] == values[2] and result[1] == values[0] and result[2] == values[3] and result[3] == values[1])
+        or (result[0] == values[2] and result[1] == values[1] and result[2] == values[0] and result[3] == values[3])
+        or (result[0] == values[2] and result[1] == values[1] and result[2] == values[3] and result[3] == values[0])
+        or (result[0] == values[2] and result[1] == values[3] and result[2] == values[0] and result[3] == values[1])
+        or (result[0] == values[2] and result[1] == values[3] and result[2] == values[1] and result[3] == values[0])
+        or (result[0] == values[3] and result[1] == values[0] and result[2] == values[1] and result[3] == values[2])
+        or (result[0] == values[3] and result[1] == values[0] and result[2] == values[2] and result[3] == values[1])
+        or (result[0] == values[3] and result[1] == values[1] and result[2] == values[0] and result[3] == values[2])
+        or (result[0] == values[3] and result[1] == values[1] and result[2] == values[2] and result[3] == values[0])
+        or (result[0] == values[3] and result[1] == values[2] and result[2] == values[0] and result[3] == values[1])
+        or (result[0] == values[3] and result[1] == values[2] and result[2] == values[1] and result[3] == values[0])
+    )
+    ordered = values
+    if ordered[0] > ordered[1]:
+        saved = ordered[0]
+        ordered[0] = ordered[1]
+        ordered[1] = saved
+    if ordered[2] > ordered[3]:
+        saved = ordered[2]
+        ordered[2] = ordered[3]
+        ordered[3] = saved
+    if ordered[0] > ordered[2]:
+        saved = ordered[0]
+        ordered[0] = ordered[2]
+        ordered[2] = saved
+    if ordered[1] > ordered[3]:
+        saved = ordered[1]
+        ordered[1] = ordered[3]
+        ordered[3] = saved
+    if ordered[1] > ordered[2]:
+        saved = ordered[1]
+        ordered[1] = ordered[2]
+        ordered[2] = saved
+    return ordered
+
+fn first_index4(values: int[4], target: int) -> int:
+    ensures -1 <= result < 4
+    ensures (
+        (result == -1 and values[0] != target and values[1] != target and values[2] != target and values[3] != target)
+        or (result == 0 and values[0] == target)
+        or (result == 1 and values[1] == target and values[0] != target)
+        or (result == 2 and values[2] == target and values[0] != target and values[1] != target)
+        or (result == 3 and values[3] == target and values[0] != target and values[1] != target and values[2] != target)
+    )
+    if values[0] == target:
+        return 0
+    if values[1] == target:
+        return 1
+    if values[2] == target:
+        return 2
+    if values[3] == target:
+        return 3
+    return -1
+
+fn argmin4(values: int[4]) -> int:
+    ensures 0 <= result < 4
+    ensures values[result] <= values[0] and values[result] <= values[1] and values[result] <= values[2] and values[result] <= values[3]
+    ensures (
+        (result == 0)
+        or (result == 1 and values[0] > values[1])
+        or (result == 2 and values[0] > values[2] and values[1] > values[2])
+        or (result == 3 and values[0] > values[3] and values[1] > values[3] and values[2] > values[3])
+    )
+    best = 0
+    if values[1] < values[best]:
+        best = 1
+    if values[2] < values[best]:
+        best = 2
+    if values[3] < values[best]:
+        best = 3
+    return best
+
+fn lower_bound4(values: int[4], target: int) -> int:
+    requires values[0] <= values[1] <= values[2] <= values[3]
+    ensures 0 <= result <= 4
+    ensures result == 0 or values[result - 1] < target
+    ensures result == 4 or values[result] >= target
+    if target <= values[2]:
+        if target <= values[1]:
+            if target <= values[0]:
+                return 0
+            return 1
+        return 2
+    if target <= values[3]:
+        return 3
+    return 4

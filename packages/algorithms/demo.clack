@@ -1,0 +1,11 @@
+from algorithms import sort4, first_index4, argmin4, lower_bound4
+
+fn main():
+    values = [7, -3, 7, 1]
+    ordered = sort4(values)
+    for i in range(4):
+        print(ordered[i])
+    print(first_index4(values, 7))
+    print(first_index4(values, 99))
+    print(argmin4(values))
+    print(lower_bound4(ordered, 7))

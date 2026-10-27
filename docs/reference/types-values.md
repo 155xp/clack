@@ -92,7 +92,7 @@ fn main():
 
 This prints `3`, `30`, and `true`. The constructor takes one argument for each field, in declaration order. Constructors have no default values or named arguments. Each argument must have exactly the corresponding field's type.
 
-Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.5.
+Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.6.
 
 Field access uses `.` and may be chained with further field or array access. Fields cannot be assigned directly. To update a record, construct and assign a replacement. The following is a fragment inside a function where `point` is already a `Point` and the addition is known safe:
 

@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "reference_kind": "implemented-language-capabilities",
+  "language": "Clack",
+  "language_version": "0.6.0",
+  "path_base": "repository-root",
+  "entrypoints": {
+    "agent_guide": "docs/agents.md",
+    "human_handbook": "docs/README.md",
+    "grammar": "docs/reference/grammar.md",
+    "quick_reference": "docs/quick-reference.md",
+    "package_guide": "docs/packages.md",
+    "package_catalog": "packages/catalog.json",
+    "documentation_index": "llms.txt"
+  },
+  "toolchain": {
+    "python_minimum": "3.11",
+    "solver_dependency": "z3-solver==4.16.0.0",
+    "backend": "C11",
+    "native_thread_api": "POSIX pthreads",
+    "tested_platform": "Linux",
+    "native_windows_supported": false,
+    "runtime_requires_python": false,
+    "runtime_requires_solver": false,
+    "source_execution": "Clack source is parsed, verified, and compiled; it is not evaluated as Python."
+  },
+  "commands": [
+    {
+      "name": "check",
+      "syntax": "clack check SOURCE",
+      "result": "type and verification checks",
+      "requires_c_compiler": false,
+      "options": ["--timeout-ms", "--proof-dir", "--timings"]
+    },
+    {
+      "name": "build",
+      "syntax": "clack build SOURCE -o OUTPUT",
+      "result": "verified native executable",
+      "requires_c_compiler": true,
+      "options": ["-o", "--output", "--cc", "--timeout-ms", "--proof-dir", "--timings"]
+    },
+    {
+      "name": "run",
+      "syntax": "clack run SOURCE",
+      "result": "verify, compile, execute, remove temporary executable",
+      "requires_c_compiler": true,
+      "application_arguments_supported": false,
+      "options": ["--cc", "--timeout-ms", "--proof-dir", "--timings"]
+    },
+    {
+      "name": "emit-c",
+      "syntax": "clack emit-c SOURCE -o OUTPUT",
+      "result": "verified C11 source; standard output if no destination is supplied",
+      "requires_c_compiler": false,
+      "options": ["-o", "--output", "--timeout-ms", "--proof-dir", "--timings"]
+    }
+  ],
+  "command_behavior": {
+    "module_invocation": "python -m clack",
+    "global_flags": ["--help", "--version"],
+    "default_timeout_ms_per_obligation": 5000,
+    "unchecked_build_option": false,
+    "timings_stream": "standard error",
+    "timings_phases": ["load", "verify", "emit", "cc"],
+    "proof_manifest": "obligations.json",
+    "proof_queries": "numbered SMT-LIB .smt2 files",
+    "proof_artifact_kind": "replayable verification conditions, not independently checked certificates",
+    "source_error_exit_status": 1,
+    "usage_error_exit_status": 2,
+    "run_exit_behavior": "propagates the native process status; signals use 128 plus signal number"
+  },
+  "syntax": {
+    "block_style": "colon, newline, indented nonempty body",
+    "indentation": "spaces; tabs in indentation are rejected",
+    "comments": "# to end of line",
+    "identifiers": "ASCII letters, digits, and underscore; first character cannot be a digit",
+    "integer_literals": "decimal integers; no hexadecimal, underscores, or floating-point literals",
+    "text_literals": "double-quoted JSON-style escapes; valid UTF-8 without NUL",
+    "local_type_inference": true,
+    "parameter_type_inference": false,
+    "function_result_annotation": "required except main",
+    "implicit_final_expression_return": false,
+    "entrypoint": "fn main():",
+    "ordinary_unit_helpers_supported": false
+  },
+  "types": {
+    "int": {
+      "representation": "signed 64-bit integer",
+      "minimum": "-9223372036854775808",
+      "maximum": "9223372036854775807"
+    },
+    "bool": {
+      "literals": ["true", "false"],
+      "implicit_integer_conversion": false
+    },
+    "text": {
+      "representation": "immutable UTF-8 originating in static literals",
+      "equality": "exact byte equality; case-sensitive; no normalization",
+      "length_unit": "UTF-8 bytes",
+      "supported_operations": ["==", "!=", "len", "parameter passing", "return", "record fields", "print in main"],
+      "dynamic_allocation_supported": false
+    },
+    "fixed_array": {
+      "element_types": ["int", "bool"],
+      "minimum_length": 1,
+      "maximum_length": 1000000,
+      "length_is_part_of_type": true,
+      "copy_semantics": "by value",
+      "local_element_updates": true,
+      "parameter_element_updates": false,
+      "runtime_index_checks": "indices must be proved in bounds before emission"
+    },
+    "record": {
+      "declaration_keyword": "type",
+      "constructor_arguments": "positional in field declaration order",
+      "field_updates": false,
+      "copy_semantics": "by value",
+      "recursive_layouts_supported": false,
+      "type_identity": "nominal, including across modules"
+    },
+    "unit": {
+      "usage": "main and native procedure results"
+    }
+  },
+  "operators": {
+    "arithmetic": ["+", "-", "*", "/", "%", "unary +", "unary -"],
+    "boolean": ["and", "or", "not"],
+    "equality_operand_types": ["matching int", "matching bool", "matching text"],
+    "ordering_operand_types": ["int"],
+    "composite_equality_supported": false,
+    "division": "integer division truncates toward zero",
+    "remainder": "a nonzero remainder has the dividend's sign",
+    "short_circuit": ["and", "or"],
+    "chained_comparisons": true
+  },
+  "builtins": [
+    {
+      "name": "print",
+      "arguments": "one int, bool, or text",
+      "restriction": "main only; unit result; appends a newline"
+    },
+    {
+      "name": "len",
+      "arguments": "one fixed array or text",
+      "result": "int; array element count or UTF-8 byte count",
+      "allowed_in_proofs": true
+    }
+  ],
+  "standard_modules": {
+    "std.math": {
+      "implementation": "verified Clack source",
+      "exports": ["min", "max", "abs", "clamp"],
+      "source": "clack/stdlib/math.clack"
+    },
+    "std.array": {
+      "compiler_operators": ["fill", "sum", "minimum", "maximum", "all", "any", "count"],
+      "verified_source_helpers": ["sum2", "sum3", "sum4", "sum8", "all4", "any4"],
+      "fill_shape_rule": "count must be an integer literal from 1 through 1000000; value must be int or bool",
+      "sum_safety_rule": "every left-to-right partial addition must fit signed 64-bit range",
+      "source": "clack/stdlib/array.clack",
+      "compiler_operator_registry": "clack/arrayops.py"
+    }
+  },
+  "verification": {
+    "all_loaded_source_functions_checked": true,
+    "unused_source_functions_checked": true,
+    "executable_integer_arithmetic": "all intermediates must fit signed 64-bit range",
+    "proof_integer_arithmetic": "mathematical integers; division and indexing still must be defined",
+    "allowed_proof_calls": ["len"],
+    "annotations": ["requires", "ensures", "assert", "invariant", "decreases"],
+    "annotation_rules": {
+      "requires": "caller obligations; forbidden on main",
+      "ensures": "proved on every return; result denotes a non-unit returned value",
+      "assert": "proved from current facts; never an assumption",
+      "invariant": "proved on entry and preserved by continuing iterations",
+      "decreases": "integer measure nonnegative on active iterations and strictly decreasing"
+    },
+    "query_results": {
+      "unsat": "negated obligation has no counterexample in the model",
+      "sat": "reject with a counterexample in the current path/specification model",
+      "unknown": "reject, including timeouts"
+    },
+    "trusted_components": ["Clack compiler", "Z3", "C compiler", "native platform", "explicit native C providers"],
+    "limits": ["contracts may omit intended behavior", "SMT exports are not independently checked proof certificates", "resource availability is not proved"]
+  },
+  "control_flow": {
+    "conditionals": ["if", "elif", "else"],
+    "conditions_require_bool": true,
+    "for": {
+      "forms": ["for i in range(stop):", "for i in range(start, stop):"],
+      "bounds_evaluated_once": true,
+      "upper_bound_exclusive": true,
+      "step": 1,
+      "index_mutable": false,
+      "index_scope": "body only; cannot shadow an existing binding",
+      "automatic_proofs": ["index bounds", "termination"],
+      "additional_state": "user invariants may be needed for changing accumulators and postconditions"
+    },
+    "while": {
+      "required_header_annotations": ["one or more invariants", "one decreases expression"],
+      "verification_state": "modified values are replaced at an arbitrary loop head and constrained by invariants"
+    },
+    "loop_body_locals_available_after_loop": false,
+    "recursion_supported": false
+  },
+  "parallelism": {
+    "form": "parallel: with name = source_function(arguments) jobs",
+    "direct_jobs_require_source_functions": true,
+    "arguments_cannot_reference_any_result_name_in_block": true,
+    "arguments_use_incoming_state": true,
+    "waits_for_all_jobs": true,
+    "data_exchange": "values; no shared mutable language references",
+    "execution": "first N-1 jobs on POSIX threads, final job on caller",
+    "thread_creation_failure": "synchronous fallback",
+    "worker_pool": false,
+    "gpu_backend": false,
+    "speedup_guaranteed": false
+  },
+  "imports": {
+    "form": "from dotted.module import selected_name, another_name",
+    "local_resolution": "relative to the importing source file's directory",
+    "standard_namespace": "std resolves only inside the installed bundled standard library",
+    "aliases": false,
+    "wildcards": false,
+    "network_resolution": false,
+    "environment_search_path": false,
+    "module_initializers": false,
+    "import_cycles": false,
+    "libraries_define_main": false,
+    "root_application_package_example": "from packages.geometry.geometry import Point, squared_distance"
+  },
+  "native_boundary": {
+    "source_declaration": "native \"provider.c\"",
+    "binding_example": "extern fn show(value: text) -> unit = \"clack_demo_show\"",
+    "source_paths": "relative .c files confined to the declaring module directory",
+    "parameter_types": ["int", "bool", "text"],
+    "result_types": ["int", "bool", "unit"],
+    "call_location": "main only; direct assignment or standalone unit call",
+    "native_calls_in_proofs_or_workers": false,
+    "native_contracts": false,
+    "native_result_model": "fresh arbitrary int or bool result; unit has no assignable value",
+    "provider_implementation_verified": false,
+    "reference": "docs/native.md"
+  },
+  "unsupported": [
+    "floating-point types",
+    "dynamic arrays or text allocation",
+    "arrays of text, records, or arrays",
+    "text concatenation, ordering, or indexing",
+    "general generic functions or types",
+    "closures and first-class functions",
+    "recursion",
+    "tagged unions and pattern matching",
+    "exceptions",
+    "break and continue",
+    "range steps or range values outside for headers",
+    "package resolver or online registry",
+    "built-in file, network, random, clock, command-line argument, or console input APIs"
+  ],
+  "repair_workflow": [
+    "Read the diagnostic's original source path and line, including imported modules.",
+    "Establish required numeric/index/callee bounds through intended preconditions or guards.",
+    "Describe relations among modified loop state with useful invariants.",
+    "Do not use assert as an assumption or accept unknown results.",
+    "Preserve intended behavior when changing specifications.",
+    "Run documented demos and independent native-output checks after verification."
+  ]
+}

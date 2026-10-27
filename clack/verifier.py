@@ -153,9 +153,9 @@ class _Verifier:
         if isinstance(expression, ast.BoolLit):
             return Value("bool", z3.BoolVal(expression.value))
         if isinstance(expression, ast.StringLit):
-            # Encode UTF-8 bytes explicitly; Z3's string parser otherwise
-            # interprets backslash escapes and truncates high Unicode points.
-            return Value("text", z3.StringVal(''.join('\\u{%x}' % byte for byte in expression.value.encode("utf-8"))))
+            # One solver character per byte; protect backslashes before
+            # StringVal escapes non-ASCII bytes to avoid escape aliasing.
+            return Value("text", z3.StringVal(expression.value.encode("utf-8").decode("latin1").replace("\\", "\\u{5c}")))
         if isinstance(expression, ast.Name):
             return state.env[expression.name]
         if isinstance(expression, ast.Unary):

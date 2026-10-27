@@ -2,7 +2,7 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
-Clack 0.5 reduces array-fill copying and proof-construction overhead, and adds text equality and UTF-8 byte lengths. Read the [measured before/after report](benchmarks/RESULTS-0.5.md) for speed and line-count changes, raw samples, and limitations. Counted loops, checked contracts, immutable text, and explicit native bindings remain supported.
+Clack 0.6 adds seven optional source packages, including basic integer ML, fixed-point arithmetic, and terminal UIs. Start with the [package guide](docs/packages.md), [agent guide](docs/agents.md), or [machine-readable language reference](docs/agent-reference.json). The compiler stays at 2,343 lines; the [0.6 report](benchmarks/RESULTS-0.6.md) covers the libraries, faster text compilation, selected ML measurements, raw samples, and limitations.
 
 [GitHub repository](https://github.com/155xp/clack)
 
@@ -33,6 +33,8 @@ Start with [the Clack Handbook](docs/README.md) or go directly to:
 - [Step-by-step tutorials](docs/tutorials/README.md), including a parallel data project and your own libraries.
 - [Quick reference](docs/quick-reference.md) and [full language reference](docs/reference/README.md).
 - [Built-ins and standard libraries](docs/libraries.md), [cookbook](docs/cookbook.md), and [common errors](docs/errors.md).
+- [Optional packages](docs/packages.md), including small numeric, ML, algorithm, and terminal UI libraries.
+- [Coding-agent guide](docs/agents.md), [structured language reference](docs/agent-reference.json), and [documentation index](llms.txt).
 - [Text equality and byte lengths](docs/tutorials/09-text.md), and [explicit native bindings](docs/native.md) for optional terminal UI libraries.
 - [CLI reference](docs/cli.md), [FAQ](docs/faq.md), and [compiler internals](docs/internals.md).
 
@@ -141,6 +143,17 @@ fn main():
 `std.math` and the older fixed-size helpers are verified Clack source. The array operators are modeled directly by the compiler and emitted as native loops. `fill(value, count)` builds an integer or Boolean array; its count must be a positive integer literal. `minimum` and `maximum` find integer-array bounds, while `sum`, `all`, `any`, and `count` reduce arrays of any supported fixed length. `sum` requires every intermediate addition to fit signed 64-bit range. See the [library catalog](docs/libraries.md) for examples and exact types.
 
 You can also import functions and records from your own files, such as `from helpers import twice` for a neighboring `helpers.clack`. Library scopes remain separate, and imported source declarations go through the same checks as the entry program. The [library tutorial](docs/tutorials/08-libraries.md) explains code reuse.
+
+## Optional packages
+
+The [packages directory](packages/README.md) supplies geometry, matrix, fixed-point arithmetic, statistics, algorithms, basic ML, and terminal UI libraries. Source packages have explicit shapes, numeric domains, and checked contracts. The ML package demonstrates bounded integer learning and inference; it does not add floating-point types or a general tensor framework. The TUI package uses an explicit, unproved C boundary for terminal effects.
+
+```sh
+.venv/bin/python -m clack run packages/ml/demo.clack
+.venv/bin/python -m clack run packages/algorithms/demo.clack
+```
+
+An application beside the `packages/` directory imports paths such as `from packages.geometry.geometry import Point, squared_distance`. Read the [package guide](docs/packages.md) for installation and layout, or inspect exact source signatures, demos, and checksums in the [package catalog](packages/catalog.json). Packages stay outside the compiler and bundled standard library.
 
 ## What “checked” means
 

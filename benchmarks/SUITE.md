@@ -71,6 +71,8 @@ This isolates thread overhead. Clack 0.3 lets the caller execute the last job wh
 
 ## Reading results honestly
 
+The [0.6 report](RESULTS-0.6.md) adds two focused scripts outside this nine-kernel suite. [text_encoding.py](text_encoding.py) compares actual compiler revisions on byte-exact Unicode text, checking generated C and replayed SMT query hashes before timing. [ml.py](ml.py) compiles the optional ML package and equivalent C for a four-feature integer score/checksum kernel. Their raw results state sample counts, flags, source fingerprints, and scope; the ML case does not measure training or a general neural-network workload.
+
 These programs exercise five algorithm families, with five variants of the arithmetic workload. They are broader than a single kernel, but they are not a representative application suite and do not establish universal C or Rust performance. Both Clack and the hand-written C comparison use GCC or Clang's optimizer. Rust is not measured here.
 
 Scheduling, CPU allocation, thermal state, and competing processes affect runtimes and parallel scaling. The report's logical CPU count is a host observation, not a guarantee of available CPU time. Small differences around a ratio of one should be treated as noise until larger repeated experiments support them.

@@ -21,13 +21,13 @@ There is also a practical tradeoff: arbitrary program correctness cannot be deci
 | Parallelism | Independent function calls using POSIX threads and value arguments |
 | Effects | Output restricted to main; no mutable globals |
 | Native boundary | Explicit main-only scalar/text C calls; provider implementations remain outside verification |
-| Libraries | Explicit source imports, isolated module names, verified math/fixed-size helpers, and compiler-modeled fill and reductions for any supported fixed-array length |
+| Libraries | Explicit source imports, isolated module names, verified math/fixed-size helpers, compiler-modeled array operators, and optional numeric, ML, algorithm, and terminal packages |
 
 ## Next steps
 
 These are design proposals, not syntax accepted by the current compiler.
 
-1. **Better daily tooling.** A formatter, language-server diagnostics, source maps, a package layout, and concise explanations for failed obligations. Error messages should distinguish an actual counterexample from insufficient solver knowledge.
+1. **Better daily tooling.** A formatter, language-server integration, package dependency resolution, and concise explanations for failed obligations. Source maps, a source-package layout, an API catalog, and agent documentation already exist. Error messages should distinguish an actual counterexample from insufficient solver knowledge.
 2. **More useful data.** Text concatenation, indexing, dynamic text, slices, dynamic arrays, tagged unions, pattern matching, and generic functions. Tagged unions should make absent values and recoverable errors explicit without making every call ceremonial.
 3. **A memory model that scales.** Use values by default, infer moves and regions when possible, and introduce explicit borrowing only where it expresses a real aliasing choice. Dynamic storage must have a precise lifetime and alias model before it participates in proofs or shared work.
 4. **Structured parallel collections.** Add collection operations that distribute independent work over a worker pool. Preserve deterministic result ordering and establish that each task owns its mutable output. GPU support would require a separate backend and a defined supported subset.

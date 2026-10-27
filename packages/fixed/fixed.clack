@@ -1,0 +1,48 @@
+# Fixed-point values represent raw / 1000. Division truncates toward zero.
+type Fixed:
+    raw: int
+
+fn from_int(value: int) -> Fixed:
+    requires -1000000000000 <= value <= 1000000000000
+    ensures result.raw == value * 1000
+    ensures -1000000000000000 <= result.raw <= 1000000000000000
+    return Fixed(value * 1000)
+
+fn to_int(value: Fixed) -> int:
+    ensures result == value.raw / 1000
+    return value.raw / 1000
+
+fn from_ratio(numerator: int, denominator: int) -> Fixed:
+    requires -1000000000000 <= numerator <= 1000000000000
+    requires denominator != 0
+    ensures result.raw == numerator * 1000 / denominator
+    ensures -1000000000000000 <= result.raw <= 1000000000000000
+    return Fixed(numerator * 1000 / denominator)
+
+fn add(left: Fixed, right: Fixed) -> Fixed:
+    requires -1000000000000000 <= left.raw <= 1000000000000000
+    requires -1000000000000000 <= right.raw <= 1000000000000000
+    ensures result.raw == left.raw + right.raw
+    ensures -2000000000000000 <= result.raw <= 2000000000000000
+    return Fixed(left.raw + right.raw)
+
+fn subtract(left: Fixed, right: Fixed) -> Fixed:
+    requires -1000000000000000 <= left.raw <= 1000000000000000
+    requires -1000000000000000 <= right.raw <= 1000000000000000
+    ensures result.raw == left.raw - right.raw
+    ensures -2000000000000000 <= result.raw <= 2000000000000000
+    return Fixed(left.raw - right.raw)
+
+fn multiply(left: Fixed, right: Fixed) -> Fixed:
+    requires -1000000000 <= left.raw <= 1000000000
+    requires -1000000000 <= right.raw <= 1000000000
+    ensures result.raw == left.raw * right.raw / 1000
+    ensures -1000000000000000 <= result.raw <= 1000000000000000
+    return Fixed(left.raw * right.raw / 1000)
+
+fn divide(left: Fixed, right: Fixed) -> Fixed:
+    requires -1000000000000 <= left.raw <= 1000000000000
+    requires right.raw != 0
+    ensures result.raw == left.raw * 1000 / right.raw
+    ensures -1000000000000000 <= result.raw <= 1000000000000000
+    return Fixed(left.raw * 1000 / right.raw)

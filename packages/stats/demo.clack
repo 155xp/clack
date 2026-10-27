@@ -1,0 +1,13 @@
+from stats import summarize4, mean4, span, sum_squares4
+
+fn main():
+    values = [3, 7, -2, 8]
+    summary = summarize4(values)
+    average = mean4(values)
+    print(summary.total)
+    print(summary.minimum)
+    print(summary.maximum)
+    print(average.numerator)
+    print(average.denominator)
+    print(span(summary))
+    print(sum_squares4(values))

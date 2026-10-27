@@ -1,0 +1,13 @@
+from matrices import Matrix2, Vec2, multiply, apply, determinant
+
+fn main():
+    left = Matrix2(1, 2, 3, 4)
+    right = Matrix2(5, 6, 7, 8)
+    parallel:
+        product = multiply(left, right)
+        transformed = apply(left, Vec2(2, 3))
+    print(product.a)
+    print(product.d)
+    print(transformed.x)
+    print(transformed.y)
+    print(determinant(left))

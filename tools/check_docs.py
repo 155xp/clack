@@ -24,7 +24,8 @@ LINK = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
 
 
 def markdown_files() -> list[Path]:
-    return [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md")), *sorted((ROOT / "benchmarks").rglob("*.md"))]
+    return [ROOT / "README.md", ROOT / "llms.txt", *sorted((ROOT / "docs").rglob("*.md")),
+            *sorted((ROOT / "benchmarks").rglob("*.md")), *sorted((ROOT / "packages").rglob("*.md"))]
 
 
 def anchors(source: str) -> set[str]:
@@ -113,6 +114,16 @@ def main() -> int:
     if args.timeout_seconds <= 0:
         parser.error("--timeout-seconds must be positive")
     errors, links, snippets = check_links_and_snippets()
+    try:
+        from clack import __version__
+        reference = json.loads((ROOT / "docs/agent-reference.json").read_text(encoding="utf-8"))
+        if reference["language_version"] != __version__:
+            errors.append("agent reference version differs from compiler version")
+        for name, target in reference["entrypoints"].items():
+            if not (ROOT / target).is_file():
+                errors.append(f"agent reference: missing {name} target {target}")
+    except (OSError, ValueError, KeyError) as error:
+        errors.append(f"agent reference: {error}")
     programs = 0
     if not args.skip_run:
         try:

@@ -1,0 +1,103 @@
+# Exact integer 2x2 operations. Matrix fields are row-major: [a b; c d].
+type Matrix2:
+    a: int
+    b: int
+    c: int
+    d: int
+
+type Vec2:
+    x: int
+    y: int
+
+type Vec4:
+    x: int
+    y: int
+    z: int
+    w: int
+
+fn identity() -> Matrix2:
+    ensures result.a == 1 and result.b == 0
+    ensures result.c == 0 and result.d == 1
+    return Matrix2(1, 0, 0, 1)
+
+fn transpose(matrix: Matrix2) -> Matrix2:
+    ensures result.a == matrix.a and result.b == matrix.c
+    ensures result.c == matrix.b and result.d == matrix.d
+    return Matrix2(matrix.a, matrix.c, matrix.b, matrix.d)
+
+fn determinant(matrix: Matrix2) -> int:
+    requires -1000000 <= matrix.a <= 1000000
+    requires -1000000 <= matrix.b <= 1000000
+    requires -1000000 <= matrix.c <= 1000000
+    requires -1000000 <= matrix.d <= 1000000
+    ensures result == matrix.a * matrix.d - matrix.b * matrix.c
+    return matrix.a * matrix.d - matrix.b * matrix.c
+
+fn multiply(left: Matrix2, right: Matrix2) -> Matrix2:
+    requires -1000000 <= left.a <= 1000000
+    requires -1000000 <= left.b <= 1000000
+    requires -1000000 <= left.c <= 1000000
+    requires -1000000 <= left.d <= 1000000
+    requires -1000000 <= right.a <= 1000000
+    requires -1000000 <= right.b <= 1000000
+    requires -1000000 <= right.c <= 1000000
+    requires -1000000 <= right.d <= 1000000
+    ensures result.a == left.a * right.a + left.b * right.c
+    ensures result.b == left.a * right.b + left.b * right.d
+    ensures result.c == left.c * right.a + left.d * right.c
+    ensures result.d == left.c * right.b + left.d * right.d
+    return Matrix2(
+        left.a * right.a + left.b * right.c,
+        left.a * right.b + left.b * right.d,
+        left.c * right.a + left.d * right.c,
+        left.c * right.b + left.d * right.d,
+    )
+
+fn apply(matrix: Matrix2, vector: Vec2) -> Vec2:
+    requires -1000000 <= matrix.a <= 1000000
+    requires -1000000 <= matrix.b <= 1000000
+    requires -1000000 <= matrix.c <= 1000000
+    requires -1000000 <= matrix.d <= 1000000
+    requires -1000000 <= vector.x <= 1000000
+    requires -1000000 <= vector.y <= 1000000
+    ensures result.x == matrix.a * vector.x + matrix.b * vector.y
+    ensures result.y == matrix.c * vector.x + matrix.d * vector.y
+    return Vec2(
+        matrix.a * vector.x + matrix.b * vector.y,
+        matrix.c * vector.x + matrix.d * vector.y,
+    )
+
+fn add(left: Matrix2, right: Matrix2) -> Matrix2:
+    requires -1000000 <= left.a <= 1000000
+    requires -1000000 <= left.b <= 1000000
+    requires -1000000 <= left.c <= 1000000
+    requires -1000000 <= left.d <= 1000000
+    requires -1000000 <= right.a <= 1000000
+    requires -1000000 <= right.b <= 1000000
+    requires -1000000 <= right.c <= 1000000
+    requires -1000000 <= right.d <= 1000000
+    ensures result.a == left.a + right.a and result.b == left.b + right.b
+    ensures result.c == left.c + right.c and result.d == left.d + right.d
+    return Matrix2(left.a + right.a, left.b + right.b, left.c + right.c, left.d + right.d)
+
+fn dot4(left: Vec4, right: Vec4) -> int:
+    requires -1000000 <= left.x <= 1000000
+    requires -1000000 <= left.y <= 1000000
+    requires -1000000 <= left.z <= 1000000
+    requires -1000000 <= left.w <= 1000000
+    requires -1000000 <= right.x <= 1000000
+    requires -1000000 <= right.y <= 1000000
+    requires -1000000 <= right.z <= 1000000
+    requires -1000000 <= right.w <= 1000000
+    ensures result == left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w
+    ensures -4000000000000 <= result <= 4000000000000
+    return left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w
+
+fn squared_norm4(vector: Vec4) -> int:
+    requires -1000000 <= vector.x <= 1000000
+    requires -1000000 <= vector.y <= 1000000
+    requires -1000000 <= vector.z <= 1000000
+    requires -1000000 <= vector.w <= 1000000
+    ensures result == vector.x * vector.x + vector.y * vector.y + vector.z * vector.z + vector.w * vector.w
+    ensures 0 <= result <= 4000000000000
+    return dot4(vector, vector)

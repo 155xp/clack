@@ -1,0 +1,67 @@
+{
+  "timestamp_utc": "2026-10-27T14:57:00.324811+00:00",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "c_compiler": "cc (Debian 14.2.0-19) 14.2.0",
+  "flags": [
+    "-std=c11",
+    "-O3",
+    "-Wall",
+    "-Wextra",
+    "-pthread"
+  ],
+  "rounds": 50000000,
+  "repeats": 9,
+  "seed": 43,
+  "expected_stdout": "749999916\n",
+  "compiler_source_sha256": "d9f54c15375859f6591f8053b57f1d33f300d24f479498f1db26df0bd995b309",
+  "package_source_sha256": "2fd829d4919fb6b70d24aba28f8b29033d80842c554fdf0073e7361b732128af",
+  "benchmark_sha256": "b58968d1517109e154a760ec8cadfe7272b82174edc7bb59501b64478cc428bb",
+  "harness_sha256": "d1192ce2356c7b840668c358bba4c2ed852f91076c8581712a68f119aa8c4c0b",
+  "clack_source_sha256": "396f8c12cbcaa3e4026c61fc562924c1c6dce5a3e8bc903602261149ba3e753a",
+  "c_source_sha256": "257116f080f76fbf70d9645489cec8ac30314aad0cc51d5e0bdf9372c511773f",
+  "generated_c_sha256": "e387ddfe9d6a97dae64d0e23c62c2a86495797e7ff7426fded01b348ef606ecf",
+  "obligations": 541,
+  "all_outputs_match_reference": true,
+  "timing_scope": "Native process wall time including startup, output, and exit; verification and compilation excluded.",
+  "results": {
+    "clack": {
+      "median_seconds": 0.054348963999927946,
+      "samples_seconds": [
+        0.05874397100001261,
+        0.051863989999901605,
+        0.054348963999927946,
+        0.05963471300015044,
+        0.05323373500004891,
+        0.05357534999984637,
+        0.055355876999783504,
+        0.06006669599992165,
+        0.0537700180000229
+      ],
+      "min_seconds": 0.051863989999901605,
+      "max_seconds": 0.06006669599992165
+    },
+    "c": {
+      "median_seconds": 0.060915701000112676,
+      "samples_seconds": [
+        0.06729026900006829,
+        0.050101723999887326,
+        0.06090311799994197,
+        0.060915701000112676,
+        0.07004483700006858,
+        0.06914292300007219,
+        0.06314163599995481,
+        0.05729097199991884,
+        0.056684625999878335
+      ],
+      "min_seconds": 0.050101723999887326,
+      "max_seconds": 0.07004483700006858
+    }
+  },
+  "clack_over_c_time": 0.8921995989150222,
+  "limits": [
+    "One four-feature integer linear score with constant weights and bounded inputs.",
+    "Both compilers may inline and simplify the equivalent score expressions; no artificial barriers.",
+    "Does not measure training throughput, floating-point ML, neural networks, GPU work, or general performance."
+  ]
+}

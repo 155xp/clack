@@ -1,0 +1,11 @@
+from stats import variance4
+
+fn main():
+    variance = variance4([3, 7, -2, 8])
+    print(variance.numerator)
+    print(variance.denominator)
+    constant = variance4([7, 7, 7, 7])
+    print(constant.numerator)
+    fractional = variance4([0, 0, 0, 1])
+    print(fractional.numerator)
+    print(fractional.denominator)

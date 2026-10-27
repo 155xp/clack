@@ -146,7 +146,7 @@ Source: [array.clack](../clack/stdlib/array.clack).
 
 Each sum adds from left to right. Its contract requires every cumulative addition to fit in signed 64-bit range. This permits large inputs when all those intermediate sums are safe; there is no arbitrary small per-element bound. A final sum that fits does not excuse an earlier overflowing partial sum.
 
-These functions remain available for compatibility and can be direct parallel jobs because they have ordinary source bodies and contracts. Use `sum`, `all`, or `any` when the array's length differs. General user-defined generic functions, dynamic collections, and `sort` remain unimplemented.
+These functions remain available for compatibility and can be direct parallel jobs because they have ordinary source bodies and contracts. Use `sum`, `all`, or `any` when the array's length differs. General user-defined generic functions, dynamic collections, and a length-independent `sort` remain unimplemented. The optional [algorithms package](../packages/algorithms/README.md) supplies `sort4` for four integers.
 
 ## Write your own library
 
@@ -189,3 +189,5 @@ Ordinary imported source functions retain the normal purity rule: only the entry
 Diagnostics for imported code identify its original file and source line. `--proof-dir` exports the combined program's obligations; their metadata identifies the relevant source files. The same trusted compiler and solver described in the [verification model](verification.md) remain involved.
 
 Distribute local libraries as `.clack` source files beside the program or in the expected subdirectories, including any declared native `.c` providers. There is no package version resolver, lockfile, separate library binary format, or third-party dependency registry yet. The bundled standard-library sources are included in the Python compiler distribution.
+
+The separate [package guide](packages.md) covers the optional numeric, ML, algorithm, and terminal UI sources published in this repository. Their [catalog](../packages/catalog.json) records source signatures, file hashes, and runnable demos.

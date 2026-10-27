@@ -61,6 +61,12 @@ python tools/check_docs.py
 
 Use complete runnable examples when teaching a new concept; label fragments and intentionally failing snippets clearly. Give exact expected output when it helps a learner check their progress. Documentation corrections generally need example validation, not new unit tests that merely duplicate prose.
 
+## Optional libraries
+
+Prefer an ordinary [source package](packages.md) when a capability can be expressed using existing language features. Keep package code separate from the compiler and bundled `std` modules. Include explicit contracts, documented numeric domains, a native demo with an expected result, independent reference tests, and a license.
+
+After editing source or adding an API, refresh generated signatures and hashes with `python tools/check_packages.py --update --metadata-only`, then run `python tools/check_packages.py`. Updating metadata does not verify a function. Keep the [agent guide](agents.md), [structured reference](agent-reference.json), and package README accurate about implemented behavior.
+
 ## Performance work
 
 Use the [benchmark experiment](../benchmarks/README.md) to check the native path:

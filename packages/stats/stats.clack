@@ -1,0 +1,62 @@
+from std.array import sum, minimum, maximum
+
+type Summary:
+    total: int
+    minimum: int
+    maximum: int
+
+type Rational:
+    numerator: int
+    denominator: int
+
+fn summarize4(values: int[4]) -> Summary:
+    requires -1000000 <= values[0] <= 1000000
+    requires -1000000 <= values[1] <= 1000000
+    requires -1000000 <= values[2] <= 1000000
+    requires -1000000 <= values[3] <= 1000000
+    ensures result.total == values[0] + values[1] + values[2] + values[3]
+    ensures result.minimum <= values[0] and result.minimum <= values[1] and result.minimum <= values[2] and result.minimum <= values[3]
+    ensures result.minimum == values[0] or result.minimum == values[1] or result.minimum == values[2] or result.minimum == values[3]
+    ensures result.maximum >= values[0] and result.maximum >= values[1] and result.maximum >= values[2] and result.maximum >= values[3]
+    ensures result.maximum == values[0] or result.maximum == values[1] or result.maximum == values[2] or result.maximum == values[3]
+    return Summary(sum(values), minimum(values), maximum(values))
+
+fn mean4(values: int[4]) -> Rational:
+    requires -1000000 <= values[0] <= 1000000
+    requires -1000000 <= values[1] <= 1000000
+    requires -1000000 <= values[2] <= 1000000
+    requires -1000000 <= values[3] <= 1000000
+    ensures result.numerator == values[0] + values[1] + values[2] + values[3]
+    ensures result.denominator == 4
+    return Rational(sum(values), 4)
+
+fn span(summary: Summary) -> int:
+    requires -1000000 <= summary.minimum <= summary.maximum <= 1000000
+    ensures result == summary.maximum - summary.minimum
+    ensures 0 <= result <= 2000000
+    return summary.maximum - summary.minimum
+
+fn sum_squares4(values: int[4]) -> int:
+    requires -1000000 <= values[0] <= 1000000
+    requires -1000000 <= values[1] <= 1000000
+    requires -1000000 <= values[2] <= 1000000
+    requires -1000000 <= values[3] <= 1000000
+    ensures result == values[0] * values[0] + values[1] * values[1] + values[2] * values[2] + values[3] * values[3]
+    ensures 0 <= result <= 4000000000000
+    return sum([values[0] * values[0], values[1] * values[1], values[2] * values[2], values[3] * values[3]])
+
+fn variance4(values: int[4]) -> Rational:
+    requires -1000000 <= values[0] <= 1000000
+    requires -1000000 <= values[1] <= 1000000
+    requires -1000000 <= values[2] <= 1000000
+    requires -1000000 <= values[3] <= 1000000
+    ensures result.numerator == 4 * (values[0] * values[0] + values[1] * values[1] + values[2] * values[2] + values[3] * values[3]) - (values[0] + values[1] + values[2] + values[3]) * (values[0] + values[1] + values[2] + values[3])
+    ensures result.denominator == 16
+    ensures 0 <= result.numerator <= 24000000000000
+    a = values[0] - values[1]
+    b = values[0] - values[2]
+    c = values[0] - values[3]
+    d = values[1] - values[2]
+    e = values[1] - values[3]
+    f = values[2] - values[3]
+    return Rational(a * a + b * b + c * c + d * d + e * e + f * f, 16)

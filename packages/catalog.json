@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "compiler_minimum": "0.5.0",
+  "path_base": "repository-root",
+  "packages": [
+    {
+      "id": "geometry",
+      "name": "Clack geometry",
+      "version": "0.1.0",
+      "module": "packages.geometry.geometry",
+      "source": "packages/geometry/geometry.clack",
+      "readme": "packages/geometry/README.md",
+      "license": "MIT",
+      "license_file": "packages/geometry/LICENSE",
+      "tests": "packages/geometry/tests",
+      "demos": [
+        {
+          "path": "packages/geometry/demo.clack",
+          "stdout": "25\n12\ntrue\ntrue\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "type",
+          "name": "Point",
+          "signature": "type Point(x: int, y: int)",
+          "line": 4
+        },
+        {
+          "kind": "type",
+          "name": "Rect",
+          "signature": "type Rect(left: int, top: int, right: int, bottom: int)",
+          "line": 8
+        },
+        {
+          "kind": "function",
+          "name": "translate",
+          "signature": "fn translate(point: Point, dx: int, dy: int) -> Point",
+          "line": 14
+        },
+        {
+          "kind": "function",
+          "name": "squared_distance",
+          "signature": "fn squared_distance(a: Point, b: Point) -> int",
+          "line": 22
+        },
+        {
+          "kind": "function",
+          "name": "contains",
+          "signature": "fn contains(rect: Rect, point: Point) -> bool",
+          "line": 33
+        },
+        {
+          "kind": "function",
+          "name": "intersects",
+          "signature": "fn intersects(a: Rect, b: Rect) -> bool",
+          "line": 38
+        },
+        {
+          "kind": "function",
+          "name": "area",
+          "signature": "fn area(rect: Rect) -> int",
+          "line": 44
+        },
+        {
+          "kind": "function",
+          "name": "bounding_rect",
+          "signature": "fn bounding_rect(a: Point, b: Point) -> Rect",
+          "line": 54
+        }
+      ],
+      "reexports": [
+        {
+          "module": "std.math",
+          "names": [
+            "min",
+            "max"
+          ],
+          "line": 2
+        }
+      ],
+      "files": [
+        {
+          "path": "packages/geometry/demo.clack",
+          "sha256": "fff17030f2fcd4ae102a5b366806b5d66f97afbd192a4ac578fb798b1b26b87e"
+        },
+        {
+          "path": "packages/geometry/geometry.clack",
+          "sha256": "5775ee3afeeedf3c38de89aa662d0d6d1d7d31625662c624ab2a310609712b82"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "matrix",
+      "name": "Clack matrix",
+      "version": "0.1.0",
+      "module": "packages.matrix.matrices",
+      "source": "packages/matrix/matrices.clack",
+      "readme": "packages/matrix/README.md",
+      "license": "MIT",
+      "license_file": "packages/matrix/LICENSE",
+      "tests": "packages/matrix/tests",
+      "demos": [
+        {
+          "path": "packages/matrix/demo.clack",
+          "stdout": "19\n50\n8\n18\n-2\n"
+        },
+        {
+          "path": "packages/matrix/vector_demo.clack",
+          "stdout": "70\n30\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "type",
+          "name": "Matrix2",
+          "signature": "type Matrix2(a: int, b: int, c: int, d: int)",
+          "line": 2
+        },
+        {
+          "kind": "type",
+          "name": "Vec2",
+          "signature": "type Vec2(x: int, y: int)",
+          "line": 8
+        },
+        {
+          "kind": "type",
+          "name": "Vec4",
+          "signature": "type Vec4(x: int, y: int, z: int, w: int)",
+          "line": 12
+        },
+        {
+          "kind": "function",
+          "name": "identity",
+          "signature": "fn identity() -> Matrix2",
+          "line": 18
+        },
+        {
+          "kind": "function",
+          "name": "transpose",
+          "signature": "fn transpose(matrix: Matrix2) -> Matrix2",
+          "line": 23
+        },
+        {
+          "kind": "function",
+          "name": "determinant",
+          "signature": "fn determinant(matrix: Matrix2) -> int",
+          "line": 28
+        },
+        {
+          "kind": "function",
+          "name": "multiply",
+          "signature": "fn multiply(left: Matrix2, right: Matrix2) -> Matrix2",
+          "line": 36
+        },
+        {
+          "kind": "function",
+          "name": "apply",
+          "signature": "fn apply(matrix: Matrix2, vector: Vec2) -> Vec2",
+          "line": 56
+        },
+        {
+          "kind": "function",
+          "name": "add",
+          "signature": "fn add(left: Matrix2, right: Matrix2) -> Matrix2",
+          "line": 70
+        },
+        {
+          "kind": "function",
+          "name": "dot4",
+          "signature": "fn dot4(left: Vec4, right: Vec4) -> int",
+          "line": 83
+        },
+        {
+          "kind": "function",
+          "name": "squared_norm4",
+          "signature": "fn squared_norm4(vector: Vec4) -> int",
+          "line": 96
+        }
+      ],
+      "reexports": [],
+      "files": [
+        {
+          "path": "packages/matrix/demo.clack",
+          "sha256": "085e030ac3414e1dbde8e2e28b33e3f6ea2639a8d76171e83cdcf67efcd21e90"
+        },
+        {
+          "path": "packages/matrix/matrices.clack",
+          "sha256": "3eab22214d68534061629be4aef651452759b44e0a19ea65e310b4a980857f04"
+        },
+        {
+          "path": "packages/matrix/vector_demo.clack",
+          "sha256": "c1e578bbfc8ac43d36d38bbf0353ab7685bcd665d24f4dc07743e55fa203bd95"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "fixed",
+      "name": "Clack fixed",
+      "version": "0.1.0",
+      "module": "packages.fixed.fixed",
+      "source": "packages/fixed/fixed.clack",
+      "readme": "packages/fixed/README.md",
+      "license": "MIT",
+      "license_file": "packages/fixed/LICENSE",
+      "tests": "packages/fixed/tests",
+      "demos": [
+        {
+          "path": "packages/fixed/demo.clack",
+          "stdout": "1500\n2250\n3000\n-1\n3500\n2000\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "type",
+          "name": "Fixed",
+          "signature": "type Fixed(raw: int)",
+          "line": 2
+        },
+        {
+          "kind": "function",
+          "name": "from_int",
+          "signature": "fn from_int(value: int) -> Fixed",
+          "line": 5
+        },
+        {
+          "kind": "function",
+          "name": "to_int",
+          "signature": "fn to_int(value: Fixed) -> int",
+          "line": 11
+        },
+        {
+          "kind": "function",
+          "name": "from_ratio",
+          "signature": "fn from_ratio(numerator: int, denominator: int) -> Fixed",
+          "line": 15
+        },
+        {
+          "kind": "function",
+          "name": "add",
+          "signature": "fn add(left: Fixed, right: Fixed) -> Fixed",
+          "line": 22
+        },
+        {
+          "kind": "function",
+          "name": "subtract",
+          "signature": "fn subtract(left: Fixed, right: Fixed) -> Fixed",
+          "line": 29
+        },
+        {
+          "kind": "function",
+          "name": "multiply",
+          "signature": "fn multiply(left: Fixed, right: Fixed) -> Fixed",
+          "line": 36
+        },
+        {
+          "kind": "function",
+          "name": "divide",
+          "signature": "fn divide(left: Fixed, right: Fixed) -> Fixed",
+          "line": 43
+        }
+      ],
+      "reexports": [],
+      "files": [
+        {
+          "path": "packages/fixed/demo.clack",
+          "sha256": "48489c2e985061411c77f6faea8c10c65a1f62637c31766df963efc8dcc3ad95"
+        },
+        {
+          "path": "packages/fixed/fixed.clack",
+          "sha256": "67abc9b4282f159af540b2cbf67caac27097644f219cb150841f6da037970d79"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "stats",
+      "name": "Clack stats",
+      "version": "0.1.0",
+      "module": "packages.stats.stats",
+      "source": "packages/stats/stats.clack",
+      "readme": "packages/stats/README.md",
+      "license": "MIT",
+      "license_file": "packages/stats/LICENSE",
+      "tests": "packages/stats/tests",
+      "demos": [
+        {
+          "path": "packages/stats/demo.clack",
+          "stdout": "16\n-2\n8\n16\n4\n10\n126\n"
+        },
+        {
+          "path": "packages/stats/variance_demo.clack",
+          "stdout": "248\n16\n0\n3\n16\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "type",
+          "name": "Summary",
+          "signature": "type Summary(total: int, minimum: int, maximum: int)",
+          "line": 3
+        },
+        {
+          "kind": "type",
+          "name": "Rational",
+          "signature": "type Rational(numerator: int, denominator: int)",
+          "line": 8
+        },
+        {
+          "kind": "function",
+          "name": "summarize4",
+          "signature": "fn summarize4(values: int[4]) -> Summary",
+          "line": 12
+        },
+        {
+          "kind": "function",
+          "name": "mean4",
+          "signature": "fn mean4(values: int[4]) -> Rational",
+          "line": 24
+        },
+        {
+          "kind": "function",
+          "name": "span",
+          "signature": "fn span(summary: Summary) -> int",
+          "line": 33
+        },
+        {
+          "kind": "function",
+          "name": "sum_squares4",
+          "signature": "fn sum_squares4(values: int[4]) -> int",
+          "line": 39
+        },
+        {
+          "kind": "function",
+          "name": "variance4",
+          "signature": "fn variance4(values: int[4]) -> Rational",
+          "line": 48
+        }
+      ],
+      "reexports": [
+        {
+          "module": "std.array",
+          "names": [
+            "sum",
+            "minimum",
+            "maximum"
+          ],
+          "line": 1
+        }
+      ],
+      "files": [
+        {
+          "path": "packages/stats/demo.clack",
+          "sha256": "7ecab73fdcb8779ee1115a318ed8a04ec12af0dce30a72621eacac45be4eff70"
+        },
+        {
+          "path": "packages/stats/stats.clack",
+          "sha256": "888ae53d2c17fb11b622542957e1ac702bf0dadb7c9bdc1dbbc1a65e5940612d"
+        },
+        {
+          "path": "packages/stats/variance_demo.clack",
+          "sha256": "e3f6f58aac71db538a9d5dc29ac22bbfb07cb0d0877c02b62f4e4bbc98d04fe2"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "algorithms",
+      "name": "Clack algorithms",
+      "version": "0.1.0",
+      "module": "packages.algorithms.algorithms",
+      "source": "packages/algorithms/algorithms.clack",
+      "readme": "packages/algorithms/README.md",
+      "license": "MIT",
+      "license_file": "packages/algorithms/LICENSE",
+      "tests": "packages/algorithms/tests",
+      "demos": [
+        {
+          "path": "packages/algorithms/demo.clack",
+          "stdout": "-3\n1\n7\n7\n0\n-1\n1\n2\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "function",
+          "name": "sort4",
+          "signature": "fn sort4(values: int[4]) -> int[4]",
+          "line": 3
+        },
+        {
+          "kind": "function",
+          "name": "first_index4",
+          "signature": "fn first_index4(values: int[4], target: int) -> int",
+          "line": 54
+        },
+        {
+          "kind": "function",
+          "name": "argmin4",
+          "signature": "fn argmin4(values: int[4]) -> int",
+          "line": 73
+        },
+        {
+          "kind": "function",
+          "name": "lower_bound4",
+          "signature": "fn lower_bound4(values: int[4], target: int) -> int",
+          "line": 91
+        }
+      ],
+      "reexports": [],
+      "files": [
+        {
+          "path": "packages/algorithms/algorithms.clack",
+          "sha256": "689c6e7096f36aa76f824639891f7601468aa4498b9c947d708b1d8b12e9a914"
+        },
+        {
+          "path": "packages/algorithms/demo.clack",
+          "sha256": "8e17913305eb8afc02d1b8763ccfb176cbe503da380556c160843d10fd6c11d5"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "ml",
+      "name": "Clack ml",
+      "version": "0.1.0",
+      "module": "packages.ml.ml",
+      "source": "packages/ml/ml.clack",
+      "readme": "packages/ml/README.md",
+      "license": "MIT",
+      "license_file": "packages/ml/LICENSE",
+      "tests": "packages/ml/tests",
+      "demos": [
+        {
+          "path": "packages/ml/demo.clack",
+          "stdout": "false\ntrue\ntrue\ntrue\ntrue\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "type",
+          "name": "Linear4",
+          "signature": "type Linear4(weights: int[4], bias: int)",
+          "line": 4
+        },
+        {
+          "kind": "function",
+          "name": "zero4",
+          "signature": "fn zero4() -> Linear4",
+          "line": 8
+        },
+        {
+          "kind": "function",
+          "name": "score4",
+          "signature": "fn score4(model: Linear4, features: int[4]) -> int",
+          "line": 13
+        },
+        {
+          "kind": "function",
+          "name": "predict4",
+          "signature": "fn predict4(model: Linear4, features: int[4]) -> bool",
+          "line": 27
+        },
+        {
+          "kind": "function",
+          "name": "bounded_add",
+          "signature": "fn bounded_add(value: int, delta: int) -> int",
+          "line": 40
+        },
+        {
+          "kind": "function",
+          "name": "perceptron_step4",
+          "signature": "fn perceptron_step4(model: Linear4, features: int[4], label: bool, rate: int) -> Linear4",
+          "line": 47
+        },
+        {
+          "kind": "function",
+          "name": "squared_distance4",
+          "signature": "fn squared_distance4(left: int[4], right: int[4]) -> int",
+          "line": 77
+        },
+        {
+          "kind": "function",
+          "name": "nearest_centroid4",
+          "signature": "fn nearest_centroid4(features: int[4], negative: int[4], positive: int[4]) -> bool",
+          "line": 94
+        }
+      ],
+      "reexports": [
+        {
+          "module": "std.math",
+          "names": [
+            "clamp"
+          ],
+          "line": 2
+        }
+      ],
+      "files": [
+        {
+          "path": "packages/ml/demo.clack",
+          "sha256": "5210c63e2b3a3ac8d795723cfcf8465ef9ccb05f7f8a23b71e869c82250e087c"
+        },
+        {
+          "path": "packages/ml/ml.clack",
+          "sha256": "2fd829d4919fb6b70d24aba28f8b29033d80842c554fdf0073e7361b732128af"
+        }
+      ],
+      "assurance": "verified-source"
+    },
+    {
+      "id": "tui",
+      "name": "Clack tui",
+      "version": "0.1.0",
+      "module": "packages.tui.tui",
+      "source": "packages/tui/tui.clack",
+      "readme": "packages/tui/README.md",
+      "license": "MIT",
+      "license_file": "packages/tui/LICENSE",
+      "tests": "packages/tui/tests",
+      "demos": [
+        {
+          "path": "packages/tui/demo.clack",
+          "stdout_contains": [
+            "Clack build dashboard",
+            "Jobs ready",
+            "Actions"
+          ],
+          "stdout_endswith": "0\n"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "native",
+          "name": "begin",
+          "signature": "fn begin(title: text) -> unit",
+          "line": 3
+        },
+        {
+          "kind": "native",
+          "name": "panel",
+          "signature": "fn panel(title: text) -> unit",
+          "line": 4
+        },
+        {
+          "kind": "native",
+          "name": "label",
+          "signature": "fn label(value: text) -> unit",
+          "line": 5
+        },
+        {
+          "kind": "native",
+          "name": "row",
+          "signature": "fn row(name: text, value: text) -> unit",
+          "line": 6
+        },
+        {
+          "kind": "native",
+          "name": "metric",
+          "signature": "fn metric(name: text, value: int) -> unit",
+          "line": 7
+        },
+        {
+          "kind": "native",
+          "name": "progress",
+          "signature": "fn progress(name: text, value: int, total: int) -> unit",
+          "line": 8
+        },
+        {
+          "kind": "native",
+          "name": "option",
+          "signature": "fn option(id: int, name: text) -> unit",
+          "line": 9
+        },
+        {
+          "kind": "native",
+          "name": "run",
+          "signature": "fn run() -> int",
+          "line": 10
+        },
+        {
+          "kind": "native",
+          "name": "end",
+          "signature": "fn end() -> unit",
+          "line": 11
+        },
+        {
+          "kind": "native",
+          "name": "menu3",
+          "signature": "fn menu3(title: text, first: text, second: text, third: text) -> int",
+          "line": 12
+        }
+      ],
+      "reexports": [],
+      "files": [
+        {
+          "path": "packages/tui/demo.clack",
+          "sha256": "283a9089e242fb79e9b98ac49286851eff57572048a5d14fd1436ed430cb5e77"
+        },
+        {
+          "path": "packages/tui/terminal.c",
+          "sha256": "ad7967deaa11c65baa4ab92f9f47279baaa4063d476876e30e83ff8dc7a063c9"
+        },
+        {
+          "path": "packages/tui/tui.clack",
+          "sha256": "38206d9f4acc50e37f6737337a725c11f13c7f7e4f53e5f611d807ff73077d26"
+        }
+      ],
+      "assurance": "native-boundary"
+    }
+  ]
+}
