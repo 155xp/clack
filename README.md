@@ -2,7 +2,7 @@
 
 A small language with plain syntax, native binaries, and checked contracts.
 
-Clack 0.4 adds `fill`, `minimum`, and `maximum` for fixed arrays, alongside compiler improvements. Read the [measured before/after report](benchmarks/RESULTS-0.4.md) for speed and line-count changes, raw samples, and limitations. Counted loops, checked contracts, immutable text, and explicit native bindings remain supported.
+Clack 0.5 reduces array-fill copying and proof-construction overhead, and adds text equality and UTF-8 byte lengths. Read the [measured before/after report](benchmarks/RESULTS-0.5.md) for speed and line-count changes, raw samples, and limitations. Counted loops, checked contracts, immutable text, and explicit native bindings remain supported.
 
 [GitHub repository](https://github.com/155xp/clack)
 
@@ -33,7 +33,7 @@ Start with [the Clack Handbook](docs/README.md) or go directly to:
 - [Step-by-step tutorials](docs/tutorials/README.md), including a parallel data project and your own libraries.
 - [Quick reference](docs/quick-reference.md) and [full language reference](docs/reference/README.md).
 - [Built-ins and standard libraries](docs/libraries.md), [cookbook](docs/cookbook.md), and [common errors](docs/errors.md).
-- [Text and explicit native bindings](docs/native.md), including the boundary used by optional terminal UI libraries.
+- [Text equality and byte lengths](docs/tutorials/09-text.md), and [explicit native bindings](docs/native.md) for optional terminal UI libraries.
 - [CLI reference](docs/cli.md), [FAQ](docs/faq.md), and [compiler internals](docs/internals.md).
 
 ## Run it
@@ -117,7 +117,7 @@ fn main():
     print(values[1])
 ```
 
-`int` is a signed 64-bit integer. `bool` has `true` and `false`, and `text` holds immutable UTF-8 literals such as `"Clack"`. Records group named fields. Arrays have a fixed integer or Boolean element type and length, such as `int[4]`. Records and arrays are passed and copied by value. Array access must be proved in bounds before compilation.
+`int` is a signed 64-bit integer. `bool` has `true` and `false`, and `text` holds immutable UTF-8 literals such as `"Clack"`, supports `==` and `!=`, and exposes its byte length with `len`. Records group named fields. Arrays have a fixed integer or Boolean element type and length, such as `int[4]`. Records and arrays are passed and copied by value. Array access must be proved in bounds before compilation.
 
 Function inputs are immutable. Local bindings can be reassigned; local array elements can be changed. Record fields are immutable: build a replacement record when changing a field.
 
@@ -167,7 +167,7 @@ Native execution is a foundation for C-like performance, not evidence that every
 
 One local experiment with 10 million iterations of an integer arithmetic kernel measured **41.7 ms for Clack and 43.0 ms for C**. Two Clack jobs measured **89.1 ms sequentially and 41.7 ms in parallel** (five-run medians). See the [reproducible benchmark and recorded samples](benchmarks/README.md). These measurements cover one workload on this machine.
 
-Dynamic collections, text manipulation, floating-point types, generics, recursion, and shared-memory concurrency are future work. This first implementation is deliberately small enough to inspect and test.
+Dynamic collections, text concatenation and indexing, floating-point types, generics, recursion, and shared-memory concurrency are future work. This first implementation is deliberately small enough to inspect and test.
 
 Read [the language guide](docs/language.md), [verification model](docs/verification.md), and [design direction](docs/design.md). Try the files under [examples](examples/); programs in `examples/rejected/` demonstrate errors the compiler should catch.
 

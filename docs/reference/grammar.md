@@ -1,6 +1,6 @@
 # Grammar
 
-This grammar describes Clack 0.4's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
+This grammar describes Clack 0.5's source forms. Use it with the [lexical rules](lexical-syntax.md) and [statement semantics](functions-control-flow.md): a grammatical program can still fail type checking or verification. The [reference index](README.md) links the remaining rules.
 
 Quoted strings are literal tokens. `A | B` chooses an alternative, `[ A ]` makes a form optional, and `{ A }` repeats it zero or more times. A comma between grammar items means sequence; it is not a source comma unless quoted.
 

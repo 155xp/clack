@@ -22,6 +22,8 @@ All clauses precede executable statements in the function body. Multiple clauses
 
 Preconditions and postconditions may refer to parameters. Only postconditions may also use `result`. They cannot name local variables. Conditions support operators, fields, array indexing, and `len`, but cannot call a local or imported function or a constructor. A contract must have Boolean type. Importing a standard helper does not make it callable inside an annotation.
 
+Text equality and `len(text)` have the same byte semantics in contracts as in executable code. For example, `ensures result == "Ready"` describes a text result, and `requires len(label) <= 80` limits its UTF-8 byte length. No implicit case conversion or Unicode normalization occurs.
+
 This restriction also applies to all compiler array operators, including `fill`, `minimum`, and `maximum`. Call an operator in executable code, then express a property using its returned local value. The verifier uses its exact model and must prove every intermediate integer sum is safe.
 
 `main` cannot declare a precondition. Program entry has no caller that could establish one. It can contain assertions and may have postconditions that do not mention a nonexistent result, although assertions usually express useful facts more directly.

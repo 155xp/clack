@@ -1,13 +1,13 @@
 # The Clack Handbook
 
-Documentation for **Clack 0.4**, the native language implemented in this repository.
+Documentation for **Clack 0.5**, the native language implemented in this repository.
 
 Clack combines a small syntax with static types, value records, fixed arrays, checked contracts, and independent parallel calls. This handbook teaches the current compiler. Proposed features live in the [design direction](design.md).
 
 ## Start here
 
 1. [Install Clack and run a program](getting-started.md).
-2. Work through the [eight tutorials](tutorials/README.md), from the first function to a parallel data-processing project and reusable libraries.
+2. Work through the [nine tutorials](tutorials/README.md), from the first function to a parallel data-processing project, reusable libraries, and text contracts.
 3. Keep the [quick reference](quick-reference.md) nearby while writing code.
 4. Use the [error guide](errors.md) when a program fails to compile.
 

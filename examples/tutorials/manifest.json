@@ -47,6 +47,10 @@
     {
       "path": "examples/tutorials/08-array-operators.clack",
       "stdout": "5\n-3\n7\n25\n7\n3\nfalse\n"
+    },
+    {
+      "path": "examples/tutorials/09-text.clack",
+      "stdout": "Ready\ntrue\n5\n0\ntrue\ntrue\n"
     }
   ]
 }

@@ -73,8 +73,8 @@ class NativeModuleTests(unittest.TestCase):
                 print(copied.value)
         ''')
 
-    def test_text_does_not_silently_gain_unmodeled_operations(self):
-        for expression in ('"a" + "b"', '"a" == "a"', '["a", "b"]', 'len("hello")'):
+    def test_text_rejects_unsupported_operations(self):
+        for expression in ('"a" + "b"', '"a" < "b"', '["a", "b"]', '"hello"[0]'):
             with self.subTest(expression=expression):
                 self.rejected(f"fn main():\n    value = {expression}\n    print(value)\n")
 

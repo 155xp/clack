@@ -39,7 +39,7 @@ These two functions are available without an import:
 | Function | Input | Result and behavior |
 | --- | --- | --- |
 | `print(value)` | One `int`, `bool`, or `text` | Prints the value and a newline. Only `main` may call it. It produces no assignable value. |
-| `len(values)` | A fixed array | Returns its length as an `int`. Length is part of the array type. |
+| `len(value)` | A fixed array or `text` | Returns its length as an `int`: array elements or UTF-8 text bytes. Array length is part of the type. |
 
 `len` is also allowed in proof expressions. Other function calls, including standard-library helpers, are not allowed inside `requires`, `ensures`, `assert`, `invariant`, or `decreases`. Write properties in terms of operators, fields, elements, and `len` instead.
 

@@ -159,7 +159,7 @@ The timeout is per query. There is no option to accept an unproved result. See t
 
 ## The construct is not implemented
 
-Text requires double-quoted JSON-style literals; unsupported quoting reports `use double-quoted JSON text literals`. Text concatenation, comparison, indexing, text arrays, and `len(text)` are not supported. Nondecimal and floating-point literals report `only decimal integer literals are supported`. Recursive calls report `recursive call cycle ... is unsupported; use a loop with decreases`.
+Text requires double-quoted JSON-style literals; unsupported quoting reports `use double-quoted JSON text literals`. Text concatenation, ordering comparisons, indexing, text arrays, and native text returns are not supported. Matching text values support `==` and `!=`; `len(text)` counts UTF-8 bytes. Nondecimal and floating-point literals report `only decimal integer literals are supported`. Recursive calls report `recursive call cycle ... is unsupported; use a loop with decreases`.
 
 Clack also has no dynamic arrays, `break`, `continue`, exceptions, or user-defined operators. Counted loops use `for i in range(stop)` or `range(start, stop)`; steps and range values outside that header are unsupported. Check the [current reference](reference/README.md) and [design direction](design.md) before assuming familiar syntax is available.
 

@@ -23,7 +23,7 @@ Booleans support `not`, `and`, `or`, `==`, and `!=`. An `if` or `while` conditio
 
 `text` uses double-quoted JSON-style literals such as `"Clack"` and `"Ready\n"`. Contents must be valid UTF-8 without embedded NUL. An ordinary function may accept or return text, and a record may contain a text field. Text contents cannot be mutated, though a local text binding may be reassigned another text value.
 
-Text currently originates only from static literals. Concatenation, equality, ordering, indexing, `len(text)`, text arrays, and native text returns are unsupported. This keeps the current lifetime model small; it is not a general string-processing library. See [the text guide](../native.md#text-values) for escapes and output examples.
+Text currently originates only from static literals. `==` and `!=` compare exact UTF-8 byte sequences, with case preserved and no Unicode normalization. `len(text)` counts UTF-8 bytes: `len("café")` is `5`, and `len("")` is `0`. Equality and length are available in executable code and proof annotations. Concatenation, ordering, indexing, text arrays, and native text returns remain unsupported. See [the text guide](../native.md#text-values) for escapes and output examples.
 
 ## Fixed arrays
 
@@ -92,7 +92,7 @@ fn main():
 
 This prints `3`, `30`, and `true`. The constructor takes one argument for each field, in declaration order. Constructors have no default values or named arguments. Each argument must have exactly the corresponding field's type.
 
-Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.4.
+Fields may contain integers, Booleans, text, fixed scalar arrays, or other records. A record cannot contain itself directly or indirectly by value. Such a layout would require infinite storage. There are no user-visible pointers or references with which to express a recursive data structure in version 0.5.
 
 Field access uses `.` and may be chained with further field or array access. Fields cannot be assigned directly. To update a record, construct and assign a replacement. The following is a fragment inside a function where `point` is already a `Point` and the addition is known safe:
 
@@ -114,8 +114,8 @@ These rules also apply at parallel boundaries. Two workers receiving the same ar
 
 ## Comparison and output
 
-`==` and `!=` compare two integers or two Booleans. Ordering comparisons accept two integers. Composite equality is not implemented; compare the fields or elements needed for the property.
+`==` and `!=` compare matching pairs of integers, Booleans, or text values. Mixed-type equality is rejected. Ordering comparisons accept two integers. Composite equality is not implemented; compare the fields or elements needed for the property.
 
 `print` accepts one integer, Boolean, or text value and appends a newline. It prints Booleans as `true` and `false`. It cannot print a whole record or array, so print selected fields or elements. Only `main` may call `print`.
 
-Text manipulation, dynamic arrays, slices, enums, tagged unions, generic types, and user-defined operators remain [design proposals](../design.md).
+Text concatenation and indexing, dynamic arrays, slices, enums, tagged unions, generic types, and user-defined operators remain [design proposals](../design.md).

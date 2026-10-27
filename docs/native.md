@@ -28,7 +28,11 @@ Text uses double-quoted JSON-style literals. Supported escapes are `\"`, `\\`, `
 
 Text contents are immutable. A local binding may be assigned another text value, and ordinary functions and records may pass or return text. All current runtime text originates in static literals; there is no dynamic text allocation or mutable character buffer in the language.
 
-This is a small text API, not a general string library. Text concatenation, equality, ordering, character indexing, `len(text)`, text arrays, and native functions returning text are unsupported. `len` still accepts only fixed integer or Boolean arrays.
+`==` and `!=` compare text by its exact UTF-8 bytes. Comparison preserves case and performs no Unicode normalization: `"Clack" != "clack"`, and composed `"é"` differs from `"e\u0301"`. Both equality and length can appear in ordinary code, assertions, and contracts.
+
+`len(text)` returns the UTF-8 byte count as an integer. `len("café")` is `5`, `len("é")` is `2`, `len("e\u0301")` is `3`, and `len("")` is `0`. It accepts one text value or one fixed array; array lengths still count elements.
+
+Text concatenation, ordering, character indexing, text arrays, and native functions returning text remain unsupported. See the [text tutorial](tutorials/09-text.md) for functions, record fields, and verified text contracts.
 
 ## Declare an explicit C boundary
 

@@ -1,6 +1,6 @@
 # 8. Reuse code with libraries
 
-[Previous: Inventory project](07-project.md) · [Tutorial index](README.md)
+[Previous: Inventory project](07-project.md) · [Tutorial index](README.md) · [Next: Text and byte lengths](09-text.md)
 
 The goal of this lesson is to use supplied helpers and move your own function into another file. The earlier lessons defined every helper in place so you could read a complete program. Imports let you reuse those definitions without copying their bodies.
 

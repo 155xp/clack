@@ -192,8 +192,8 @@ class _Checker:
                 self.need(right, "bool", expr.line, expr.op)
                 typ = "bool"
             elif expr.op in {"==", "!="}:
-                if left != right or left not in {"int", "bool"}:
-                    self.fail("equality compares matching int or bool values; compare record fields or array elements", expr.line)
+                if left != right or left not in {"int", "bool", "text"}:
+                    self.fail("equality compares matching int, bool, or text values; compare record fields or array elements", expr.line)
                 typ = "bool"
             elif expr.op in {"<", "<=", ">", ">="}:
                 self.need(left, "int", expr.line, expr.op)
@@ -233,8 +233,8 @@ class _Checker:
                 self.fail("proof expressions cannot call functions or constructors; use fields, operators, and len", expr.line)
             args = [self.expr(arg, scope, proof) for arg in expr.args]
             if expr.name == "len":
-                if len(args) != 1 or array_type(args[0]) is None:
-                    self.fail("len needs exactly one fixed array", expr.line)
+                if len(args) != 1 or (args[0] != "text" and array_type(args[0]) is None):
+                    self.fail("len needs exactly one fixed array or text value", expr.line)
                 typ = "int"
             elif expr.name in OPERATIONS:
                 operation = OPERATIONS[expr.name]

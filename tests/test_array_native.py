@@ -166,6 +166,70 @@ class ArrayNativeTests(unittest.TestCase):
         self.assertEqual(output, "7\n4096\n")
         self.assertLess(len(generated), 2000)
 
+    def test_assignment_fill_snapshots_old_target_before_writing_any_element(self):
+        output, generated = self.native("""
+            from std.array import fill
+            fn main():
+                values = fill(3, 4)
+                copied = values
+                values = fill(values[0] + values[1], 4)
+                flags = fill(false, 4)
+                original = flags
+                flags = fill(not flags[0], 4)
+                print(values[0])
+                print(values[3])
+                print(copied[0])
+                print(flags[0])
+                print(flags[3])
+                print(original[0])
+        """)
+        self.assertEqual(output, "6\n6\n3\ntrue\ntrue\nfalse\n")
+        self.assertNotIn("clack_reduce_fill_", generated)
+
+    def test_assignment_fill_keeps_nested_value_calls_and_rvalue_helpers_reachable(self):
+        output, generated = self.native("""
+            from std.array import fill, maximum
+            fn identity(value: int) -> int:
+                ensures result == value
+                return value
+            fn main():
+                values = fill(identity(maximum(fill(9, 2))), 4)
+                print(values[0])
+                print(values[3])
+        """)
+        self.assertEqual(output, "9\n9\n")
+        self.assertIn("clack_fn_identity", generated)
+        self.assertIn("clack_reduce_fill_int_2", generated)
+        self.assertNotIn("clack_reduce_fill_int_4", generated)
+
+    def test_fill_rvalue_returns_and_record_fields_keep_value_semantics(self):
+        output, generated = self.native("""
+            from std.array import fill, minimum
+            type Batch:
+                values: int[4]
+            fn values() -> int[4]:
+                return fill(9, 4)
+            fn main():
+                batch = Batch(fill(-2, 4))
+                print(minimum(values()))
+                print(minimum(batch.values))
+        """)
+        self.assertEqual(output, "9\n-2\n")
+        self.assertIn("clack_reduce_fill_int_4", generated)
+
+    def test_fill_assignment_temporary_names_do_not_collide_with_counted_loops(self):
+        output, _ = self.native("""
+            from std.array import fill
+            fn main():
+                for i in range(2):
+                    values = fill(i, 3)
+                    for j in range(2):
+                        flags = fill(j == 1, 2)
+                        print(values[2])
+                        print(flags[1])
+        """)
+        self.assertEqual(output, "0\nfalse\n0\ntrue\n1\nfalse\n1\ntrue\n")
+
 
 if __name__ == "__main__":
     unittest.main()

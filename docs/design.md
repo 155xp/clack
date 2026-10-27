@@ -16,7 +16,7 @@ There is also a practical tradeoff: arbitrary program correctness cannot be deci
 | --- | --- |
 | Syntax | Indentation, inferred local types, plain functions and records, counted `for` loops |
 | Execution | Optimized C11 output and native executables |
-| Data | Signed 64-bit integers, Booleans, immutable literal text, fixed scalar arrays, value records |
+| Data | Signed 64-bit integers, Booleans, immutable text with equality and byte length, fixed scalar arrays, value records |
 | Verification | SMT checks for arithmetic, bounds, contracts, assertions, loops |
 | Parallelism | Independent function calls using POSIX threads and value arguments |
 | Effects | Output restricted to main; no mutable globals |
@@ -28,7 +28,7 @@ There is also a practical tradeoff: arbitrary program correctness cannot be deci
 These are design proposals, not syntax accepted by the current compiler.
 
 1. **Better daily tooling.** A formatter, language-server diagnostics, source maps, a package layout, and concise explanations for failed obligations. Error messages should distinguish an actual counterexample from insufficient solver knowledge.
-2. **More useful data.** Text manipulation and dynamic text, slices, dynamic arrays, tagged unions, pattern matching, and generic functions. Tagged unions should make absent values and recoverable errors explicit without making every call ceremonial.
+2. **More useful data.** Text concatenation, indexing, dynamic text, slices, dynamic arrays, tagged unions, pattern matching, and generic functions. Tagged unions should make absent values and recoverable errors explicit without making every call ceremonial.
 3. **A memory model that scales.** Use values by default, infer moves and regions when possible, and introduce explicit borrowing only where it expresses a real aliasing choice. Dynamic storage must have a precise lifetime and alias model before it participates in proofs or shared work.
 4. **Structured parallel collections.** Add collection operations that distribute independent work over a worker pool. Preserve deterministic result ordering and establish that each task owns its mutable output. GPU support would require a separate backend and a defined supported subset.
 5. **Deeper specifications.** Reusable predicates, refinement types, mathematical sequences, quantified collection properties, and verified libraries would make useful contracts shorter. Recursive definitions need a termination story before recursive functions are accepted.

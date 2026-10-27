@@ -27,6 +27,7 @@ Commands in these lessons assume you stay in the repository root with this envir
 | [6. Learn from a rejected program](06-fixing-errors.md) | A safe increment function | Counterexamples, contracts, guarded arithmetic |
 | [7. Build an inventory report](07-project.md) | Two warehouse reports | Putting the pieces together |
 | [8. Reuse code with libraries](08-libraries.md) | A program using supplied and local helpers | Imports, library contracts, code reuse |
+| [9. Text and byte lengths](09-text.md) | A verified status label | Text equality, UTF-8 byte lengths, text contracts |
 
 Every lesson contains a complete source file, a command, exact output, and exercises with answers. The complete files live in [examples/tutorials](../../examples/tutorials/). They are checked with the repository's documentation checks so the listings and runnable files stay in sync.
 

@@ -173,7 +173,7 @@ A return may exit a loop. Every loop needs a verified termination argument: `for
 | Built-in | Input | Result and restrictions |
 | --- | --- | --- |
 | `print(value)` | One `int`, `bool`, or `text` | Prints one line; callable only in `main`; no assignable value |
-| `len(values)` | One fixed scalar array | Returns its length as `int`; allowed in executable and proof expressions |
+| `len(value)` | One fixed scalar array or `text` | Returns the array length or UTF-8 byte length as `int`; allowed in executable and proof expressions |
 
 This table lists the two functions available without imports. The source helpers and compiler-implemented array operators supplied through explicit standard imports are listed in the [library guide](../libraries.md). Array operators may be used in executable expressions but not proof annotations or direct parallel jobs. Source worker functions may call them normally.
 

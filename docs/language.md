@@ -28,7 +28,7 @@ Store the program in a `.clack` file. With the compiler installed and the virtua
 | Layout | Consistent space indentation; `#` comments; no semicolons | [Lexical syntax](reference/lexical-syntax.md) |
 | Numbers | Signed 64-bit integers; every executable intermediate must fit | [Types and values](reference/types-values.md) |
 | Booleans | `true`, `false`, `and`, `or`, `not`; no integer truthiness | [Expressions](reference/lexical-syntax.md) |
-| Text | Immutable UTF-8 literals; pass, return, and print; no manipulation API yet | [Text and native bindings](native.md) |
+| Text | Immutable UTF-8 literals; equality, byte length, passing, returning, and printing | [Text and native bindings](native.md) |
 | Data | Named records and nonempty fixed `int[N]` or `bool[N]` arrays | [Types and values](reference/types-values.md) |
 | Libraries | Explicit `from module import name` for standard or local definitions | [Library guide](libraries.md) |
 | Mutation | Locals may change; parameters and record fields are immutable | [Functions and control flow](reference/functions-control-flow.md) |
@@ -66,4 +66,4 @@ Local libraries use the same form: `from helpers import twice` loads `helpers.cl
 - Use the [reference index](reference/README.md) or [complete grammar](reference/grammar.md) to look up syntax.
 - Try the [example programs](../examples/) and compare their source with the generated C.
 - Read [native bindings](native.md) for the explicit trusted C boundary used by optional terminal UI packages.
-- Read the [design direction](design.md) for planned text manipulation, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.4.
+- Read the [design direction](design.md) for planned text concatenation and indexing, dynamic collections, richer proofs, and broader systems integration. Those proposals are not features accepted by version 0.5.

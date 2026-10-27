@@ -50,6 +50,7 @@ class _Verifier:
     def __init__(self, program: ast.Program, timeout_ms: int, proof_dir: Path | None):
         self.program = program
         self.info = check(program)
+        self.int_bounds = (z3.IntVal(MIN_INT), z3.IntVal(MAX_INT))
         self.solver = z3.Solver()
         self.solver.set(timeout=timeout_ms)
         self.proof_dir = proof_dir
@@ -81,8 +82,10 @@ class _Verifier:
 
     def bounds(self, value: Value) -> z3.BoolRef:
         if value.type == "int":
-            return z3.And(value.term >= MIN_INT, value.term <= MAX_INT)
-        if value.type in {"bool", "text"}:
+            return z3.And(value.term >= self.int_bounds[0], value.term <= self.int_bounds[1])
+        if value.type == "text":
+            return z3.Length(value.term) <= self.int_bounds[1]
+        if value.type == "bool":
             return z3.BoolVal(True)
         array = array_type(value.type)
         if array:
@@ -99,7 +102,7 @@ class _Verifier:
     def prove(self, state: State, claim: z3.BoolRef, line: int, message: str) -> None:
         # A constant True claim needs no solver. False still needs its path:
         # an unreachable operation may legitimately have a false safety goal.
-        trivial = z3.is_true(z3.simplify(claim))
+        trivial = z3.is_true(claim) or z3.is_true(z3.simplify(claim))
         # Reuse solver machinery, never assertions: each obligation has its
         # own push/pop scope, including exported queries and failure paths.
         solver = self.solver
@@ -150,7 +153,9 @@ class _Verifier:
         if isinstance(expression, ast.BoolLit):
             return Value("bool", z3.BoolVal(expression.value))
         if isinstance(expression, ast.StringLit):
-            return Value("text", z3.StringVal(expression.value))
+            # Encode UTF-8 bytes explicitly; Z3's string parser otherwise
+            # interprets backslash escapes and truncates high Unicode points.
+            return Value("text", z3.StringVal(''.join('\\u{%x}' % byte for byte in expression.value.encode("utf-8"))))
         if isinstance(expression, ast.Name):
             return state.env[expression.name]
         if isinstance(expression, ast.Unary):
@@ -214,6 +219,8 @@ class _Verifier:
                 # Evaluate its argument too: source semantics must not hide
                 # unsafe indexing/calls just because length is statically known.
                 value = self.expr(expression.args[0], state, spec)
+                if value.type == "text":
+                    return Value("int", z3.Length(value.term))
                 return Value("int", z3.IntVal(array_type(value.type)[1]))
             args = [self.expr(value, state, spec) for value in expression.args]
             if expression.name in OPERATIONS:

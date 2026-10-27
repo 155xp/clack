@@ -4,6 +4,23 @@
 
 These patterns show how to write ordinary Clack functions. `print` and `len` are available without imports; `std.math` and `std.array` supply explicitly imported source helpers. `std.array` also supplies compiler operators for filling arrays, selecting integer extrema, and reducing any supported fixed length. The [library catalog](libraries.md) explains that distinction. Each example below is a complete program you can save in its own `.clack` file.
 
+## Choose and compare a text label
+
+```clack
+fn label(ready: bool) -> text:
+    ensures (ready and result == "Ready") or (not ready and result == "Waiting")
+    if ready:
+        return "Ready"
+    return "Waiting"
+
+fn main():
+    value = label(true)
+    print(value == "Ready")
+    print(len("café"))
+```
+
+Output: `true`, then `5`. Text equality compares exact UTF-8 bytes, preserving case and performing no Unicode normalization. `len` counts UTF-8 bytes and is also accepted in contracts. The [text tutorial](tutorials/09-text.md) covers record fields, empty text, and combining accents.
+
 ## Start a fixed array with one value
 
 ```clack

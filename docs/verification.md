@@ -20,6 +20,8 @@ Do not infer runtime safety from the final answer alone. For example, `(x + 1) -
 
 The imported array operators are modeled directly by the compiler. `fill` constructs an array whose elements all equal its once-evaluated input; its literal count fixes the type. `minimum` and `maximum` select exact integer-array extrema using comparisons. `sum` requires each left-to-right partial addition to fit signed 64-bit range, while `count` produces the exact number of true Boolean elements and `all`/`any` use their logical meanings. These are not source helpers whose contracts are merely assumed, and they cannot be called inside proof annotations. Their verifier models and native loops are part of the trusted compiler. See the [library guide](libraries.md) for accepted inputs and array-length costs.
 
+Text equality compares exact UTF-8 bytes, and `len(text)` counts those bytes in both executable and proof expressions. Text lengths fit the signed integer range. Literal terms preserve the byte encoding even for high Unicode code points and literal backslashes; native code uses byte equality and length operations. Text still originates in immutable static literals and pass-through values.
+
 ## Loop reasoning
 
 A loop invariant must hold when entering the loop and remain true after each body execution that continues the loop. The verifier reasons from an arbitrary loop head, forgetting the previous values of bindings the body may modify. It must not assume the first iteration represents every iteration.

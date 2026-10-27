@@ -114,6 +114,51 @@ def source_fingerprint(root: Path) -> str:
     return digest.hexdigest()
 
 
+def text_fixture() -> tuple[str, str]:
+    payload = "Clack\\u{30000} é😀𰀀" * 32
+    payload += "x" * (1024 - len(payload.encode("utf-8")))
+    assert len(payload.encode("utf-8")) == 1024
+    source = "fn echo(value: text) -> text:\n    return value\nfn main():\n    print(echo(" + json.dumps(payload, ensure_ascii=False) + "))\n"
+    return source, payload + "\n"
+
+
+def paired_native(case: dict, roots: dict[str, Path], folder: Path, command: list[str], repeats: int) -> dict:
+    """Compile actual revisions before interleaving their native executions."""
+    fingerprints = {label: source_fingerprint(root) for label, root in roots.items()}
+    driver = """import pathlib, sys
+sys.path.insert(0, sys.argv[1])
+from clack.codegen import emit_c
+from clack.modules import load_program
+from clack.verifier import verify
+source = pathlib.Path(sys.argv[2])
+program = load_program(source)
+checked = verify(program)
+source.with_suffix('.c').write_text(emit_c(program, checked.local_types, checked.expr_types))
+"""
+    samples = {label: [] for label in roots}
+    binaries = {}
+    for label, root in roots.items():
+        source = folder / f"paired_{label}.clack"
+        source.write_text(case["clack"], encoding="utf-8")
+        checked_run([sys.executable, "-c", driver, str(root), str(source)], cwd=root)
+        binary = source.with_suffix("")
+        checked_run([*command, *FLAGS, str(source.with_suffix(".c")), "-o", str(binary)])
+        checked_run([str(binary)], case["expected"])
+        binaries[label] = binary
+    rng = random.Random(17)
+    order = list(roots)
+    for _ in range(repeats):
+        rng.shuffle(order)
+        for label in order:
+            samples[label].append(checked_run([str(binaries[label])], case["expected"])[0])
+    if fingerprints != {label: source_fingerprint(root) for label, root in roots.items()}:
+        raise RuntimeError("compiler changed during paired native measurements")
+    return {"case": case["name"], "compiler_source_sha256": fingerprints, "seed": 17, "repeats": repeats,
+            "source_sha256": hashlib.sha256(case["clack"].encode()).hexdigest(), "expected_stdout": case["expected"],
+            "scope": "Paired native-process wall time; verification and C compilation excluded; every output checked.",
+            "results": {label: summary(values) for label, values in samples.items()}}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compiler-root", type=Path, default=ROOT, help="compiler source tree to measure (supports immutable baseline snapshots)")
@@ -123,6 +168,7 @@ def main() -> int:
     parser.add_argument("--compile-repeats", type=positive, default=3)
     parser.add_argument("--only", help="comma-separated native case names, useful for development")
     parser.add_argument("--cc", default=os.environ.get("CC", "cc"))
+    parser.add_argument("--paired-root", type=Path, help="also interleave native array-fill runs against this compiler tree")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.scale > 20:
@@ -171,6 +217,7 @@ def main() -> int:
         ),
         "branch8": branch8,
         "array512": "from std.array import sum\nfn main():\n    total = sum([" + ", ".join(str(i % 7) for i in range(512)) + "])\n    assert total == 1533\n    print(total)\n",
+        "text1024": text_fixture()[0],
     }
     fixtures["unused150"] = "".join(
         f"fn unused{i}(x: int) -> int:\n    requires 0 <= x <= 100\n    ensures result == x + 20\n    y = x\n"
@@ -234,7 +281,7 @@ fn main():
             pipeline[name]["generated_c_bytes"] = len(generated[name].encode("utf-8"))
             print(f"Verified {name}: {pipeline[name]['total']['median_seconds'] * 1000:.2f} ms", flush=True)
         fixture_compile = {}
-        for name, expected in {"stdlib": "10\n", "unused150": "42\n"}.items():
+        for name, expected in {"stdlib": "10\n", "unused150": "42\n", "text1024": text_fixture()[1]}.items():
             source_file, binary = folder / f"{name}.c", folder / name
             source_file.write_text(generated[name], encoding="utf-8")
             fixture_compile[name] = summary([checked_run([*command, *FLAGS, str(source_file), "-o", str(binary)])[0]
@@ -264,6 +311,15 @@ fn main():
             cold_samples = [checked_run([sys.executable, "-m", "clack", "check", str(folder / (name + ".clack"))],
                                         cwd=compiler_root, env=environment)[0] for _ in range(args.compile_repeats)]
             cold[name] = summary(cold_samples)
+        paired = None
+        if args.paired_root:
+            root = args.paired_root.resolve()
+            if not (root / "clack/verifier.py").is_file():
+                parser.error("--paired-root must contain the Clack compiler sources")
+            case = next((case for case in cases if case["name"] == "array_fill"), None)
+            if case is None:
+                parser.error("--paired-root requires the array_fill case")
+            paired = paired_native(case, {"before": root, "after": compiler_root}, folder, command, args.repeats)
 
     results = {}
     for case in cases:
@@ -288,6 +344,7 @@ fn main():
               "all_outputs_match_reference": True, "runtime": results, "parallel_speedup": scaling,
               "in_process_compiler_pipeline": pipeline, "native_c_compilation": native_compile,
               "fixture_native_compilation": fixture_compile, "cold_cli_check": cold,
+              "paired_native_runtime": paired,
               "timing_scope": {"runtime": "native subprocess wall time including process startup, output, thread setup/join, and exit; no compilation or verification",
                                "in_process_compiler_pipeline": "repeated full source load, parse/link, type/proof checks, and C emission in an already imported Python process; no native compilation",
                                "cold_cli_check": "fresh Python process plus package imports, source loading, type checking, verification, and CLI output; no native compilation"},

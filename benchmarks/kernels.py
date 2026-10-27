@@ -166,9 +166,41 @@ def _array_reference(rounds):
     return str(sum((result[0]*seed+result[1]) % 1000000 for seed in range(1, 9))) + '\n'
 
 
+def _fill_sources(rounds):
+    source = f'''from std.array import fill, sum
+fn main():
+    values = fill(0, 512)
+    i = 0
+    checksum = 0
+    while i < {rounds}:
+        invariant 0 <= i <= {rounds}
+        invariant 0 <= checksum <= {512 * rounds} * i
+        decreases {rounds} - i
+        values = fill(i, 512)
+        checksum = checksum + sum(values)
+        i = i + 1
+    print(checksum)
+'''
+    native = _HEADER + f'''int main(void) {{
+    int64_t values[512]={{0}}, checksum=0;
+    for (int64_t i=0; i<{rounds}; ++i) {{
+        for (int j=0; j<512; ++j) values[j]=i;
+        int64_t total=0;
+        for (int j=0; j<512; ++j) total+=values[j];
+        checksum+=total;
+    }}
+    printf("%" PRId64 "\\n", checksum);
+    return 0;
+}}
+'''
+    return source, native
+
+
 def cases(scale=1):
     gcd_rounds, sqrt_rounds, array_rounds = 300000*scale, 300000*scale, 2000003*scale
     array, array_c = _array_sources(array_rounds)
+    fill_rounds = 100000 * scale
+    fill, fill_c = _fill_sources(fill_rounds)
     return [
         {'name':'gcd','label':'Variable-input Euclidean GCD','clack':_GCD.replace('ROUNDS',str(gcd_rounds)),
          'c':_GCD_C.replace('ROUNDS',str(gcd_rounds)),'expected':_reference(gcd_rounds,'gcd'),'work_units':gcd_rounds},
@@ -176,4 +208,6 @@ def cases(scale=1):
          'c':_SQRT_C.replace('ROUNDS',str(sqrt_rounds)),'expected':_reference(sqrt_rounds,'sqrt'),'work_units':sqrt_rounds},
         {'name':'array','label':'Eight-state fixed-array updates','clack':array,'c':array_c,
          'expected':_array_reference(array_rounds),'work_units':array_rounds*8},
+        {'name':'array_fill','label':'Repeated 512-value fill and sum','clack':fill,'c':fill_c,
+         'expected':str(512*fill_rounds*(fill_rounds-1)//2)+'\n','work_units':fill_rounds*512},
     ]

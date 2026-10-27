@@ -1,0 +1,21 @@
+type Label:
+    value: text
+
+fn status(command: text) -> text:
+    ensures (command == "build" and result == "Ready") or (command != "build" and result == "Unknown")
+    if command == "build":
+        return "Ready"
+    return "Unknown"
+
+fn same_size(left: text, right: text) -> bool:
+    ensures result == (len(left) == len(right))
+    return len(left) == len(right)
+
+fn main():
+    label = Label(status("build"))
+    print(label.value)
+    print(label.value == "Ready")
+    print(len("café"))
+    print(len(""))
+    print("é" != "e\u0301")
+    print(same_size("é", "ab"))

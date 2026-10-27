@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 
-from suite import source_fingerprint
+from suite import source_fingerprint, text_fixture
 
 
 def main():
@@ -34,6 +34,7 @@ def main():
         "hello": "fn main():\n    print(42)\n",
         "stdlib": "from std.math import clamp\nfrom std.array import sum4\nfn main():\n    print(clamp(sum4([1,2,3,4]),0,100))\n",
         "array512": "from std.array import sum\nfn main():\n    total = sum([" + ", ".join(str(i % 7) for i in range(512)) + "])\n    assert total == 1533\n    print(total)\n",
+        "text1024": text_fixture()[0],
     }
     samples = {name: {label: [] for label in roots} for name in fixtures}
     order = [(name, label) for name in fixtures for label in roots]

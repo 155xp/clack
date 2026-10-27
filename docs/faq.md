@@ -16,13 +16,13 @@ An indentation-based syntax does not require an interpreted runtime. It also doe
 
 It has an efficient starting point: signed machine integers, by-value native records and fixed arrays, optimized C output, and no interpreter in the resulting binary. The recorded native suite compares eight cases across four algorithm families with equivalent C and checks every output. Those results describe the measured workloads, not a universal promise.
 
-There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [latest benchmark report](../benchmarks/RESULTS-0.4.md) separates compiler improvements, thread overhead, and native execution measurements, with raw samples and reproduction commands.
+There is no representative application suite or Rust comparison yet. Copying a large by-value array can cost time, and creating a thread for a tiny job can make it slower. The [latest benchmark report](../benchmarks/RESULTS-0.5.md) separates compiler improvements, thread overhead, and native execution measurements, with raw samples and reproduction commands.
 
 ## How much type annotation is required?
 
 Function parameters, function results other than main's, and record fields declare types. Locals infer a type from their first assignment and retain it. `int` means signed 64-bit integer; `bool` means `true` or `false`. There are no implicit integer/Boolean conversions.
 
-Array lengths are part of their types. `[1, 2, 3]` has type `int[3]`, so it cannot be passed to a function expecting `int[4]`. Records give a name to a fixed collection of fields. Immutable `text` literals support labels, output, ordinary function values, and native text arguments. Text manipulation, floating-point numbers, generic types, slices, and dynamic collections are not implemented yet.
+Array lengths are part of their types. `[1, 2, 3]` has type `int[3]`, so it cannot be passed to a function expecting `int[4]`. Records give a name to a fixed collection of fields. Immutable `text` literals support labels, output, ordinary function values, and native text arguments. Text equality and UTF-8 byte lengths are supported. Text concatenation, floating-point numbers, generic types, slices, and dynamic collections are not implemented yet.
 
 ## Do I need to write a proof for every statement?
 
@@ -86,7 +86,7 @@ Direct and mutual recursion are still rejected, including cycles that cross modu
 
 ## Can I use text or make a terminal UI?
 
-Yes. `print("Clack")` prints an immutable UTF-8 text literal. Text currently has no concatenation, comparison, indexing, length API, or dynamic input buffer. Main may call explicitly declared native C procedures for terminal drawing and input events. Ordinary worker functions remain pure, and the C provider is reported as outside verification. The [native guide](native.md) explains the complete declaration, ABI, path rules, and trust boundary used by optional TUI libraries.
+Yes. `print("Clack")` prints an immutable UTF-8 text literal. `==` and `!=` compare text by exact UTF-8 bytes, and `len` counts those bytes. For example, `len("café")` is five. Text currently has no concatenation, indexing, or dynamic input buffer. Main may call explicitly declared native C procedures for terminal drawing and input events. Ordinary worker functions remain pure, and the C provider is reported as outside verification. The [native guide](native.md) explains the complete declaration, ABI, path rules, and trust boundary used by optional TUI libraries.
 
 ## Where should I start?
 

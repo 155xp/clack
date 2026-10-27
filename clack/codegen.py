@@ -36,6 +36,10 @@ def _field(name: str) -> str:
     return f"clack_field_{name}"
 
 
+def _is_fill(expression) -> bool:
+    return isinstance(expression, ast.Call) and expression.name in OPERATIONS and OPERATIONS[expression.name].name == "fill"
+
+
 @dataclass
 class _Task:
     number: int
@@ -63,6 +67,9 @@ class _Emitter:
                 for value in node:
                     visit(value)
             elif is_dataclass(node):
+                if isinstance(node, ast.Assign) and _is_fill(node.value):
+                    visit(node.value.args)
+                    return
                 if isinstance(node, ast.Parallel):
                     for binding in node.bindings:
                         self.tasks[id(binding)] = _Task(len(self.tasks), binding, self.functions[binding.value.name])
@@ -171,6 +178,8 @@ class _Emitter:
             op = {"not": "!"}.get(expression.op, expression.op)
             return f"({op}({self.expression(expression.operand)}))"
         if kind == "Binary":
+            if expression.op in {"==", "!="} and self.expr_types[id(expression.left)] == "text":
+                return f"(strcmp({self.expression(expression.left)}, {self.expression(expression.right)}) {expression.op} 0)"
             op = {"and": "&&", "or": "||"}.get(expression.op, expression.op)
             return f"({self.expression(expression.left)} {op} {self.expression(expression.right)})"
         if kind == "Call":
@@ -187,6 +196,8 @@ class _Emitter:
                 fields = ", ".join(f".{_field(name)} = {self.expression(value)}" for (name, _), value in zip(record.fields, expression.args))
                 return f"(({_ctype(expression.name)}){{ {fields} }})"
             if expression.name == "len":
+                if self.expr_types[id(expression.args[0])] == "text":
+                    return f"((int64_t)strlen({self.expression(expression.args[0])}))"
                 array = array_type(self.expr_types[id(expression.args[0])])
                 if array is None:
                     raise ValueError("len of a non-array reached code generation")
@@ -261,7 +272,16 @@ class _Emitter:
         for statement in body:
             kind = type(statement).__name__
             if kind == "Assign":
-                output.append(f"{indent}{_var(statement.name)} = {self.expression(statement.value)};")
+                if _is_fill(statement.value):
+                    self.serial += 1
+                    element, length = array_type(self.expr_types[id(statement.value)])
+                    value, index = f"clack_for_{self.serial}_fill", f"clack_for_{self.serial}_index"
+                    output.extend([f"{indent}{{",
+                                   f"{indent}    const {_ctype(element)} {value} = {self.expression(statement.value.args[0])};",
+                                   f"{indent}    for (size_t {index} = 0; {index} < {length}; ++{index}) {_var(statement.name)}.data[{index}] = {value};",
+                                   indent + "}"])
+                else:
+                    output.append(f"{indent}{_var(statement.name)} = {self.expression(statement.value)};")
             elif kind == "IndexAssign":
                 output.append(f"{indent}{_var(statement.name)}.data[{self.expression(statement.index)}] = {self.expression(statement.value)};")
             elif kind == "Return":
@@ -306,6 +326,7 @@ class _Emitter:
             "#include <stdbool.h>",
             "#include <stdio.h>",
             "#include <stdlib.h>",
+            "#include <string.h>",
             "#include <pthread.h>",
             "",
             *self._type_definitions(),

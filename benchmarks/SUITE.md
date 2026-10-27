@@ -6,7 +6,7 @@ Run the suite from the repository root using the compiler's Python environment:
 .venv/bin/python benchmarks/suite.py --repeats 5 --compile-repeats 3 --output build/suite.json
 ```
 
-The suite checks eight native workloads against independent results and matching hand-written C programs. Clack and C use the same compiler and flags: `-std=c11 -O3 -Wall -Wextra -pthread`. Correct outputs are required before any timing report is written.
+The suite checks nine native workloads against independent results and matching hand-written C programs. Clack and C use the same compiler and flags: `-std=c11 -O3 -Wall -Wextra -pthread`. Correct outputs are required before any timing report is written.
 
 | Workload | What it exercises | Independent output reference |
 | --- | --- | --- |
@@ -18,6 +18,7 @@ The suite checks eight native workloads against independent results and matching
 | Variable-input Euclidean GCD | Nested variable-length remainder loops | Python `math.gcd` |
 | Integer square root | Repeated binary search and branches | Python `math.isqrt` |
 | Eight-state array update | Fixed-array reads, writes, and recurrence state | Logarithmic matrix exponentiation |
+| Repeated 512-value fill and sum | Fill assignments, full-array reduction, and accumulated checksum | Closed form `512 * N * (N - 1) / 2` |
 
 The source generators are in [suite.py](suite.py) and [kernels.py](kernels.py). The GCD and square-root contracts establish safety, termination, and result bounds; their full mathematical behavior is checked by independent runtime output comparisons. Do not confuse those output checks with formal functional proofs.
 
@@ -37,6 +38,8 @@ A nested-record-constructor fixture checks whether C emission visits each child 
 
 A 512-element integer-literal sum checks the cost of creating exact constant values, proving their range, and verifying every partial sum. Its asserted reference total is 1,533. An unused-code fixture contains 150 arithmetic helpers, a small used helper chain, and an unused parallel helper. All source bodies must still verify. The report records generated C bytes and separately measures C compilation for that fixture and the standard-library fixture, with native output checked after compilation. These measurements distinguish source verification from avoiding unnecessary backend work. The paired [cold-check script](cold.py) also includes the array fixture to show how import and process startup affect the change.
 
+A 1,024-byte text fixture passes mixed Unicode and literal escape-like text through a helper and prints it. It uses operations already supported in Clack 0.4, so it can expose the cost of changes to the verifier's text representation. Its compiled native output is checked against the exact original text. Both the main suite and paired cold-check script include it; it does not compare new text operations against an older compiler that lacked them.
+
 ## Compare an immutable baseline
 
 Use the same benchmark source and parameters for both compiler revisions. An explicit compiler root lets the benchmark import a snapshot without changing the active checkout:
@@ -52,6 +55,8 @@ Replace `COMMIT_SHA` with the revision you want to compare. The script verifies 
 
 `--scale N` multiplies runtime work, with `1 <= N <= 20`. Default work is designed to last tens of milliseconds on the recorded machine, so process startup remains visible but does not normally dominate. Use larger work on faster machines, and keep it identical across comparisons. `--only gcd,array`, for example, selects particular native cases during development; compiler fixtures still run.
 
+Add `--paired-root /tmp/clack-before` to the current run for an interleaved native comparison of the fill-and-sum kernel. The script builds actual output from both compiler trees, checks the closed-form checksum, and shuffles `--repeats` samples between the resulting binaries. Their source fingerprints must stay unchanged. Every iteration contributes to the accumulated result; the compiler may still optimize either program under ordinary C rules. This focused measurement avoids comparing native medians collected in separate baseline and current runs.
+
 ## Small parallel jobs
 
 [parallel.py](parallel.py) compares actual native output from two compiler trees on repeated small parallel blocks:
@@ -66,7 +71,7 @@ This isolates thread overhead. Clack 0.3 lets the caller execute the last job wh
 
 ## Reading results honestly
 
-These programs exercise four algorithm families, with five variants of the arithmetic workload. They are broader than a single kernel, but they are not a representative application suite and do not establish universal C or Rust performance. Both Clack and the hand-written C comparison use GCC or Clang's optimizer. Rust is not measured here.
+These programs exercise five algorithm families, with five variants of the arithmetic workload. They are broader than a single kernel, but they are not a representative application suite and do not establish universal C or Rust performance. Both Clack and the hand-written C comparison use GCC or Clang's optimizer. Rust is not measured here.
 
 Scheduling, CPU allocation, thermal state, and competing processes affect runtimes and parallel scaling. The report's logical CPU count is a host observation, not a guarantee of available CPU time. Small differences around a ratio of one should be treated as noise until larger repeated experiments support them.
 

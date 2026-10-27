@@ -2,7 +2,7 @@
 
 [Handbook](README.md) · [Full reference](reference/README.md)
 
-This page summarizes accepted Clack 0.4 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
+This page summarizes accepted Clack 0.5 syntax. Except where a complete program is shown, code blocks are fragments to place in an appropriate function.
 
 ## Program and functions
 
@@ -26,6 +26,8 @@ Only `main` may omit the result annotation and perform output. Other functions m
 | `number = number + 1` | Reassign that local with the same type |
 | `ready = true` | Infer a `bool` local |
 | `title = "Clack"` | Infer an immutable `text` value |
+| `title == "Clack"` | Compare exact UTF-8 bytes |
+| `len("café")` | Return `5`, the UTF-8 byte count |
 | `values = [10, 20, 30]` | Infer `int[3]` |
 | `flags = [true, false]` | Infer `bool[2]` |
 | `values = fill(0, 100)` | Infer `int[100]`; requires `from std.array import fill` |
@@ -44,7 +46,7 @@ Only `main` may omit the result annotation and perform output. Other functions m
 | Boolean | `and`, `or`, `not` |
 | Grouping and access | `(expression)`, `record.field`, `array[index]` |
 
-`/` truncates integer division toward zero. `%` has the dividend's sign for a nonzero remainder. `and` and `or` short-circuit. `0 <= x <= 10` is a chained comparison. Booleans and integers do not implicitly convert to one another. Equality applies to scalar values; compare record fields or array elements individually.
+`/` truncates integer division toward zero. `%` has the dividend's sign for a nonzero remainder. `and` and `or` short-circuit. `0 <= x <= 10` is a chained comparison. Booleans and integers do not implicitly convert to one another. Equality accepts matching integer, Boolean, or text values. Text equality compares exact UTF-8 bytes with case preserved and no normalization. Ordering accepts integers. Compare record fields or array elements individually.
 
 ## Records
 
@@ -124,7 +126,7 @@ The block waits for all results. Each job is a call to a user function. All argu
 | Function | Use |
 | --- | --- |
 | `print(value)` | Print one `int`, `bool`, or `text`, only in `main` |
-| `len(array)` | Return a fixed array's length |
+| `len(value)` | Return a fixed array's element count or text's UTF-8 byte count |
 
 Import the standard helpers explicitly:
 
